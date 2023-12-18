@@ -1,0 +1,212 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Collaboration {
+  id              Int       @id @default(autoincrement())
+  user_id         Int
+  collaborator_id Int
+  account_id      Int
+  status          Boolean
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  // Define references to the User model
+  user            User      @relation("UserCollaborations", fields: [user_id], references: [id])
+  collaborator    User      @relation("CollaboratorCollaborations", fields: [collaborator_id], references: [id])
+}
+model Budget {
+  id                  Int      @id @default(autoincrement())
+  user_id             Int
+  name                String
+  amount              Float
+  budgets_category_id Int
+  account_id          Int
+  set_limit           Float
+  start_date          DateTime
+  end_date            DateTime
+  created_at          DateTime @default(now())
+  updated_at          DateTime @default(now())
+  duration            DateTime
+
+  // References
+  User                 User @relation(fields: [user_id], references: [id])
+  BudgetsCategory      BudgetsCategory @relation(fields: [budgets_category_id], references: [id])
+}
+
+model GoalCategory {
+  id         Int      @id @default(autoincrement())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  // References
+  Goal Goal[]
+}
+
+model UserEmail {
+  id              Int      @id @default(autoincrement())
+  sender          String
+  receiver        String
+  response_details Int
+  created_at      Int
+  updated_at      Int
+}
+
+model InstitutionAccount {
+  id                 Int      @id @default(autoincrement())
+  user_id            Int
+  plaid_account_id   String
+  account_name       String
+  account_type       String
+  institution_id     Int
+  institution_name   String
+  mask               String
+  subtype            String
+  verification_status String
+  balance            Float
+  available_balance  Float
+  created_at         DateTime
+  updated_at         DateTime
+
+  // References
+  User User @relation(fields: [user_id], references: [id])
+}
+
+model PlaidItem {
+  id            Int      @id @default(autoincrement())
+  plaid_item_id Int
+  user_id       Int
+  access_token  String
+  public_token  String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now())
+
+  // References
+  User User @relation(fields: [user_id], references: [id])
+}
+
+model BudgetsCategory {
+  id         Int      @id @default(autoincrement())
+  name       Int
+  icon       String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  // References
+  Budget Budget[]
+}
+
+// Define the User model
+
+// User Enum
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  active        Boolean   @default(false)
+  password      String
+  otp_verified  Boolean   @default(false)
+  user_otp      Int      
+  user_role    UserRole   @default(USER)
+  device_token  String
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  // Define relationships to the Collaboration model
+  collaborations      Collaboration[] @relation("UserCollaborations")
+  collaboratedWith     Collaboration[] @relation("CollaboratorCollaborations")
+  budget     Budget[]
+  institution_account InstitutionAccount[]
+  plaidItems PlaidItem[]
+  user_details UserDetails?
+  account Account[]
+}
+
+model Goal {
+  id              Int      @id @default(autoincrement())
+  user_id         Int
+  goal_category_id Int
+  name            String
+  created_at      DateTime @default(now())
+  updated_at      DateTime @default(now())
+
+  // References
+//   User            User @relation(fields: [user_id], references: [id])
+  GoalCategory    GoalCategory @relation(fields: [goal_category_id], references: [id])
+}
+
+model UserDetails {
+  id          Int      @id @default(autoincrement())
+  user_id     Int @unique
+  firstname   String
+  lastname    String
+  dateofbirth DateTime
+  phonenumber Int
+  gender      String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+
+  // References
+  user  User @relation(fields: [user_id], references: [id])
+}
+
+model Transaction {
+  id                   Int      @id @default(autoincrement())
+  account_id           Int
+  plaid_transaction_id Int
+  name                 String
+  amount               Float
+  category_id          String
+  category_name        String[]
+  date                 DateTime
+  pending              Boolean
+  created_at           DateTime @default(now())
+  updated_at           DateTime @default(now())
+
+  // References
+  Account Account @relation(fields: [account_id], references: [id])
+}
+
+model Account {
+  id                 Int      @id @default(autoincrement())
+  user_id            Int
+  account_name       String
+  account_type       String
+  institution_name   String
+  mask               String
+  subtype            String
+  verification_status String
+  created_at         DateTime
+  updated_at         DateTime
+
+  // References
+  User User @relation(fields: [user_id], references: [id])
+  Transaction        Transaction[]
+  Balance            Balance[]
+}
+
+model Balance {
+  id                 Int      @id @default(autoincrement())
+  account_id         Int
+  current_balance    Float
+  available_balance  Float
+  date               DateTime
+  created_at         DateTime @default(now())
+  updated_at         DateTime @default(now())
+
+  // References
+  Account            Account @relation(fields: [account_id], references: [id])
+}
+
