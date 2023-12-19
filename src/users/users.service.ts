@@ -1,10 +1,16 @@
-import { HttpException, HttpStatus, Injectable, Post, UseGuards } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { RegisterUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { PrismaService } from 'src/prisma.service';
-import * as bcrypt from 'bcrypt'
+import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
-import * as nodeMailer from 'nodemailer'
+import * as nodeMailer from 'nodemailer';
 import { LoginUserDto } from './dto/login-user.dto';
 import { ForgetPassword } from './dto/forget-password.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -12,12 +18,10 @@ import { ProfileAddDto } from './dto/profile-add.dto';
 
 @Injectable()
 export class UsersService {
-
   constructor(
     private readonly prisma: PrismaService,
     private jwtService: JwtService,
-    ) { }
-
+  ) {}
 
   // async registerUser(createUserDto: RegisterUserDto) {
 
@@ -46,7 +50,6 @@ export class UsersService {
   //     }
   //   })
 
-
   //   await this.sendEmail(user, "Welcome and verify your email.", "Thank for joining us please verify email with code", otp);
 
   //   delete user.password
@@ -55,22 +58,27 @@ export class UsersService {
   async registerUser(createUserDto: RegisterUserDto) {
     try {
       if (!createUserDto) {
-        throw new HttpException("User registration details are missing", HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'User registration details are missing',
+          HttpStatus.BAD_REQUEST,
+        );
       }
-  
-      const alreadyExists = await this.prisma.user.findUnique({ where: { email: createUserDto.email } });
-  
+
+      const alreadyExists = await this.prisma.user.findUnique({
+        where: { email: createUserDto.email },
+      });
+
       if (alreadyExists) {
         return {
-          status: "failure",
-          data: { message: "Email already exists" },
+          status: 'failure',
+          data: { message: 'Email already exists' },
         };
       }
-  
+
       const hash_password = await bcrypt.hash(createUserDto.password, 10);
-  
+
       const otp = Math.floor(1000 + Math.random() * 9000);
-  
+
       const user = await this.prisma.user.create({
         data: {
           email: createUserDto.email,
@@ -81,26 +89,33 @@ export class UsersService {
           device_token: createUserDto.device_token,
         },
       });
-  
-      await this.sendEmail(user, "Welcome and verify your email.", "Thank for joining us please verify email with code", otp);
-  
+
+      await this.sendEmail(
+        user,
+        'Welcome and verify your email.',
+        'Thank for joining us please verify email with code',
+        otp,
+      );
+
       delete user.password;
       return {
-        status: "success",
+        status: 'success',
         data: user,
       };
     } catch (error) {
       // Handle specific errors with specific messages or codes
       // Here, we are just returning a generic error message
       return {
-        status: "failure",
-        data: { message: "An error occurred during registration, please try again later" },
+        status: 'failure',
+        data: {
+          message:
+            'An error occurred during registration, please try again later',
+        },
       };
     }
   }
 
   async sendEmail(user: User, subject: string, message: string, otp: number) {
-
     const transporter = nodeMailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT) || 587,
@@ -109,18 +124,18 @@ export class UsersService {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
-    })
+    });
 
     const emailOptions = {
       from: process.env.FROM_EMAIL,
       to: user.email,
       subject: subject,
-      text: message
+      text: message,
     };
 
-    emailOptions.text += " Your Notification Code is : " + otp;
+    emailOptions.text += ' Your Notification Code is : ' + otp;
 
-    await transporter.sendMail(emailOptions)
+    await transporter.sendMail(emailOptions);
   }
 
   // async loginUser(payload: LoginUserDto) {
@@ -144,39 +159,51 @@ export class UsersService {
   //   const token = await this.jwtService.signAsync(jwtPayload);
   //   // If the email and password are correct, return the user data (without sensitive info)
   //   const { password: userPassword, ...userData} = user;
-    
+
   //   return {...userData, token};
   // }
   async loginUser(payload: LoginUserDto) {
     try {
       // Check if the email exists in the database
-      const user = await this.prisma.user.findUnique({ where: { email: payload.email } });
-  
+      const user = await this.prisma.user.findUnique({
+        where: { email: payload.email },
+      });
+
       if (!user) {
         return {
-          status: "failure",
-          data: { message: "Invalid email or password" },
+          status: 'failure',
+          data: { message: 'Invalid email or password' },
         };
       }
-  
+            
+      if (!user.otp_verified) {
+        return {
+          status: 'failure',
+          data: { message: 'User email is not verified, Please try again' },
+        };
+      }
+
       // Check if the provided password matches the hashed password in the database
-      const passwordMatches = await bcrypt.compare(payload.password, user.password);
-  
+      const passwordMatches = await bcrypt.compare(
+        payload.password,
+        user.password,
+      );
+
       if (!passwordMatches) {
         return {
-          status: "failure",
-          data: { message: "Invalid email or password" },
+          status: 'failure',
+          data: { message: 'Invalid email or password' },
         };
       }
-  
+
       const jwtPayload = {
         user_id: user.id,
       };
-  
+
       const token = await this.jwtService.signAsync(jwtPayload);
-        const { password: userPassword, ...userData } = user;
-        return {
-        status: "success",
+      const { password: userPassword, ...userData } = user;
+      return {
+        status: 'success',
         data: {
           ...userData,
           token,
@@ -186,160 +213,298 @@ export class UsersService {
       // Handle specific errors with specific messages or codes
       // Here, we are just returning a generic error message
       return {
-        status: "failure",
-        data: { message: "An error occurred during login, please try again later" },
+        status: 'failure',
+        data: {
+          message: 'An error occurred during login, please try again later',
+        },
       };
     }
   }
-  
 
   async forgetPassword(payload: ForgetPassword) {
-    // Check if the email exists in the database
-    const user = await this.prisma.user.findUnique({ where: { email: payload.email } });
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { email: payload.email },
+      });
 
-    const otp = Math.floor(1000 + Math.random() * 9000);
-
-    if (!user) {
-      throw new HttpException('Invalid email', HttpStatus.UNAUTHORIZED);
-    }
-
-    await this.prisma.user.update({
-      where: { email: payload.email },
-      data: {
-        user_otp: otp
+      if (!user) {
+        return {
+          status: 'failure',
+          data: { message: 'Invalid email' },
+        };
       }
-    })
 
-    await this.sendEmail(user, "Password Reset", "Password reset OTP is ", otp);
-    return true;
+      const otp = Math.floor(1000 + Math.random() * 9000);
+
+      await this.prisma.user.update({
+        where: { email: payload.email },
+        data: { user_otp: otp },
+      });
+
+      await this.sendEmail(
+        user,
+        'Password Reset',
+        'Password reset OTP is ',
+        otp,
+      );
+      return {
+        status: 'success',
+        data: { message: 'Email sent with OTP for password reset' },
+      };
+    } catch (error) {
+      // Handle specific errors with specific messages or codes
+      // Here, we are just returning a generic error message
+      return {
+        status: 'failure',
+        data: {
+          message:
+            'An error occurred during password reset request, please try again later',
+        },
+      };
+    }
   }
 
   async verifyOTP(email: string, otp: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-
-    if (user.user_otp !== parseInt(otp)) {
-      throw new HttpException('Invalid OTP', HttpStatus.UNAUTHORIZED);
-    }
-
-    // Update user as OTP is verified
-    await this.prisma.user.update({
-      where: { email },
-      data: { otp_verified: true, user_otp: parseInt(otp)}, // Clear OTP after verification
-    });
-
-    return {message : 'OTP verified successfully', user_id : user.id };
-  }
-
-  async changePassword(email : string, user_id: number, password: string) {
-    const user = await this.prisma.user.findUnique({ where: { id : user_id, email} });
-
-    if (!email || !user_id || !password) {
-      throw new HttpException('All fields are mendetory', HttpStatus.BAD_REQUEST); 
-    }
-
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-
-    // Hash the new password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Update the user's password in the database
-    await this.prisma.user.update({
-      where: { id : user_id, email},
-      data: { password: hashedPassword },
-    });
-
-    return 'Password updated successfully';
-  }
-
-  async addProfile(profileData : ProfileAddDto, user_id : number){
-    const isUserExists = await this.prisma.user.findUnique({where : {id : user_id}})
-
-    if (!isUserExists) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
     try {
+      const user = await this.prisma.user.findUnique({ where: { email } });
+
+      if (!user) {
+        return {
+          status: 'failure',
+          data: { message: 'User not found' },
+        };
+      }
+
+      if (user.user_otp !== parseInt(otp)) {
+        return {
+          status: 'failure',
+          data: { message: 'Invalid OTP' },
+        };
+      }
+
+      // Update user as OTP is verified
+      await this.prisma.user.update({
+        where: { email },
+        data: { otp_verified: true, user_otp: parseInt(otp) }, // Clear OTP after verification
+      });
+
+      return {
+        status: 'success',
+        data: { message: 'OTP verified successfully', user_id: user.id },
+      };
+    } catch (error) {
+      // Handle specific errors with specific messages or codes
+      // Here, we are just returning a generic error message
+      return {
+        status: 'failure',
+        data: { message: 'An error occurred while otp verification' },
+      };
+    }
+  }
+  async resendOTP(email : string) {
+    try {
+      const user = await this.prisma.user.findUnique({ where: {email} });
+
+      if (!user) {
+        return {
+          status: 'failure',
+          data: { message: 'User not found' },
+        };
+      }
+
+      const otp = Math.floor(1000 + Math.random() * 9000);
+
+      await this.prisma.user.update({
+        where: { email: email },
+        data: { user_otp: otp },
+      });
+
+      await this.sendEmail(
+        user,
+        'Password Reset',
+        'Password reset OTP is ',
+        otp,
+      );
+
+      return {
+        status: 'success',
+        data: { message: 'Email sent with OTP for password reset' },
+      };
+    } catch (error) {
+      // Handle specific errors with specific messages or codes
+      // Here, we are just returning a generic error message
+      return {
+        status: 'failure',
+        data: { message: 'An error occurred while resend otp' },
+      };
+    }
+  }
+
+  async changePassword(email: string, user_id: number, password: string) {
+    try {
+      if (!email || !user_id || !password) {
+        return {
+          status: 'failure',
+          data: { message: 'Missing required fields' },
+        };
+      }
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: user_id, email },
+      });
+
+      if (!user) {
+        return {
+          status: 'failure',
+          data: { message: 'User not found' },
+        };
+      }
+
+      // Hash the new password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Update the user's password in the database
+      await this.prisma.user.update({
+        where: { id: user_id, email },
+        data: { password: hashedPassword },
+      });
+
+      return {
+        status: 'success',
+        data: { message: 'Password updated successfully' },
+      };
+    } catch (error) {
+      // Handle specific errors with specific messages or codes
+      // Here, we are just returning a generic error message
+      return {
+        status: 'failure',
+        data: {
+          message:
+            'An error occurred during password change, please try again later',
+        },
+      };
+    }
+  }
+
+  async addProfile(profileData: ProfileAddDto, user_id: number) {
+    try {
+      const isUserExists = await this.prisma.user.findUnique({
+        where: { id: user_id },
+      });
+
+      if (!isUserExists) {
+        return {
+          status: 'failure',
+          data: { message: 'User not found' },
+        };
+      }
 
       const newProfile = await this.prisma.userDetails.create({
-        data : {
-          firstname : profileData.firstname,
-          lastname : profileData.lastname,
-          dateofbirth : new Date(profileData.date_of_birth),
-          gender : profileData.gender,
-          phonenumber : profileData.phone_number,
-          user_id : user_id
-        }
-      })
-        return newProfile
+        data: {
+          firstname: profileData.firstname,
+          lastname: profileData.lastname,
+          dateofbirth: new Date(profileData.date_of_birth),
+          gender: profileData.gender,
+          phonenumber: profileData.phone_number,
+          user_id,
+        },
+      });
+
+      return {
+        status: 'success',
+        data: newProfile,
+      };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      // Handle specific errors with specific messages or codes
+      // Here, we are just returning a generic error message
+      return {
+        status: 'failure',
+        data: {
+          message:
+            'An error occurred during profile creation, please try again later',
+        },
+      };
     }
   }
 
-  async getProfileDetails(user_id : number){
-    const isUserExists = await this.prisma.userDetails.findUnique({
-      where : {
-        user_id
-      }
-    })
-    
-    if (isUserExists) {
-      return {message: "profile details already exists", user : isUserExists}
-    }
-    else{
-      return {message : "profile details does not exists"}
-    }
-  }
-
-
-  async updateProfile(profileData : UpdateProfileDto, user_id : number){
-    const isUserExists = await this.prisma.user.findUnique({where : {id : user_id}})
-
-    if (!isUserExists) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-
+  async getProfileDetails(user_id: number) {
     try {
       const userDetails = await this.prisma.userDetails.findUnique({
-        where : {
-          user_id : user_id
-        }
-      })
+        where: { user_id },
+      });
+
+      if (userDetails) {
+        return {
+          status: 'success',
+          data: userDetails,
+        };
+      } else {
+        return {
+          status: 'success',
+          data: { message: 'Profile details not found' },
+        };
+      }
+    } catch (error) {
+      // Handle specific errors with specific messages or codes
+      // Here, we are just returning a generic error message
+      return {
+        status: 'failure',
+        data: { message: 'An error occurred while retrieving profile details' },
+      };
+    }
+  }
+
+  async updateProfile(profileData: UpdateProfileDto, user_id: number) {
+    try {
+      const isUserExists = await this.prisma.user.findUnique({
+        where: { id: user_id },
+      });
+
+      if (!isUserExists) {
+        return {
+          status: 'failure',
+          data: { message: 'User not found' },
+        };
+      }
+
+      const userDetails = await this.prisma.userDetails.findUnique({
+        where: { user_id },
+      });
 
       if (!userDetails) {
-        throw new HttpException('User details not found', HttpStatus.NOT_FOUND);
+        return {
+          status: 'failure',
+          data: { message: 'Profile details not found' },
+        };
       }
 
       const updatedProfile = await this.prisma.userDetails.update({
-        where:{
-          user_id : user_id
+        where: { user_id },
+        data: {
+          firstname: profileData.firstname,
+          lastname: profileData.lastname,
+          dateofbirth: new Date(profileData.date_of_birth),
+          gender: profileData.gender,
+          phonenumber: profileData.phone_number,
         },
-        data : {
-          firstname : profileData.firstname,
-          lastname : profileData.lastname,
-          dateofbirth : new Date(profileData.date_of_birth),
-          gender : profileData.gender,
-          phonenumber : profileData.phone_number,
-          user_id : user_id
-        }
-      })
-        return updatedProfile
+      });
+
+      return {
+        status: 'success',
+        data: updatedProfile,
+      };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      // Handle specific errors with specific messages or codes
+      // Here, we are just returning a generic error message
+      return {
+        status: 'failure',
+        data: {
+          message:
+            'An error occurred during profile update, please try again later',
+        },
+      };
     }
   }
-
-
-
-
-
-
-
 
   create(createUserDto: RegisterUserDto) {
     return createUserDto;

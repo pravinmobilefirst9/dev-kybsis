@@ -39,6 +39,16 @@ export class UsersController {
     }
   }
 
+  @Post('resend_otp')
+  async resendOTP(@Body() body: { email: string }) {
+    try {
+      const result = await this.usersService.resendOTP(body.email);
+      return { message: result };
+    } catch (error) {
+      throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   @Post('update_password')
   async updatePassword(@Body() body: { email : string, user_id: number, password : string }) {
     try {
