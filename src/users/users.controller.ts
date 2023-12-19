@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus, UseGuards, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { RegisterUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { ForgetPassword } from './dto/forget-password.dto';
+import { ProfileAddDto } from './dto/profile-add.dto';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { Request } from 'express';
 
 @Controller('users')
 export class UsersController {
@@ -49,7 +52,21 @@ export class UsersController {
 
 
   
-  
+  @Post('add_profile_details')
+  @UseGuards(AuthGuard)
+  async profileAdd(
+    @Body() profileData : ProfileAddDto, @Req() req : any
+  ){
+    try {
+      console.log(req.body);
+      
+      const result = await this.usersService.addProfile(profileData);
+      return { message: result };
+    } catch (error) {
+      throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   
   @Post()
   create(@Body() createUserDto: RegisterUserDto) {

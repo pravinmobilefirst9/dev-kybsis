@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Body, HttpException, HttpStatus, Injectable, Post, UseGuards } from '@nestjs/common';
 import { RegisterUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma.service';
@@ -9,6 +9,8 @@ import otpGenerator from 'otp-generator';
 import { LoginUserDto } from './dto/login-user.dto';
 import { ForgetPassword } from './dto/forget-password.dto';
 import { JwtService } from '@nestjs/jwt';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { ProfileAddDto } from './dto/profile-add.dto';
 
 @Injectable()
 export class UsersService {
@@ -166,10 +168,9 @@ export class UsersService {
     return 'Password updated successfully';
   }
 
-
-
-
-
+  async addProfile(profileData : ProfileAddDto){
+      return true
+  }
 
 
 
