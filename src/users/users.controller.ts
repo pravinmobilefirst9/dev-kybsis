@@ -58,14 +58,31 @@ export class UsersController {
     @Body() profileData : ProfileAddDto, @Req() req : any
   ){
     try {
-      console.log(req.body);
-      
-      const result = await this.usersService.addProfile(profileData);
+      const {user_id} = req.auth     
+      const result = await this.usersService.addProfile(profileData, user_id);
       return { message: result };
     } catch (error) {
       throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  @Get('get_profile_details')
+  @UseGuards(AuthGuard)
+  async getProfileDetails(@Req() req : any) {
+    console.log({req});
+    
+    const {user_id} = req.auth 
+    try {
+      console.log({user_id});
+          
+      const result = await this.usersService.getProfileDetails(user_id);
+      return { message: result };
+    } catch (error) {
+      throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
 
   
   @Post()

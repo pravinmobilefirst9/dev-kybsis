@@ -153,7 +153,7 @@ model UserDetails {
   firstname   String
   lastname    String
   dateofbirth DateTime
-  phonenumber Int
+  phonenumber String
   gender      String
   created_at  DateTime @default(now())
   updated_at  DateTime @default(now())

@@ -95,7 +95,7 @@ export class UsersService {
     }
 
     const jwtPayload = {
-      user: { id: user?.id, email: user?.email },
+      user_id: user.id
     };
     const token = await this.jwtService.signAsync(jwtPayload);
     // If the email and password are correct, return the user data (without sensitive info)
@@ -168,8 +168,43 @@ export class UsersService {
     return 'Password updated successfully';
   }
 
-  async addProfile(profileData : ProfileAddDto){
-      return true
+  async addProfile(profileData : ProfileAddDto, user_id : number){
+    const isUserExists = await this.prisma.user.findUnique({where : {id : user_id}})
+
+    if (!isUserExists) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    try {
+
+      const newProfile = await this.prisma.userDetails.create({
+        data : {
+          firstname : profileData.firstname,
+          lastname : profileData.lastname,
+          dateofbirth : new Date(profileData.date_of_birth),
+          gender : profileData.gender,
+          phonenumber : profileData.phone_number,
+          user_id : user_id
+        }
+      })
+        return newProfile
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async getProfileDetails(user_id : number){
+    const isUserExists = await this.prisma.userDetails.findUnique({
+      where : {
+        user_id : user_id
+      }
+    })
+
+    if (isUserExists) {
+      return {message: "profile details already exists"}
+    }
+    else{
+      return {message : "profile details does not exists"}
+    }
   }
 
 
