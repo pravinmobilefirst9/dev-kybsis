@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus, UseGuards, Req, Put } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { RegisterUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { ForgetPassword } from './dto/forget-password.dto';
 import { ProfileAddDto } from './dto/profile-add.dto';
@@ -72,10 +72,20 @@ export class UsersController {
     console.log({req});
     
     const {user_id} = req.auth 
-    try {
-      console.log({user_id});
-          
+    try {         
       const result = await this.usersService.getProfileDetails(user_id);
+      return { message: result };
+    } catch (error) {
+      throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  
+  @Put('update_profile')
+  @UseGuards(AuthGuard)
+  async updateProfile(@Body() updateProfileDto : UpdateProfileDto,  @Req() req : any) {
+    try {
+      const {user_id} = req.auth     
+      const result = await this.usersService.updateProfile(updateProfileDto, user_id);
       return { message: result };
     } catch (error) {
       throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
@@ -101,7 +111,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateProfileDto) {
     return this.usersService.update(+id, updateUserDto);
   }
 

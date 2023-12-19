@@ -1,6 +1,6 @@
 import { Body, HttpException, HttpStatus, Injectable, Post, UseGuards } from '@nestjs/common';
 import { RegisterUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { PrismaService } from 'src/prisma.service';
 import * as bcrypt from 'bcrypt'
 import { User } from '@prisma/client';
@@ -195,18 +195,55 @@ export class UsersService {
   async getProfileDetails(user_id : number){
     const isUserExists = await this.prisma.userDetails.findUnique({
       where : {
-        user_id : user_id
+        user_id
       }
     })
-
+    
     if (isUserExists) {
-      return {message: "profile details already exists"}
+      return {message: "profile details already exists", user : isUserExists}
     }
     else{
       return {message : "profile details does not exists"}
     }
   }
 
+
+  async updateProfile(profileData : UpdateProfileDto, user_id : number){
+    const isUserExists = await this.prisma.user.findUnique({where : {id : user_id}})
+
+    if (!isUserExists) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    try {
+      const userDetails = await this.prisma.userDetails.findUnique({
+        where : {
+          user_id : user_id
+        }
+      })
+
+      if (!userDetails) {
+        throw new HttpException('User details not found', HttpStatus.NOT_FOUND);
+      }
+
+      const updatedProfile = await this.prisma.userDetails.update({
+        where:{
+          user_id : user_id
+        },
+        data : {
+          firstname : profileData.firstname,
+          lastname : profileData.lastname,
+          dateofbirth : new Date(profileData.date_of_birth),
+          gender : profileData.gender,
+          phonenumber : profileData.phone_number,
+          user_id : user_id
+        }
+      })
+        return updatedProfile
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 
 
 
@@ -227,7 +264,7 @@ export class UsersService {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
+  update(id: number, updateUserDto: UpdateProfileDto) {
     return `This action updates a #${id} user`;
   }
 
