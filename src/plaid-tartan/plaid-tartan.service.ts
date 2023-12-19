@@ -12,7 +12,19 @@ export class PlaidTartanService {
   
   async addPlaidItems(createPlaidTartanDto: CreatePlaidTartanDto, user_id : number) {
     try {
-      console.log({user_id});
+      
+      const existingPlaidItem = await this.prisma.plaidItem.findFirst({
+        where: {
+          access_token: createPlaidTartanDto.access_token,
+          plaid_item_id: createPlaidTartanDto.plaid_item_id,
+          user_id: user_id,
+        },
+      });
+
+      if (existingPlaidItem) {
+        throw new HttpException('Duplicate Plaid item found', HttpStatus.CONFLICT);
+      }
+      
       
       const user = await this.prisma.user.findUnique({where :{id : user_id }})
       if (!user) {
