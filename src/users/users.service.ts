@@ -19,38 +19,84 @@ export class UsersService {
     ) { }
 
 
+  // async registerUser(createUserDto: RegisterUserDto) {
+
+  //   if (!createUserDto) {
+  //     throw new HttpException("User registration details are missing", HttpStatus.BAD_REQUEST)
+  //   }
+
+  //   const alreadyExists = await this.prisma.user.findUnique({ where: { email: createUserDto.email } })
+
+  //   if (alreadyExists) {
+  //     throw new HttpException("Email already exists", HttpStatus.BAD_REQUEST)
+  //   }
+
+  //   const hash_password = await bcrypt.hash(createUserDto.password, 10);
+
+  //   const otp = Math.floor(1000 + Math.random() * 9000);
+
+  //   const user = await this.prisma.user.create({
+  //     data: {
+  //       email: createUserDto.email,
+  //       password: hash_password,
+  //       otp_verified: false,
+  //       active: false,
+  //       user_otp: otp,
+  //       device_token: createUserDto.device_token
+  //     }
+  //   })
+
+
+  //   await this.sendEmail(user, "Welcome and verify your email.", "Thank for joining us please verify email with code", otp);
+
+  //   delete user.password
+  //   return user;
+  // }
   async registerUser(createUserDto: RegisterUserDto) {
-
-    if (!createUserDto) {
-      throw new HttpException("User registration details are missing", HttpStatus.BAD_REQUEST)
-    }
-
-    const alreadyExists = await this.prisma.user.findUnique({ where: { email: createUserDto.email } })
-
-    if (alreadyExists) {
-      throw new HttpException("Email already exists", HttpStatus.BAD_REQUEST)
-    }
-
-    const hash_password = await bcrypt.hash(createUserDto.password, 10);
-
-    const otp = Math.floor(1000 + Math.random() * 9000);
-
-    const user = await this.prisma.user.create({
-      data: {
-        email: createUserDto.email,
-        password: hash_password,
-        otp_verified: false,
-        active: false,
-        user_otp: otp,
-        device_token: createUserDto.device_token
+    try {
+      if (!createUserDto) {
+        throw new HttpException("User registration details are missing", HttpStatus.BAD_REQUEST);
       }
-    })
-
-
-    await this.sendEmail(user, "Welcome and verify your email.", "Thank for joining us please verify email with code", otp);
-
-    delete user.password
-    return user;
+  
+      const alreadyExists = await this.prisma.user.findUnique({ where: { email: createUserDto.email } });
+  
+      if (alreadyExists) {
+        return {
+          status: "failure",
+          data: { message: "Email already exists" },
+        };
+      }
+  
+      const hash_password = await bcrypt.hash(createUserDto.password, 10);
+  
+      const otp = Math.floor(1000 + Math.random() * 9000);
+  
+      const user = await this.prisma.user.create({
+        data: {
+          email: createUserDto.email,
+          password: hash_password,
+          otp_verified: false,
+          active: false,
+          user_otp: otp,
+          device_token: createUserDto.device_token,
+        },
+      });
+  
+      await this.sendEmail(user, "Welcome and verify your email.", "Thank for joining us please verify email with code", otp);
+  
+      delete user.password;
+      return {
+        status: "success",
+        data: user,
+      };
+    } catch (error) {
+      // Handle specific errors with specific messages or codes
+      // Here, we are just returning a generic error message
+      return {
+        status: "failure",
+        data: { message: "An error occurred during registration, please try again later" },
+      };
+    }
   }
 
   async sendEmail(user: User, subject: string, message: string, otp: number) {
@@ -77,30 +123,75 @@ export class UsersService {
     await transporter.sendMail(emailOptions)
   }
 
-  async loginUser(payload: LoginUserDto) {
-    // Check if the email exists in the database
-    const user = await this.prisma.user.findUnique({ where: { email: payload.email } });
+  // async loginUser(payload: LoginUserDto) {
+  //   // Check if the email exists in the database
+  //   const user = await this.prisma.user.findUnique({ where: { email: payload.email } });
 
-    if (!user) {
-      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-    }
+  //   if (!user) {
+  //     throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+  //   }
 
-    // Check if the provided password matches the hashed password in the database
-    const passwordMatches = await bcrypt.compare(payload.password, user.password);
+  //   // Check if the provided password matches the hashed password in the database
+  //   const passwordMatches = await bcrypt.compare(payload.password, user.password);
 
-    if (!passwordMatches) {
-      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-    }
+  //   if (!passwordMatches) {
+  //     throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+  //   }
 
-    const jwtPayload = {
-      user_id: user.id
-    };
-    const token = await this.jwtService.signAsync(jwtPayload);
-    // If the email and password are correct, return the user data (without sensitive info)
-    const { password: userPassword, ...userData} = user;
+  //   const jwtPayload = {
+  //     user_id: user.id
+  //   };
+  //   const token = await this.jwtService.signAsync(jwtPayload);
+  //   // If the email and password are correct, return the user data (without sensitive info)
+  //   const { password: userPassword, ...userData} = user;
     
-    return {...userData, token};
+  //   return {...userData, token};
+  // }
+  async loginUser(payload: LoginUserDto) {
+    try {
+      // Check if the email exists in the database
+      const user = await this.prisma.user.findUnique({ where: { email: payload.email } });
+  
+      if (!user) {
+        return {
+          status: "failure",
+          data: { message: "Invalid email or password" },
+        };
+      }
+  
+      // Check if the provided password matches the hashed password in the database
+      const passwordMatches = await bcrypt.compare(payload.password, user.password);
+  
+      if (!passwordMatches) {
+        return {
+          status: "failure",
+          data: { message: "Invalid email or password" },
+        };
+      }
+  
+      const jwtPayload = {
+        user_id: user.id,
+      };
+  
+      const token = await this.jwtService.signAsync(jwtPayload);
+        const { password: userPassword, ...userData } = user;
+        return {
+        status: "success",
+        data: {
+          ...userData,
+          token,
+        },
+      };
+    } catch (error) {
+      // Handle specific errors with specific messages or codes
+      // Here, we are just returning a generic error message
+      return {
+        status: "failure",
+        data: { message: "An error occurred during login, please try again later" },
+      };
+    }
   }
+  
 
   async forgetPassword(payload: ForgetPassword) {
     // Check if the email exists in the database
