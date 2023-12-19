@@ -81,7 +81,7 @@ model InstitutionAccount {
 
 model PlaidItem {
   id            Int      @id @default(autoincrement())
-  plaid_item_id Int
+  plaid_item_id String
   user_id       Int
   access_token  String
   public_token  String
@@ -89,7 +89,7 @@ model PlaidItem {
   updated_at    DateTime @default(now())
 
   // References
-  User User @relation(fields: [user_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
 }
 
 model BudgetsCategory {

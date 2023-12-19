@@ -1,15 +1,13 @@
-import { Body, HttpException, HttpStatus, Injectable, Post, UseGuards } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Post, UseGuards } from '@nestjs/common';
 import { RegisterUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { PrismaService } from 'src/prisma.service';
 import * as bcrypt from 'bcrypt'
 import { User } from '@prisma/client';
 import * as nodeMailer from 'nodemailer'
-import otpGenerator from 'otp-generator';
 import { LoginUserDto } from './dto/login-user.dto';
 import { ForgetPassword } from './dto/forget-password.dto';
 import { JwtService } from '@nestjs/jwt';
-import { AuthGuard } from 'src/guards/auth.guard';
 import { ProfileAddDto } from './dto/profile-add.dto';
 
 @Injectable()
