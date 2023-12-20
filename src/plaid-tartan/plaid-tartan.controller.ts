@@ -23,6 +23,19 @@ export class PlaidTartanController {
     }
   }
 
+
+  @Post("update_historical_transaction")
+  @UseGuards(AuthGuard)
+  async updateHistoricalTransactions(@Req() req : any) {
+    try {
+      const {user_id} = req.auth     
+      const result = await this.plaidTartanService.updateHistoricalTransactions(user_id);
+      return result;
+    } catch (error) {
+      throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   
   
   

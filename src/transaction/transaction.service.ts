@@ -2,9 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from 'src/prisma.service';
-import axios from 'axios';
-import { Configuration, PlaidApi, PlaidEnvironments } from 'plaid';
-import plaid from 'plaid';
+import { Configuration, InstitutionsGetByIdRequest, PlaidApi, PlaidEnvironments } from 'plaid';
 
 
 @Injectable()
@@ -39,9 +37,7 @@ export class TransactionService {
     }
 
     const plaid_item = await this.prisma.plaidItem.findFirst({where : {user_id : user.id}});
-
-
-   
+  
 
     if (!plaid_item) {
       return {
@@ -50,27 +46,19 @@ export class TransactionService {
       };
     }
 
+    try {
+      
       const response = await this.client.transactionsGet({
-      access_token : plaid_item.access_token,
-      start_date: "2010-04-14",
-      end_date: "2024-04-17",
-    });
+        access_token : plaid_item.access_token,
+        start_date: "2010-04-14",
+        end_date: "2024-04-17",
+      });
+ 
+      return {status : "success", data : response.data, message : "transaction data fetched successfully"};
+    } catch (error) {
+      return {status : "failure", message : error.message, data : null}
+    }
 
-
-    // response.data.accounts.forEach(account => {
-    //   const newAccount = await this.prisma.account.create();
-
-    //   const newBalance = await this.prisma.balance.create(
-    //     {
-    //       data : {
-    //         account_id : newAccount.id
-    //       }
-    //     }
-    //   );
-
-    // });
-
-    return response.data;
     
   }
 

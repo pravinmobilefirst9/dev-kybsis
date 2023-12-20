@@ -8,5 +8,6 @@ import { Configuration, PlaidApi, PlaidEnvironments } from 'plaid';
   imports : [],
   controllers: [TransactionController],
   providers: [TransactionService, PrismaService],
+  exports : [TransactionService]
 })
 export class TransactionModule {}
