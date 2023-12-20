@@ -22,7 +22,7 @@ export class PlaidTartanController {
       throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-  
+
   
   
   

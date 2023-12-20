@@ -183,10 +183,13 @@ model Account {
   id                 Int      @id @default(autoincrement())
   user_id            Int
   account_name       String
-  account_type       String
+  account_id         String
   institution_name   String
+  official_name      String
   mask               String
+  type               String
   subtype            String
+  institution_id     String
   verification_status String
   created_at         DateTime
   updated_at         DateTime
@@ -202,6 +205,7 @@ model Balance {
   account_id         Int
   current_balance    Float
   available_balance  Float
+  iso_currency_code  String
   date               DateTime
   created_at         DateTime @default(now())
   updated_at         DateTime @default(now())

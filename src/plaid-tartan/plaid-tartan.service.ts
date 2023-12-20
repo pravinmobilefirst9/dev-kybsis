@@ -25,6 +25,8 @@ export class PlaidTartanService {
         throw new HttpException('Duplicate Plaid item found', HttpStatus.CONFLICT);
       }
       
+      console.log({user_id});
+      
       
       const user = await this.prisma.user.findUnique({where :{id : user_id }})
       if (!user) {
