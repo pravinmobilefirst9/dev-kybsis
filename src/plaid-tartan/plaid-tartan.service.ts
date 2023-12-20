@@ -52,155 +52,67 @@ export class PlaidTartanService {
   }
 
   async updateHistoricalTransactions(userId : number){
-    const historical_data = await this.transactionService.getTransactions(userId)
+    try {
+      const historical_data = await this.transactionService.getTransactions(userId)
     const user = await this.prisma.user.findUnique({where : {id : userId}})
     if (historical_data.status === "failure") {
       throw new HttpException(historical_data.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    const {accounts, transactions, item} = historical_data.data
+    const {accounts, item, transactions} = historical_data.data
 
-    console.log({accounts, transactions, item});
-    // Mehul
-    // for (const accountData of accounts) {
-    //   const createdAccount = await this.prisma.account.create({
-    //     data: {
-    //       account_id: accountData.account_id,
-    //       mask: accountData.mask,
-    //       account_name: accountData.name,
-    //       official_name: accountData.official_name,
-    //       subtype: accountData.subtype,
-    //       type: accountData.type,
-    //     //   balances: {
-    //     //     create: {
-    //     //       available: accountData.balances.available,
-    //     //       current: accountData.balances.current,
-    //     //       iso_currency_code: accountData.balances.iso_currency_code,
-    //     //       limit: accountData.balances.limit,
-    //     //       unofficial_currency_code: accountData.balances.unofficial_currency_code,
-    //     //     },
-    //     //   },
-    //     //   transactions: {
-    //     //     create: accountData.transactions.map(transactionData => ({
-    //     //       amount: transactionData.amount,
-    //     //       date: new Date(transactionData.date),
-    //     //       name: transactionData.name,
-    //     //       // ... other transaction properties
-    //     //     })),
-    //     //   },
-    //     // },
-    //     // include: {
-    //     //   balances: true,
-    //     //   transactions: true,
-    //     },
-    //   })
-    //   console.log('Created account:', createdAccount);
-    // }
-    // Pravin
     for (const account of accounts) {
-      const createdAccount = await this.prisma.account.create({
+      const currentTime = new Date();
+      await this.prisma.account.create({
         data: {
-          // Account fields
           account_name: account.name,
           account_id: account.account_id,
-          institution_name: account.official_name,
-          official_name: account.official_name,
+          institution_name: "Bank of America",
+          official_name: account.official_name || "Bank of America",
           mask: account.mask,
           type: account.type,
           subtype: account.subtype,
           institution_id: item.institution_id,
-          verification_status: 'verified', // Add verification status or use actual data
+          verification_status: 'verified', // Adjust as per your requirements
 
-          // User ID - make sure you have the user ID available
-          User: {
-            connect: { id: userId},
+          // Timestamps
+          created_at: currentTime,
+          updated_at: currentTime,
+          User : {connect : {id : userId}},
+          Balance: { // Create Balance associated with the account
+            create: {
+              available_balance: account.balances.available || 0,
+              current_balance: account.balances.current || 0,
+              iso_currency_code: account.balances.iso_currency_code || 'USD',
+              date: new Date(),
+            },
           },
-
-          // Create balance
-          // Balance: {
-          //   create: {
-          //     available_balance: account.balances.available,
-          //     current_balance: account.balances.current,
-          //     iso_currency_code: account.balances.iso_currency_code,
-          //     date: new Date(),
-          //   },
-          // },
-
-          // // Create transactions related to the account
-          // Transaction: {
-          //   create: transactions
-          //     .filter((t: any) => t.account_id === account.account_id)
-          //     .map((t: any) => ({
-          //       account_id: account.account_id,
-          //       plaid_transaction_id: t.transaction_id,
-          //       name: t.name,
-          //       amount: t.amount,
-          //       category_id: t.category_id,
-          //       category_name: t.category,
-          //       date: new Date(t.date),
-          //       pending: t.pending,
-          //     })),
-          // },
+          Transaction: { // Create Transactions associated with the account
+            createMany: {
+              data: transactions
+                .filter((transaction: any) => transaction.account_id === account.account_id)
+                .map((transaction: any) => (({
+                  plaid_transaction_id: transaction.transaction_id,
+                  name: transaction.name,
+                  amount: transaction.amount,
+                  category_id: transaction.category_id,
+                  category_name: transaction.category,
+                  date: new Date(transaction.date),
+                  pending: transaction.pending
+                }))),
+            },
+          },
         },
       });
-
-      console.log('Created Account:', createdAccount);
     }
-
-    // Rohan
-    // for (const account of historical_data.data.accounts) {
-
-    //   const transactionArray  : Transaction[] = [];
-    //   const transactions : any[] = historical_data.data.transactions.filter((t : any, i : number) => t.account_id === account.account_id);
-
-    //   transactions.map((t : any) => {
-    //       const newTransaction : any = {
-    //             account_id : account.account_id,
-    //             amount : t.amount,
-    //             category_id : t.category_id,
-    //             date : new Date(),
-    //             plaid_transaction_id : t.transaction_id,
-    //             name : t.name,
-    //             category_name : t.category,
-    //             pending : t.pending,
-                
-    //         }
-        
-
-    //       transactionArray.push(newTransaction)
-    //   })
-
-    //   console.log({transactionArray});
-      
-
-    //     await this.prisma.account.create({
-    //       data : {
-    //          institution_name : "Bank of America",
-    //          account_name : account.name,
-    //          type : account.type,
-    //          mask : account.mask,
-    //          subtype : account.subtype,
-    //          official_name : account.official_name,
-    //          account_id : account.account_id,
-    //         //  Balance : {
-    //         //   create : {
-    //         //         available_balance : account.balances.available,
-    //         //         current_balance : account.balances.current,
-    //         //         iso_currency_code : account.iso_currency_code,
-    //         //         date : new Date(),
-    //         //   }
-    //         //  },
-    //         //  Transaction : {
-    //         //   createMany : {data : transactionArray}
-    //         //  },
-    //          institution_id : historical_data.data.item.institution_id,
-    //          user_id : userId,
-    //          verification_status : "false"
-    //       }
-    //     })
-    // }
-
-  }
+      return {message : "Transactions imported successfully", status : "success", data : {accounts, transaction_count  : transactions.length}};
+    } catch (error) {
+      return {message : "Failed to import transactions", status : "failure", data : {}};
+    }
+    
+}
+  
+  
   // create(createPlaidTartanDto: CreatePlaidTartanDto) {
   //   return 'This action adds a new plaidTartan';
   // }

@@ -165,7 +165,7 @@ model UserDetails {
 model Transaction {
   id                   Int      @id @default(autoincrement())
   account_id           Int
-  plaid_transaction_id Int
+  plaid_transaction_id String
   name                 String
   amount               Float
   category_id          String
@@ -202,7 +202,7 @@ model Account {
 
 model Balance {
   id                 Int      @id @default(autoincrement())
-  account_id         Int
+  account_tbl_id         Int
   current_balance    Float
   available_balance  Float
   iso_currency_code  String
@@ -211,6 +211,6 @@ model Balance {
   updated_at         DateTime @default(now())
 
   // References
-  Account            Account @relation(fields: [account_id], references: [id])
+  Account            Account @relation(fields: [account_tbl_id], references: [id])
 }
 
