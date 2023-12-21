@@ -3,6 +3,7 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from 'src/prisma.service';
 import { Configuration, InstitutionsGetByIdRequest, PlaidApi, PlaidEnvironments } from 'plaid';
+import { PlaidItem } from '@prisma/client';
 
 
 @Injectable()
@@ -53,7 +54,42 @@ export class TransactionService {
         start_date: "2010-04-14",
         end_date: "2024-04-17",
       });
- 
+
+      await this.prisma.plaidInstitutionImportHistory.create({
+        data : {
+          access_token : plaid_item.access_token,
+          ins_id : plaid_item.ins_id,
+          imported_at : new Date(),
+          plaid_item_id : plaid_item.id,
+          user_id : user_id
+        }
+      })
+      return {status : "success", data : response.data, message : "transaction data fetched successfully"};
+    } catch (error) {
+      return {status : "failure", message : error.message, data : null}
+    }
+
+    
+  }
+  
+  async syncTransactions (plaid_item  : PlaidItem, user_id : number){
+    try {
+      
+      const response = await this.client.transactionsGet({
+        access_token : plaid_item.access_token,
+        start_date: "2010-04-14",
+        end_date: "2024-04-17",
+      });
+
+      await this.prisma.plaidInstitutionImportHistory.create({
+        data : {
+          access_token : plaid_item.access_token,
+          ins_id : plaid_item.ins_id,
+          imported_at : new Date(),
+          plaid_item_id : plaid_item.id,
+          user_id : user_id
+        }
+      })
       return {status : "success", data : response.data, message : "transaction data fetched successfully"};
     } catch (error) {
       return {status : "failure", message : error.message, data : null}

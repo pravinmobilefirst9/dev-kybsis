@@ -85,11 +85,28 @@ model PlaidItem {
   user_id       Int
   access_token  String
   public_token  String
+  ins_id  String
   created_at    DateTime @default(now())
   updated_at    DateTime @default(now())
 
   // References
   user User @relation(fields: [user_id], references: [id])
+  plaid PlaidInstitutionImportHistory[]
+}
+
+model PlaidInstitutionImportHistory {
+  id            Int      @id @default(autoincrement())
+  plaid_item_id Int
+  user_id       Int
+  access_token  String
+  ins_id        String
+  imported_at   DateTime? 
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now())
+
+  // References
+  user User @relation(fields: [user_id], references: [id])
+  plaidItem PlaidItem @relation(fields: [plaid_item_id], references: [id])
 }
 
 model BudgetsCategory {
@@ -132,6 +149,7 @@ model User {
   plaidItems PlaidItem[]
   user_details UserDetails?
   account Account[]
+  plaidInstitutionImportHistory PlaidInstitutionImportHistory[]
 }
 
 model Goal {

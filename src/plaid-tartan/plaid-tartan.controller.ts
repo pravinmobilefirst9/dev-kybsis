@@ -35,6 +35,18 @@ export class PlaidTartanController {
       throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+ 
+  @Post("sync_historical_transaction")
+  @UseGuards(AuthGuard)
+  async syncHistoricalTransactions(@Req() req : any) {
+    try {
+      const {user_id} = req.auth     
+      const result = await this.plaidTartanService.syncHistoricalTransactions(user_id);
+      return result;
+    } catch (error) {
+      throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 
   
   
