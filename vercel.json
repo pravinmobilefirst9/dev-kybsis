@@ -3,8 +3,7 @@
     "builds": [
       {
         "src": "src/main.ts",
-        "use": "@vercel/node",
-        "postinstall": "prisma generate"
+        "use": "@vercel/node"
       }
     ],
     "routes": [
@@ -20,6 +19,6 @@
         ]
       }
   
-    ] 
+    ]
   }
   
