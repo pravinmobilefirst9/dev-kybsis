@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from 'src/prisma.service';
-import { Configuration, InstitutionsGetByIdRequest, PlaidApi, PlaidEnvironments, CountryCode} from 'plaid';
+import { Configuration, InstitutionsGetByIdRequest, PlaidApi, PlaidEnvironments, CountryCode, InvestmentsTransactionsGetRequest} from 'plaid';
 import { PlaidItem } from '@prisma/client';
 
 
@@ -107,6 +107,21 @@ export class TransactionService {
       return {data : institution , status : "success"}
     } catch (error) {
       return {data : null , status : "failure"}
+    }
+  }
+
+  async getInvestmentDetails (plaid_item : PlaidItem, user_id : number) {
+    try {
+      const request : InvestmentsTransactionsGetRequest = {
+        access_token: plaid_item.access_token,
+        start_date: '2023-01-01',
+        end_date: '2023-06-10',
+      };
+      const response = await this.client.investmentsTransactionsGet(request);
+      const investmentdata = response.data;
+      return {data : investmentdata , status : "success"}
+    } catch (error) {
+      return {data : null , status : "failure", message : error.message}
     }
   }
 

@@ -126,6 +126,7 @@ model User {
   plaidInstitutionImportHistory PlaidInstitutionImportHistory[]
   plaidItems                    PlaidItem[]
   user_details                  UserDetails?
+  investment_account            InvestmentAccounts[]
 }
 
 model Goal {
@@ -203,4 +204,88 @@ enum UserRole {
   USER
   ADMIN
   MODERATOR
+}
+
+model InvestmentAccounts {
+  id                  Int      @id @default(autoincrement())
+  user_id             Int
+  account_name        String
+  account_id          String
+  official_name       String?
+  mask                String
+  type                String
+  subtype             String
+  verification_status String
+  created_at          DateTime
+  updated_at          DateTime
+
+  // References
+  User User @relation(fields: [user_id], references: [id])
+
+  Transactions InvestmentTransactions[]
+  Balance      InvestmentBalance[]
+}
+
+model InvestmentTransactions {
+  id                        Int                @id @default(autoincrement())
+  account_id                Int
+  cancel_transaction_id     String?            @default("NA")
+  amount                    Float
+  date_of_transaction       DateTime
+  fees                      Float
+  investment_transaction_id String
+  iso_currency_code         String?
+  name                      String
+  price                     Float
+  quantity                  Decimal
+  security_id               String
+  subtype                   String
+  type                      String
+  unofficial_currency_code  String?
+  platform                  String             @default("plaid")
+  created_at                DateTime           @default(now())
+  updated_at                DateTime           @default(now())
+  // References
+  investment_account        InvestmentAccounts @relation(fields: [account_id], references: [id])
+   @@unique([account_id, investment_transaction_id, date_of_transaction])
+
+}
+
+model InvestmentBalance {
+  id                Int      @id @default(autoincrement())
+  account_id        Int
+  current_balance   Float
+  available_balance Float
+  iso_currency_code String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @default(now())
+
+  // References
+  investment_account InvestmentAccounts @relation(fields: [account_id], references: [id])
+}
+
+model InvestmentSecurity {
+  id                       Int       @id @default(autoincrement())
+  security_id              String
+  close_price              Float?
+  close_price_as_of        DateTime?
+  cusip                    String?
+  institution_id           String?
+  institution_security_id  String?
+  is_cash_equivalent       Boolean
+  isin                     String?
+  iso_currency_code        String
+  market_identifier_code   String?
+  name                     String?
+  option_contract          String?
+  proxy_security_id        String?
+  sedol                    String?
+  ticker_symbol            String?
+  type                     String
+  unofficial_currency_code String?
+  update_datetime          DateTime?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @default(now())
+
+  @@unique([security_id])
 }

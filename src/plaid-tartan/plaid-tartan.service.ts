@@ -263,7 +263,7 @@ export class PlaidTartanService {
         data: resultArray,
       };
     } catch (error) {
-      return { message: error.message, status: 'failure', data: {} };
+      return { message: error, status: 'failure', data: {} };
     }
   }
 
