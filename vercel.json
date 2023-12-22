@@ -19,6 +19,9 @@
         ]
       }
   
-    ]
+    ],
+    "hooks": {
+      "postinstall": "prisma generate"
+    }
   }
   
