@@ -7,20 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model Collaboration {
-  id              Int       @id @default(autoincrement())
+  id              Int      @id @default(autoincrement())
   user_id         Int
   collaborator_id Int
   account_id      Int
   status          Boolean
-  created_at      DateTime  @default(now())
-  updated_at      DateTime  @updatedAt
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   // Define references to the User model
-  user            User      @relation("UserCollaborations", fields: [user_id], references: [id])
-  collaborator    User      @relation("CollaboratorCollaborations", fields: [collaborator_id], references: [id])
+  user         User @relation("UserCollaborations", fields: [user_id], references: [id])
+  collaborator User @relation("CollaboratorCollaborations", fields: [collaborator_id], references: [id])
 }
+
 model Budget {
   id                  Int      @id @default(autoincrement())
   user_id             Int
@@ -36,8 +36,8 @@ model Budget {
   duration            DateTime
 
   // References
-  User                 User @relation(fields: [user_id], references: [id])
-  BudgetsCategory      BudgetsCategory @relation(fields: [budgets_category_id], references: [id])
+  User            User            @relation(fields: [user_id], references: [id])
+  BudgetsCategory BudgetsCategory @relation(fields: [budgets_category_id], references: [id])
 }
 
 model GoalCategory {
@@ -51,29 +51,29 @@ model GoalCategory {
 }
 
 model UserEmail {
-  id              Int      @id @default(autoincrement())
-  sender          String
-  receiver        String
+  id               Int    @id @default(autoincrement())
+  sender           String
+  receiver         String
   response_details Int
-  created_at      Int
-  updated_at      Int
+  created_at       Int
+  updated_at       Int
 }
 
 model InstitutionAccount {
-  id                 Int      @id @default(autoincrement())
-  user_id            Int
-  plaid_account_id   String
-  account_name       String
-  account_type       String
-  institution_id     Int
-  institution_name   String
-  mask               String
-  subtype            String
+  id                  Int      @id @default(autoincrement())
+  user_id             Int
+  plaid_account_id    String
+  account_name        String
+  account_type        String
+  institution_id      Int
+  institution_name    String
+  mask                String
+  subtype             String
   verification_status String
-  balance            Float
-  available_balance  Float
-  created_at         DateTime
-  updated_at         DateTime
+  balance             Float
+  available_balance   Float
+  created_at          DateTime
+  updated_at          DateTime
 
   // References
   User User @relation(fields: [user_id], references: [id])
@@ -85,27 +85,28 @@ model PlaidItem {
   user_id       Int
   access_token  String
   public_token  String
-  ins_id  String
+  ins_id        String
+  ins_name      String
   created_at    DateTime @default(now())
   updated_at    DateTime @default(now())
 
   // References
-  user User @relation(fields: [user_id], references: [id])
+  user  User                            @relation(fields: [user_id], references: [id])
   plaid PlaidInstitutionImportHistory[]
 }
 
 model PlaidInstitutionImportHistory {
-  id            Int      @id @default(autoincrement())
+  id            Int       @id @default(autoincrement())
   plaid_item_id Int
   user_id       Int
   access_token  String
   ins_id        String
-  imported_at   DateTime? 
-  created_at    DateTime @default(now())
-  updated_at    DateTime @default(now())
+  imported_at   DateTime?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @default(now())
 
   // References
-  user User @relation(fields: [user_id], references: [id])
+  user      User      @relation(fields: [user_id], references: [id])
   plaidItem PlaidItem @relation(fields: [plaid_item_id], references: [id])
 }
 
@@ -130,44 +131,44 @@ enum UserRole {
 }
 
 model User {
-  id            Int       @id @default(autoincrement())
-  email         String    @unique
-  active        Boolean   @default(false)
-  password      String
-  otp_verified  Boolean   @default(false)
-  user_otp      Int      
-  user_role    UserRole   @default(USER)
-  device_token  String
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  active       Boolean  @default(false)
+  password     String
+  otp_verified Boolean  @default(false)
+  user_otp     Int
+  user_role    UserRole @default(USER)
+  device_token String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 
   // Define relationships to the Collaboration model
-  collaborations      Collaboration[] @relation("UserCollaborations")
-  collaboratedWith     Collaboration[] @relation("CollaboratorCollaborations")
-  budget     Budget[]
-  institution_account InstitutionAccount[]
-  plaidItems PlaidItem[]
-  user_details UserDetails?
-  account Account[]
+  collaborations                Collaboration[]                 @relation("UserCollaborations")
+  collaboratedWith              Collaboration[]                 @relation("CollaboratorCollaborations")
+  budget                        Budget[]
+  institution_account           InstitutionAccount[]
+  plaidItems                    PlaidItem[]
+  user_details                  UserDetails?
+  account                       Account[]
   plaidInstitutionImportHistory PlaidInstitutionImportHistory[]
 }
 
 model Goal {
-  id              Int      @id @default(autoincrement())
-  user_id         Int
+  id               Int      @id @default(autoincrement())
+  user_id          Int
   goal_category_id Int
-  name            String
-  created_at      DateTime @default(now())
-  updated_at      DateTime @default(now())
+  name             String
+  created_at       DateTime @default(now())
+  updated_at       DateTime @default(now())
 
   // References
-//   User            User @relation(fields: [user_id], references: [id])
-  GoalCategory    GoalCategory @relation(fields: [goal_category_id], references: [id])
+  //   User            User @relation(fields: [user_id], references: [id])
+  GoalCategory GoalCategory @relation(fields: [goal_category_id], references: [id])
 }
 
 model UserDetails {
   id          Int      @id @default(autoincrement())
-  user_id     Int @unique
+  user_id     Int      @unique
   firstname   String
   lastname    String
   dateofbirth DateTime
@@ -177,7 +178,7 @@ model UserDetails {
   updated_at  DateTime @default(now())
 
   // References
-  user  User @relation(fields: [user_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
 }
 
 model Transaction {
@@ -192,43 +193,43 @@ model Transaction {
   pending              Boolean
   created_at           DateTime @default(now())
   updated_at           DateTime @default(now())
-
   // References
-  Account Account @relation(fields: [account_id], references: [id])
+  Account              Account  @relation(fields: [account_id], references: [id])
+
+  @@unique([plaid_transaction_id, account_id, date])
 }
 
 model Account {
-  id                 Int      @id @default(autoincrement())
-  user_id            Int
-  account_name       String
-  account_id         String
-  institution_name   String
-  official_name      String
-  mask               String
-  type               String
-  subtype            String
-  institution_id     String
+  id                  Int      @id @default(autoincrement())
+  user_id             Int
+  account_name        String
+  account_id          String
+  institution_name    String
+  official_name       String
+  mask                String
+  type                String
+  subtype             String
+  institution_id      String
   verification_status String
-  created_at         DateTime
-  updated_at         DateTime
+  created_at          DateTime
+  updated_at          DateTime
 
   // References
-  User User @relation(fields: [user_id], references: [id])
-  Transaction        Transaction[]
-  Balance            Balance[]
+  User        User          @relation(fields: [user_id], references: [id])
+  Transaction Transaction[]
+  Balance     Balance[]
 }
 
 model Balance {
-  id                 Int      @id @default(autoincrement())
-  account_tbl_id         Int
-  current_balance    Float
-  available_balance  Float
-  iso_currency_code  String
-  date               DateTime
-  created_at         DateTime @default(now())
-  updated_at         DateTime @default(now())
+  id                Int      @id @default(autoincrement())
+  account_tbl_id    Int
+  current_balance   Float
+  available_balance Float
+  iso_currency_code String
+  date              DateTime
+  created_at        DateTime @default(now())
+  updated_at        DateTime @default(now())
 
   // References
-  Account            Account @relation(fields: [account_tbl_id], references: [id])
+  Account Account @relation(fields: [account_tbl_id], references: [id])
 }
-
