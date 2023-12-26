@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from 'src/prisma.service';
-import { Configuration, InstitutionsGetByIdRequest, PlaidApi, PlaidEnvironments, CountryCode, InvestmentsTransactionsGetRequest} from 'plaid';
+import { Configuration, InstitutionsGetByIdRequest, PlaidApi, PlaidEnvironments, CountryCode, InvestmentsTransactionsGetRequest, TransactionsEnrichRequest} from 'plaid';
 import { PlaidItem } from '@prisma/client';
 
 
@@ -74,11 +74,13 @@ export class TransactionService {
   
   async syncTransactions (plaid_item  : PlaidItem, user_id : number){
     try {
-      
       const response = await this.client.transactionsGet({
         access_token : plaid_item.access_token,
         start_date: "2010-04-14",
         end_date: "2024-04-17",
+        options : {
+          include_original_description : true, 
+        }
       });
 
       await this.prisma.plaidInstitutionImportHistory.create({
@@ -120,6 +122,17 @@ export class TransactionService {
       const response = await this.client.investmentsTransactionsGet(request);
       const investmentdata = response.data;
       return {data : investmentdata , status : "success"}
+    } catch (error) {
+      return {data : null , status : "failure", message : error.message}
+    }
+  }
+
+  // Get Plaid Transaction Categories
+  async getAllPlaidCategories () {
+    try {
+        const response = await this.client.categoriesGet({});
+        const categories = response.data.categories;
+      return {data : categories , status : "success"}
     } catch (error) {
       return {data : null , status : "failure", message : error.message}
     }

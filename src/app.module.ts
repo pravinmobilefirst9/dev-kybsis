@@ -7,9 +7,10 @@ import { PlaidTartanModule } from './plaid-tartan/plaid-tartan.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { AuthGuard } from './guards/auth.guard';
 import { InvestmentModule } from './investment/investment.module';
+import { TransactionCategoriesModule } from './transaction_categories/transaction_categories.module';
 
 @Module({
-  imports: [UsersModule, PlaidTartanModule, TransactionModule, InvestmentModule],
+  imports: [UsersModule, PlaidTartanModule, TransactionModule, InvestmentModule, TransactionCategoriesModule],
   controllers: [AppController],
   providers: [AppService, PrismaService, AuthGuard],
 })

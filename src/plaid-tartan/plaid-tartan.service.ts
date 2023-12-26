@@ -251,8 +251,9 @@ export class PlaidTartanService {
 
           resultArray.push({
             account_id: account.account_id,
-            transactions: transactions.length,
-            item_id: item.id,
+            // transactions: transactions.length,
+            // item_id: item.id,
+            transactions_api_response : transactions
           });
         }
       }

@@ -289,3 +289,13 @@ model InvestmentSecurity {
 
   @@unique([security_id])
 }
+
+//the CategoryHierarchy model
+model TransactionCategory {
+  id          Int       @id @default(autoincrement()) // Unique identifier for the category hierarchy
+  category_id  String    // Category ID, assumed to be a string in this case
+  group       String    // Group to which the category belongs (e.g., "special")
+  hierarchy   String[]  // Array storing the hierarchy levels (e.g., ["Bank Fees", "Overdraft"])
+
+
+}
