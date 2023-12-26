@@ -15,21 +15,25 @@ export class AssetsService {
 
   async importAssetReports() {
     try {
-      const access_token = "access-sandbox-47f3d91d-82c3-466a-88a9-c48b7d58019d"
-      // const createAssetsReport = await this.transactionService.createAssetsReport(access_token);
+      const access_token = "access-sandbox-2a51dd08-ba9f-419a-804b-e0e3140813ec"
+      const createAssetsReport = await this.transactionService.createAssetsReport(access_token);
 
       // if (createAssetsReport.status === "failure") {
       //   throw new HttpException(createAssetsReport.message + " from create", HttpStatus.INTERNAL_SERVER_ERROR);
       // }      
 
-      // const { asset_report_token, asset_report_id  } = createAssetsReport;
-      const response = await this.transactionService.getAssetsReport("asset_report_token");
+      const { asset_report_token, asset_report_id  } = createAssetsReport;
+      const response = await this.transactionService.getAssetsReport(asset_report_token);
       console.log({response});
       
       return response.data
     } catch (error) {
-      throw new HttpException(error.message + " from get assets", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+        console.error("Error fetching assets report:", error);
+        throw new HttpException(
+          "Failed to fetch assets report. See logs for details." + " \nError : " + error,
+          HttpStatus.INTERNAL_SERVER_ERROR
+        );
+      }
   }
 
 

@@ -4,6 +4,7 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from 'src/prisma.service';
 import { Configuration, InstitutionsGetByIdRequest, PlaidApi, PlaidEnvironments, CountryCode, InvestmentsTransactionsGetRequest, TransactionsEnrichRequest, AssetReportCreateRequest, AssetReportGetRequest } from 'plaid';
 import { PlaidItem } from '@prisma/client';
+import axios from 'axios';
 
 
 @Injectable()
@@ -141,55 +142,30 @@ export class TransactionService {
   // Get plaid assets report
   async createAssetsReport(access_token: string) {
 
-    let a = {
-      "client_id": "6565a47c274b86001c2d7c1d",
-      "secret": "b0700fa90a2b033bd01391350c2408",
-      "access_tokens": [
-          // "access-sandbox-47f3d91d-82c3-466a-88a9-c48b7d58019d",
-          access_token
-      ],
+    let reqPayload = {
+      "client_id": process.env.PLAID_CLIENT_ID,
+      "secret": process.env.PLAID_SECRET_ID,
+      "access_tokens": [access_token],
       "days_requested": 30,
       "options": {
-          "client_report_id": "ENTER_CLIENT_REPORT_ID_HERE",
-          "webhook": "https://www.example.com/webhook",
-          "user": {
-              "client_user_id": "ENTER_USER_ID_HERE",
-              "first_name": "ENTER_FIRST_NAME_HERE",
-              "middle_name": "ENTER_MIDDLE_NAME_HERE",
-              "last_name": "ENTER_LAST_NAME_HERE",
-              "ssn": "111-22-1234",
-              "phone_number": "1-415-867-5309",
-              "email": "ENTER_EMAIL_HERE"
-          }
+       //   "client_report_id": "123",
+         "webhook": "https://www.example.com/webhook",
+         "user": {
+           "client_user_id": "ENTER_USER_ID_HERE",
+           "first_name": "ENTER_FIRST_NAME_HERE",
+           "middle_name": "ENTER_MIDDLE_NAME_HERE",
+           "last_name": "ENTER_LAST_NAME_HERE",
+           "ssn": "111-22-1234",
+           "phone_number": "1-415-867-5309",
+           "email": "ENTER_EMAIL_HERE"
+         }
       }
-  }
-
-    const daysRequested = 60;
-    const options = {
-      client_report_id: '123',
-      webhook: 'https://www.example.com',
-      user: {
-        client_user_id: '7f57eb3d2a9j6480121fx361',
-        first_name: 'Jane',
-        middle_name: 'Leah',
-        last_name: 'Doe',
-        ssn: '123-45-6789',
-        phone_number: '(555) 123-4567',
-        email: 'jane.doe@example.com',
-      },
-    };
-    const request: AssetReportCreateRequest = {
-      client_id : "6565a47c274b86001c2d7c1d",
-      secret : "b0700fa90a2b033bd01391350c2408",
-      access_tokens: [access_token],
-      days_requested: daysRequested,
-      options,
-    };
+    }
     // accessTokens is an array of Item access tokens.
     // Note that the assets product must be enabled for all Items.
     // All fields on the options object are optional.
     try {
-      const response = await this.client.assetReportCreate(a);     
+      const response = await this.client.assetReportCreate(reqPayload);     
       const asset_report_id = response.data.asset_report_id;
       const asset_report_token = response.data.asset_report_token;
 
@@ -202,39 +178,15 @@ export class TransactionService {
 
   // Get Assets Report
   async getAssetsReport(assetReportToken: string) {
-    const obj = {
-      "client_id" : "6565a47c274b86001c2d7c1d",
-      "secret" : "b0700fa90a2b033bd01391350c2408",
-      "asset_report_token": assetReportToken,
-    };
-    try {
-      console.log(obj);
-      console.log(        {
-        "client_id": "6565a47c274b86001c2d7c1d",
-        "secret": "b0700fa90a2b033bd01391350c2408",
-        "asset_report_token": "assets-sandbox-bbb8228d-3d73-46bd-8898-140e38fe6e7b"
-    });
-      
-      
-      const response = await this.client.assetReportGet(
-        {
-          "client_id": "6565a47c274b86001c2d7c1d",
-          "secret": "b0700fa90a2b033bd01391350c2408",
-          "asset_report_token": "assets-sandbox-0b3189a0-9740-40da-a8a9-532ee309acb6"
-      }
-      );
-      const data = response.data;
-      console.log({data});
-             
+    console.log({assetReportToken});
+    const res = await this.client.assetReportGet({
+      asset_report_token : assetReportToken,
+      client_id : process.env.PLAID_CLIENT_ID,
+      secret : process.env.PLAID_SECRET_ID
+    })
+    
+      const data = res.data;             
       return { status: "success", message: "Assets report fetched successfully", data }
-
-    } catch (error) {
-      throw new HttpException(error + " from get assets", HttpStatus.INTERNAL_SERVER_ERROR);
-
-        // handle error
-        // return { status: "failure", message: error.message, data: null }
-    }
-
   }
 
 
