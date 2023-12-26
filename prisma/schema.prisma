@@ -247,8 +247,8 @@ model InvestmentTransactions {
   updated_at                DateTime           @default(now())
   // References
   investment_account        InvestmentAccounts @relation(fields: [account_id], references: [id])
-   @@unique([account_id, investment_transaction_id, date_of_transaction])
 
+  @@unique([account_id, investment_transaction_id, date_of_transaction])
 }
 
 model InvestmentBalance {
@@ -284,18 +284,41 @@ model InvestmentSecurity {
   type                     String
   unofficial_currency_code String?
   update_datetime          DateTime?
-  created_at        DateTime @default(now())
-  updated_at        DateTime @default(now())
+  created_at               DateTime  @default(now())
+  updated_at               DateTime  @default(now())
 
   @@unique([security_id])
 }
 
 //the CategoryHierarchy model
 model TransactionCategory {
-  id          Int       @id @default(autoincrement()) // Unique identifier for the category hierarchy
-  category_id  String    // Category ID, assumed to be a string in this case
-  group       String    // Group to which the category belongs (e.g., "special")
-  hierarchy   String[]  // Array storing the hierarchy levels (e.g., ["Bank Fees", "Overdraft"])
+  id          Int      @id @default(autoincrement()) // Unique identifier for the category hierarchy
+  category_id String // Category ID, assumed to be a string in this case
+  group       String // Group to which the category belongs (e.g., "special")
+  hierarchy   String[] // Array storing the hierarchy levels (e.g., ["Bank Fees", "Overdraft"])
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+}
 
-
+model PlaidAsset {
+  account_id          String   @id @unique
+  available           Float?
+  current_balance     Float
+  iso_currency_code   String
+  mask                String
+  account_name        String
+  ownership_type      String
+  subtype             String
+  days_available      Int
+  official_name       String?
+  primary_owner_name  String
+  primary_owner_email String
+  primary_owner_phone String
+  address_city        String
+  address_country     String
+  address_postal_code String
+  address_region      String
+  address_street      String
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
 }
