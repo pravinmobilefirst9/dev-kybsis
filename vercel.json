@@ -3,30 +3,21 @@
   "builds": [
     {
       "src": "src/main.ts",
-      "use": "@vercel/node",
-      "config": {
-        "prerender": false
-      },
-      "build": {
-        "commands": [
-          "yarn install --frozen-lockfile",
-          "yarn prisma generate",
-          "yarn build"
-        ]
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
       "dest": "src/main.ts",
-      "methods": [
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "OPTIONS"
+      "methods":[
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE",
+          "OPTIONS"
       ]
     }
+
   ]
 }
