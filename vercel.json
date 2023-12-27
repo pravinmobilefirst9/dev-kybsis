@@ -4,10 +4,12 @@
     {
       "src": "src/main.ts",
       "use": "@vercel/node",
-      "commands": [
-        "yarn prisma generate", 
-        "yarn build"  
-      ]
+      "build": {
+        "commands": [
+          "prisma generate",
+          "yarn build"
+        ]
+      }
     }
   ],
   "routes": [
