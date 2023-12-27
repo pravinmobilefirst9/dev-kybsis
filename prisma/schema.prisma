@@ -83,6 +83,8 @@ model PlaidItem {
   updated_at    DateTime                        @default(now())
   plaid         PlaidInstitutionImportHistory[]
   user          User                            @relation(fields: [user_id], references: [id])
+
+  AssetPlaidItem PlaidAssetItem?
 }
 
 model PlaidInstitutionImportHistory {
@@ -300,25 +302,67 @@ model TransactionCategory {
   updated_at  DateTime @default(now())
 }
 
-model PlaidAsset {
-  account_id          String   @id @unique
-  available           Float?
-  current_balance     Float
-  iso_currency_code   String
-  mask                String
-  account_name        String
-  ownership_type      String
-  subtype             String
-  days_available      Int
-  official_name       String?
-  primary_owner_name  String
-  primary_owner_email String
-  primary_owner_phone String
-  address_city        String
-  address_country     String
-  address_postal_code String
-  address_region      String
-  address_street      String
-  created_at          DateTime @default(now())
-  updated_at          DateTime @updatedAt
+model PlaidAssetItem {
+  id                 Int      @id @default(autoincrement())
+  asset_report_token String
+  plaid_item_id      Int      @unique
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  PlaidItem PlaidItem @relation(fields: [plaid_item_id], references: [id])
+}
+
+model AssetAccount {
+  id                       Int      @id @default(autoincrement())
+  account_id               String   @unique
+  balance_available        Decimal?
+  balance_current          Decimal
+  iso_currency_code        String?
+  balance_limit            Decimal?
+  unofficial_currency_code String?
+  days_available           Int?
+
+  mask               String
+  name               String
+  ownership_type     String?
+  subtype            String
+  type               String
+  created_at         DateTime                 @default(now())
+  updated_at         DateTime                 @updatedAt
+  historicalBalances AssetHistoricalBalance[]
+  transactions       AssetTransaction[]
+}
+
+model AssetHistoricalBalance {
+  id             Int          @id @default(autoincrement())
+  account        AssetAccount @relation(fields: [account_id], references: [account_id])
+  account_id     String
+  balance_date   DateTime // or Date, based on your needs
+  balance_amount Decimal
+  created_at     DateTime     @default(now())
+  updated_at     DateTime     @updatedAt
+
+  @@unique([account_id, balance_date])
+}
+
+model AssetTransaction {
+  id                   Int          @id @default(autoincrement())
+  account              AssetAccount @relation(fields: [account_id], references: [account_id])
+  account_id           String
+  transaction_id       String
+  transaction_type     String
+  date                 DateTime // or Date, based on your needs
+  date_transacted      DateTime
+  transaction_name     String
+  transaction_amount   Decimal
+  transaction_currency String?
+  check_number         String?
+  merchant_name        String?
+  pending              Boolean
+  category_id          String
+  category             String[]
+  created_at           DateTime     @default(now())
+  updated_at           DateTime     @updatedAt
+
+  @@unique([account_id, transaction_id, transaction_type, category_id])
 }

@@ -9,10 +9,11 @@ import { AuthGuard } from './guards/auth.guard';
 import { InvestmentModule } from './investment/investment.module';
 import { TransactionCategoriesModule } from './transaction_categories/transaction_categories.module';
 import { AssetsModule } from './assets/assets.module';
+import { LiabilitiesModule } from './liabilities/liabilities.module';
 
 @Module({
-  imports: [UsersModule, PlaidTartanModule, TransactionModule, InvestmentModule, TransactionCategoriesModule, AssetsModule],
+  imports: [UsersModule, PlaidTartanModule, TransactionModule, InvestmentModule, TransactionCategoriesModule, AssetsModule, LiabilitiesModule],
   controllers: [AppController],
-  providers: [AppService, PrismaService, AuthGuard],
+  providers: [AppService, PrismaService, AuthGuard,],
 })
 export class AppModule {}

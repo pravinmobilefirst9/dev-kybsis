@@ -3,6 +3,7 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { PrismaService } from 'src/prisma.service';
 import { TransactionService } from 'src/transaction/transaction.service';
+import { PlaidAssetItem, PlaidItem } from '@prisma/client';
 
 @Injectable()
 export class AssetsService {
@@ -12,28 +13,155 @@ export class AssetsService {
     private readonly transactionService: TransactionService,
   ) { }
 
-
-  async importAssetReports() {
+  async createAssetReportToken(user_id: number): Promise<any> {
     try {
-      const access_token = "access-sandbox-2a51dd08-ba9f-419a-804b-e0e3140813ec"
-      const createAssetsReport = await this.transactionService.createAssetsReport(access_token);
 
-      // if (createAssetsReport.status === "failure") {
-      //   throw new HttpException(createAssetsReport.message + " from create", HttpStatus.INTERNAL_SERVER_ERROR);
-      // }      
+      const plaidItems = await this.prismaClient.plaidItem.findMany({
+        where: {
+          user_id
+        }
+      });
 
-      const { asset_report_token, asset_report_id  } = createAssetsReport;
-      const response = await this.transactionService.getAssetsReport(asset_report_token);
-      console.log({response});
-      
-      return response.data
-    } catch (error) {
-        console.error("Error fetching assets report:", error);
-        throw new HttpException(
-          "Failed to fetch assets report. See logs for details." + " \nError : " + error,
-          HttpStatus.INTERNAL_SERVER_ERROR
-        );
+      if (plaidItems.length === 0) {
+        return {status : "failure", message : "Access tokens are empty" }
       }
+      for (const plaidItem of plaidItems) {
+        try {
+          const response = await this.transactionService.createAssetsReport(plaidItem.access_token, user_id);
+          const { asset_report_token } = response.data;
+
+          const isExists = await this.prismaClient.plaidAssetItem.findFirst({
+            where: {
+              asset_report_token : asset_report_token
+            }
+          })
+          if (!isExists) {
+              await this.prismaClient.plaidAssetItem.create({
+                data : {
+                  asset_report_token,
+                  plaid_item_id : plaidItem.id
+                }
+              })
+          }
+        } catch (error) {
+          continue;
+        }
+      }
+
+      return { success : "success", message: "Plaid asset item added successfully" };
+    } catch (error) {
+      throw new HttpException(
+        error,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+
+  async importAssetReports(user_id : number) {
+    try {
+      let reports = [];
+      const plaidAssetItems = await this.prismaClient.plaidAssetItem.findMany({
+        where : {
+          PlaidItem : {user_id}
+        }
+      })
+
+      for (const assetItem of plaidAssetItems) {
+          try {     
+            const response = await this.transactionService.getAssetsReport(
+              assetItem.asset_report_token
+            );
+
+            let data = response.data
+            // Add the data into Asset Account table
+            data.report.items.map((reportItem : any) => {
+              reportItem.accounts.map(async (account  : any) => {
+                let isAccountExists = await this.prismaClient.assetAccount.findUnique({
+                  where : {
+                    account_id : account.account_id
+                  }
+                })
+                let dataToAdd = {
+                  balance_available : account.balances.available,
+                  balance_limit : account.balances.limit,
+                  balance_current : account.balances.current,
+                  account_id : account.account_id,
+                  days_available : account.days_available,
+                  mask : account.mask,
+                  name  : account.name,
+                  subtype : account.subtype,
+                  type : account.type
+                }
+
+                if (isAccountExists) {
+                  await this.prismaClient.assetAccount.update({
+                    where: { id: isAccountExists.id },
+                    data: dataToAdd,
+                  });
+                } else {
+                  await this.prismaClient.assetAccount.create({
+                    data: dataToAdd,
+                  });
+                }
+                // Save Historical Balances
+
+                const filterHistoricalBalances = account.historical_balances.map((balance : any) => {
+                  return {
+                    account_id : account.account_id,
+                    balance_amount : balance.current,
+                    balance_date : new Date(balance.date)
+                  }
+                })
+
+                await this.prismaClient.assetHistoricalBalance.createMany({
+                  skipDuplicates : true,
+                  data : filterHistoricalBalances
+                })
+
+
+                // Save Assets Transactions
+
+                const filterAssetsTransactions = account.transactions.map((transaction : any) => {
+                  return {
+                    account_id: transaction.account_id,
+                    transaction_id: transaction.transaction_id,
+                    transaction_type: transaction.transaction_type,
+                    date: new Date(transaction.date),
+                    date_transacted: new Date(transaction.date_transacted),
+                    transaction_name: transaction.name,
+                    transaction_amount: transaction.amount,
+                    transaction_currency: transaction.iso_currency_code || null,
+                    check_number: transaction.check_number || null,
+                    merchant_name: transaction.merchant_name || null,
+                    pending: transaction.pending || false,
+                    category_id: transaction.category_id,
+                    category: transaction.category || [],
+                  }
+                })
+
+                await this.prismaClient.assetTransaction.createMany({
+                  skipDuplicates : true,
+                  data : filterAssetsTransactions
+                })
+
+                reports.push({account, filterAssetsTransactions, filterHistoricalBalances, reportItem})
+              })
+            })
+            
+
+          } catch (error) {
+            continue
+          }
+      }
+      
+      return reports;
+    } catch (error) {
+      throw new HttpException(
+        error,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
 

@@ -2,9 +2,9 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from 'src/prisma.service';
-import { Configuration, InstitutionsGetByIdRequest, PlaidApi, PlaidEnvironments, CountryCode, InvestmentsTransactionsGetRequest, TransactionsEnrichRequest, AssetReportCreateRequest, AssetReportGetRequest } from 'plaid';
+import { Configuration, InstitutionsGetByIdRequest, PlaidApi, PlaidEnvironments, CountryCode, InvestmentsTransactionsGetRequest, TransactionsEnrichRequest, AssetReportCreateRequest, AssetReportGetRequest, LiabilitiesGetRequest, AssetReportCreateResponse, AssetReportGetResponse } from 'plaid';
 import { PlaidItem } from '@prisma/client';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
 
 @Injectable()
@@ -140,7 +140,9 @@ export class TransactionService {
   }
 
   // Get plaid assets report
-  async createAssetsReport(access_token: string) {
+  async createAssetsReport(access_token: string, user_id : number) : 
+  Promise<AxiosResponse<AssetReportCreateResponse, any>>
+  {
 
     let reqPayload = {
       "client_id": process.env.PLAID_CLIENT_ID,
@@ -148,45 +150,40 @@ export class TransactionService {
       "access_tokens": [access_token],
       "days_requested": 30,
       "options": {
-       //   "client_report_id": "123",
-         "webhook": "https://www.example.com/webhook",
-         "user": {
-           "client_user_id": "ENTER_USER_ID_HERE",
-           "first_name": "ENTER_FIRST_NAME_HERE",
-           "middle_name": "ENTER_MIDDLE_NAME_HERE",
-           "last_name": "ENTER_LAST_NAME_HERE",
-           "ssn": "111-22-1234",
-           "phone_number": "1-415-867-5309",
-           "email": "ENTER_EMAIL_HERE"
-         }
+        "client_report_id": user_id.toString(),
+        "webhook": "https://www.example.com/webhook",
       }
     }
     // accessTokens is an array of Item access tokens.
     // Note that the assets product must be enabled for all Items.
     // All fields on the options object are optional.
-    try {
-      const response = await this.client.assetReportCreate(reqPayload);     
-      const asset_report_id = response.data.asset_report_id;
-      const asset_report_token = response.data.asset_report_token;
-
-      return { asset_report_id, asset_report_token, status: "success", message: "Asset report created successfully" }
-    } catch (error) {
-      // handle error    
-      return { status: "failure", message: error }
-    }
+      return this.client.assetReportCreate(reqPayload);
   }
 
   // Get Assets Report
-  async getAssetsReport(assetReportToken: string) {
-    console.log({assetReportToken});
-    const res = await this.client.assetReportGet({
-      asset_report_token : assetReportToken,
-      client_id : process.env.PLAID_CLIENT_ID,
-      secret : process.env.PLAID_SECRET_ID
-    })
-    
-      const data = res.data;             
-      return { status: "success", message: "Assets report fetched successfully", data }
+  async getAssetsReport(assetReportToken: string) : Promise<AxiosResponse<AssetReportGetResponse, any>> {
+      return this.client.assetReportGet({
+        asset_report_token: assetReportToken,
+        options: {
+          days_to_include: 30,
+        },
+        include_insights: true,
+  
+      })
+  }
+
+  async getLiabilities(access_token: string) {
+    // Retrieve Liabilities data for an Item
+    const request: LiabilitiesGetRequest = {
+      access_token: access_token,
+    };
+    try {
+      const response = await this.client.liabilitiesGet(request);
+      const liabilities = response.data.liabilities;
+      return {status : "success" , liabilities, message : "Liabilities fetched successfully!"}
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+    }
   }
 
 

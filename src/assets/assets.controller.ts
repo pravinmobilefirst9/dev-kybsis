@@ -9,17 +9,31 @@ export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 
 
-  @Post("import_asset_reports")
-  // @UseGuards(AuthGuard)
-  async importAssets(
-    @Req() request : any
+  @Post("create_asset_report_token")
+  @UseGuards(AuthGuard)
+  async createAssetReportToken(
+    @Req() request : any,
   )
   {
-    try {
-      console.log("I am in controller");
-      
-      // const {user_id} = req.auth     
-      const result = await this.assetsService.importAssetReports();
+    try {     
+      const {user_id} = request.auth     
+      const result = await this.assetsService.createAssetReportToken(user_id);
+      return result;
+    } catch (error) {
+      throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  @Post("import_asset_reports")
+  @UseGuards(AuthGuard)
+  async importAssets(
+    @Req() request : any,
+  )
+  {
+    try {  
+      const {user_id} = request.auth     
+      const result = await this.assetsService.importAssetReports(user_id);
       return result;
     } catch (error) {
       throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
