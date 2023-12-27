@@ -3,13 +3,7 @@
   "builds": [
     {
       "src": "src/main.ts",
-      "use": "@vercel/node",
-      "build": {
-        "commands": [
-          "prisma generate",
-          "yarn build"
-        ]
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [
