@@ -10,7 +10,7 @@ export class ProfileAddDto {
   lastname: string;
 
   @IsNotEmpty({ message: 'Date of birth cannot be empty' })
-  @IsDate({ message: 'Invalid date format for date of birth' })
+  // @IsDate({ message: 'Invalid date format for date of birth' })
   date_of_birth: Date;
 
   @IsPhoneNumber("IN", { message: 'Invalid phone number format' }) // 'ZZ' allows any country code
@@ -19,7 +19,7 @@ export class ProfileAddDto {
 
   @IsNotEmpty({ message: 'Gender cannot be empty' })
   @IsString({ message: 'Gender must be a string' })
-  @IsIn(['male', 'female', 'other'], { message: 'Invalid gender value' })
+  // @IsIn(['male', 'female', 'other'], { message: 'Invalid gender value' })
   gender: string;
 }
 

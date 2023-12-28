@@ -10,11 +10,15 @@ export class UpdatePasswordDTO {
 
   @IsNumber({}, { message: 'User ID must be a number' })
   @IsNotEmpty({ message: 'User ID cannot be empty' })
-  userId: number;
+  user_id: number;
 
   @IsString({ message: 'Password must be a string' })
   @IsNotEmpty({ message: 'Password cannot be empty' })
   @Length(8, 20, { message: 'Password must be between 8 and 20 characters long' })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   password: string;
+
+  @IsString({ message: 'OTP must be a string' })
+  @IsNotEmpty({ message: 'OTP cannot be empty' })
+  otp: string;
 }

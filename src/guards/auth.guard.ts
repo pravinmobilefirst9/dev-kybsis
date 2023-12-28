@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  HttpException,
   HttpStatus,
   Injectable,
   UnauthorizedException,
@@ -17,11 +18,7 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
-      throw new UnauthorizedException({
-        status: HttpStatus.UNAUTHORIZED,
-        success: false,
-        message: "Unauthorized",
-      });
+      throw new HttpException("Unauthorized", HttpStatus.UNAUTHORIZED);
     }
     try {
       const payload = await this.jwtService.verifyAsync(token, {
@@ -30,12 +27,8 @@ export class AuthGuard implements CanActivate {
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
       request['auth'] = payload;
-    } catch {
-      throw new UnauthorizedException({
-        status: HttpStatus.UNAUTHORIZED,
-        success: false,
-        message: "Unauthorized",
-      });
+    } catch (error) {
+      throw new HttpException("Unauthorized", HttpStatus.UNAUTHORIZED);
     }
     return true;
   }

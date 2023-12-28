@@ -15,22 +15,20 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { ForgetPassword } from './dto/forget-password.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ProfileAddDto } from './dto/profile-add.dto';
+import { UpdatePasswordDTO } from './dto/update-password.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async registerUser(createUserDto: RegisterUserDto) {
     try {
       if (!createUserDto) {
         throw new HttpException(
-          {
-            status: 'failure',
-            data: { message:'User registration details are missing' },
-          },
+          'User registration details are missing',
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -40,14 +38,7 @@ export class UsersService {
       });
 
       if (alreadyExists) {
-        throw new HttpException(
-          {
-            status: 'failure',
-            data: { message: 'Email already exists' },
-          }
-          ,
-          HttpStatus.CONFLICT
-        )
+        throw new HttpException('Email already exists', HttpStatus.CONFLICT);
       }
 
       const hash_password = await bcrypt.hash(createUserDto.password, 12);
@@ -74,24 +65,16 @@ export class UsersService {
 
       delete user.password;
       return {
-        status: 'success',
+        success: true,
+        statusCode: HttpStatus.CREATED,
         data: user,
+        message: "User registered successfully"
       };
     } catch (error) {
-      // Handle specific errors with specific messages or codes
-      // Here, we are just returning a generic error message
-      throw new HttpException(
-        {
-          status: 'failure',
-          data: {
-            message:
-              'An error occurred during registration, please try again later',
-          },
-        }
-        ,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
-
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -121,53 +104,20 @@ export class UsersService {
 
   async loginUser(payload: LoginUserDto) {
     try {
-      // Check if the email exists in the database
       const user = await this.prisma.user.findUnique({
         where: { email: payload.email },
       });
-
       if (!user) {
-        throw new HttpException(
-          {
-            status: 'failure',
-            data: {
-              status: 'failure',
-              message: 'Invalid email or password',
-            },
-          }
-          ,
-          HttpStatus.BAD_REQUEST
-        )
+        throw new HttpException('Invalid email or password', HttpStatus.UNAUTHORIZED);
       }
-            
-      if (!user.otp_verified) {
-        throw new HttpException(
-          {
-            status: 'failure',
-            data: {
-              message: 'User email is not verified, Please try again',
-            },
-          }
-          ,
-          HttpStatus.NOT_ACCEPTABLE
-        )
+      if (!user.active) {
+        throw new HttpException('User email is not verified. Please verify your email before login.', HttpStatus.FORBIDDEN);
       }
-
-      // Check if the provided password matches the hashed password in the database
-      const passwordMatches = await bcrypt.compare(
-        payload.password,
-        user.password,
-      );
-
+      const passwordMatches = await bcrypt.compare(payload.password, user.password);
       if (!passwordMatches) {
-        throw new HttpException(
-          {
-            status: 'failure',
-            data: { message: 'Invalid email or password' },
-          }
-          ,
-          HttpStatus.BAD_REQUEST
-        )
+        throw new HttpException('Invalid email or password',
+          HttpStatus.UNAUTHORIZED // 401 - Unauthorized
+        );
       }
 
       const jwtPayload = {
@@ -176,26 +126,21 @@ export class UsersService {
 
       const token = await this.jwtService.signAsync(jwtPayload);
       const { password: userPassword, ...userData } = user;
+
       return {
-        status: 'success',
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: "Login successfull",
         data: {
           ...userData,
           token,
         },
       };
     } catch (error) {
-      // Handle specific errors with specific messages or codes
-      // Here, we are just returning a generic error message
-      throw new HttpException(
-        {
-          status: 'failure',
-          data: {
-            message: 'An error occurred during login, please try again later',
-          },
-        }
-        ,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -206,21 +151,14 @@ export class UsersService {
       });
 
       if (!user) {
-        throw new HttpException(
-          {
-            status: 'failure',
-            data: { message: 'Invalid email' },
-          }
-          ,
-          HttpStatus.BAD_REQUEST
-        )
+        throw new HttpException('Invalid email', HttpStatus.BAD_REQUEST)
       }
 
       const otp = Math.floor(1000 + Math.random() * 9000);
 
       await this.prisma.user.update({
         where: { email: payload.email },
-        data: { user_otp: otp },
+        data: { user_otp: otp, otp_verified: false, user_otp_createdAt: new Date() }
       });
 
       await this.sendEmail(
@@ -230,23 +168,16 @@ export class UsersService {
         otp,
       );
       return {
-        status: 'success',
-        data: { message: 'Email sent with OTP for password reset' },
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: 'Email sent with OTP for password reset',
+        data: null
       };
     } catch (error) {
-      // Handle specific errors with specific messages or codes
-      // Here, we are just returning a generic error message
-      throw new HttpException(
-        {
-          status: 'failure',
-          data: {
-            message:
-              'An error occurred during password reset request, please try again later',
-          },
-        }
-        ,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -256,10 +187,7 @@ export class UsersService {
 
       if (!user) {
         throw new HttpException(
-          {
-            status: 'failure',
-            data: { message: 'User not found' },
-          }
+          "User not found"
           ,
           HttpStatus.NOT_FOUND
         )
@@ -267,48 +195,45 @@ export class UsersService {
 
       if (user.user_otp !== parseInt(otp)) {
         throw new HttpException(
-          {
-            status: 'failure',
-            data: { message: 'Invalid OTP' },
-          }
-          ,
+          'Invalid OTP',
           HttpStatus.NOT_ACCEPTABLE
         )
+      }
+
+      const otpCreatedAt = user.user_otp_createdAt;
+      const timeDifference = new Date().getTime() - otpCreatedAt.getTime();
+      const otpValidityDuration = 1 * 60 * 1000;
+
+      if (timeDifference > otpValidityDuration) {
+        throw new HttpException("OTP expired", HttpStatus.NOT_ACCEPTABLE);
       }
 
       // Update user as OTP is verified
       await this.prisma.user.update({
         where: { email },
-        data: { otp_verified: true, user_otp: parseInt(otp) }, // Clear OTP after verification
+        data: { otp_verified: true, active : true},
       });
 
       return {
-        status: 'success',
-        data: { message: 'OTP verified successfully', user_id: user.id },
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: 'OTP verified successfully',
+        data: { user_id: user.id },
       };
     } catch (error) {
-      // Handle specific errors with specific messages or codes
-      // Here, we are just returning a generic error message
-      throw new HttpException(
-        {
-          status: 'failure',
-          data: { message: 'An error occurred while otp verification' },
-        }
-        ,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
-  async resendOTP(email : string) {
+  async resendOTP(email: string) {
     try {
-      const user = await this.prisma.user.findUnique({ where: {email} });
+      const user = await this.prisma.user.findUnique({ where: { email } });
 
       if (!user) {
         throw new HttpException(
-          {
-            status: 'failure',
-            data: { message: 'User not found' },
-          }
+          "User not found"
           ,
           HttpStatus.NOT_FOUND
         )
@@ -318,7 +243,7 @@ export class UsersService {
 
       await this.prisma.user.update({
         where: { email: email },
-        data: { user_otp: otp },
+        data: { user_otp: otp, otp_verified: false, user_otp_createdAt : new Date() },
       });
 
       await this.sendEmail(
@@ -329,68 +254,67 @@ export class UsersService {
       );
 
       return {
-        status: 'success',
-        data: { message: 'Email sent with OTP for password reset' },
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: 'Email resent with OTP for password reset',
+        data: null,
       };
     } catch (error) {
-      // Handle specific errors with specific messages or codes
-      // Here, we are just returning a generic error message
-      throw new HttpException(
-        {
-          status: 'failure',
-          data: { message: 'An error occurred while resend otp' },
-        }
-        ,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
-  async changePassword(email: string, user_id: number, password: string) {
+  async changePassword({email, otp, password, user_id} : UpdatePasswordDTO) {
     try {
-       const user = await this.prisma.user.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: { id: user_id, email },
       });
 
- 
+
       if (!user) {
         throw new HttpException(
-          {
-            status: 'failure',
-            data: { message: 'User not found' },
-          }
+          "User not found"
           ,
           HttpStatus.NOT_FOUND
         )
       }
+      
+      if (user.user_otp !== parseInt(otp)) {
+        throw new HttpException(
+          'Invalid OTP',
+          HttpStatus.UNAUTHORIZED
+        )
+      }
 
+      if (user.otp_verified === false) {
+        throw new HttpException(
+          'OTP is not verified',
+          HttpStatus.UNAUTHORIZED
+        )
+      }
       // Hash the new password
       const hashedPassword = await bcrypt.hash(password, 10);
 
       // Update the user's password in the database
       await this.prisma.user.update({
         where: { id: user_id, email },
-        data: { password: hashedPassword },
+        data: { password: hashedPassword, otp_verified : false},
       });
 
       return {
-        status: 'success',
-        data: { message: 'Password updated successfully' },
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: 'Password updated successfully',
+        data: null,
       };
     } catch (error) {
-      // Handle specific errors with specific messages or codes
-      // Here, we are just returning a generic error message
-      throw new HttpException(
-        {
-          status: 'failure',
-          data: {
-            message:
-              'An error occurred during password change, please try again later',
-          },
-        }
-        ,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -400,46 +324,45 @@ export class UsersService {
         where: { id: user_id },
       });
 
+
       if (!isUserExists) {
         throw new HttpException(
-          {
-            status: 'failure',
-            data: { message: 'User not found' },
-          }
+          "User not found"
           ,
           HttpStatus.NOT_FOUND
         )
       }
 
-      const newProfile = await this.prisma.userDetails.create({
-        data: {
+      const newProfile = await this.prisma.userDetails.upsert({
+        where: { user_id },
+        create: {
           firstname: profileData.firstname,
           lastname: profileData.lastname,
           dateofbirth: new Date(profileData.date_of_birth),
           gender: profileData.gender,
           phonenumber: profileData.phone_number,
-          user_id,
+          user: { connect: { id: user_id } }, // Optional: Connect user_id to UserDetails
+        },
+        update: {
+          firstname: profileData.firstname,
+          lastname: profileData.lastname,
+          dateofbirth: new Date(profileData.date_of_birth),
+          gender: profileData.gender,
+          phonenumber: profileData.phone_number,
         },
       });
 
       return {
-        status: 'success',
+        success: true,
+        statusCode: HttpStatus.CREATED,
         data: newProfile,
+        message: "profile added succssfully"
       };
     } catch (error) {
-      // Handle specific errors with specific messages or codes
-      // Here, we are just returning a generic error message
-      throw new HttpException(
-        {
-          status: 'failure',
-          data: {
-            message:
-              'An error occurred during profile creation, please try again later',
-          },
-        }
-        ,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -451,30 +374,22 @@ export class UsersService {
 
       if (userDetails) {
         return {
-          status: 'success',
+          success: true,
+          statusCode: HttpStatus.OK,
           data: userDetails,
+          message: "User details fetched successfully"
         };
       } else {
         throw new HttpException(
-          {
-            status: 'success',
-            data: { message: 'Profile details not found' },
-          }
-          ,
+          'Profile details not found',
           HttpStatus.NOT_FOUND
         )
       }
     } catch (error) {
-      // Handle specific errors with specific messages or codes
-      // Here, we are just returning a generic error message
-      throw new HttpException(
-        {
-          status: 'failure',
-          data: { message: 'An error occurred while retrieving profile details' },
-        }
-        ,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 
@@ -486,10 +401,7 @@ export class UsersService {
 
       if (!isUserExists) {
         throw new HttpException(
-          {
-            status: 'failure',
-            data: { message: 'User not found' },
-          }
+          "User not found"
           ,
           HttpStatus.NOT_FOUND
         )
@@ -501,11 +413,7 @@ export class UsersService {
 
       if (!userDetails) {
         throw new HttpException(
-          {
-            status: 'failure',
-            data: { message: 'Profile details not found' },
-          }
-          ,
+          'Profile details not found',
           HttpStatus.NOT_FOUND
         )
       }
@@ -522,23 +430,16 @@ export class UsersService {
       });
 
       return {
-        status: 'success',
+        success: true,
+        statusCode: HttpStatus.OK,
         data: updatedProfile,
+        message: "profile updated successfully"
       };
     } catch (error) {
-      // Handle specific errors with specific messages or codes
-      // Here, we are just returning a generic error message
-      throw new HttpException(
-        {
-          status: 'failure',
-          data: {
-            message:
-              'An error occurred during profile update, please try again later',
-          },
-        }
-        ,
-        HttpStatus.INTERNAL_SERVER_ERROR
-      )
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 

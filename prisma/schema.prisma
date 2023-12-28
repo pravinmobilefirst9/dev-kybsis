@@ -116,6 +116,7 @@ model User {
   password                      String
   otp_verified                  Boolean                         @default(false)
   user_otp                      Int
+  user_otp_createdAt            DateTime?                       
   user_role                     UserRole                        @default(USER)
   device_token                  String
   created_at                    DateTime                        @default(now())
