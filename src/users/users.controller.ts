@@ -7,6 +7,9 @@ import { ForgetPassword } from './dto/forget-password.dto';
 import { ProfileAddDto } from './dto/profile-add.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { Request } from 'express';
+import { VerifyOtpDTO } from './dto/verify-otp.dto';
+import { ResendOTP } from './dto/resend-otp.dto';
+import { UpdatePasswordDTO } from './dto/update-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -29,7 +32,7 @@ export class UsersController {
   }  
  
   @Post('verify-otp')
-  async verifyOTP(@Body() body: { email: string, otp: string }) {
+  async verifyOTP(@Body() body: VerifyOtpDTO) {
     try {
       const { email, otp } = body;
       const result = await this.usersService.verifyOTP(email, otp);
@@ -40,7 +43,7 @@ export class UsersController {
   }
 
   @Post('resend_otp')
-  async resendOTP(@Body() body: { email: string }) {
+  async resendOTP(@Body() body: ResendOTP) {
     try {
       const result = await this.usersService.resendOTP(body.email);
       return { message: result };
@@ -50,10 +53,10 @@ export class UsersController {
   }
 
   @Post('update_password')
-  async updatePassword(@Body() body: { email : string, user_id: number, password : string }) {
+  async updatePassword(@Body() body: UpdatePasswordDTO) {
     try {
-      const { password, user_id, email} = body;
-      const result = await this.usersService.changePassword(email, user_id, password);
+      const { password, userId, email} = body;
+      const result = await this.usersService.changePassword(email, userId, password);
       return { message: result };
     } catch (error) {
       throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
@@ -78,9 +81,7 @@ export class UsersController {
 
   @Get('get_profile_details')
   @UseGuards(AuthGuard)
-  async getProfileDetails(@Req() req : any) {
-    console.log({req});
-    
+  async getProfileDetails(@Req() req : any) {   
     const {user_id} = req.auth 
     try {         
       const result = await this.usersService.getProfileDetails(user_id);

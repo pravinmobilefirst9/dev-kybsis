@@ -1,7 +1,7 @@
 import { IsDate, IsIn, IsNotEmpty, IsPhoneNumber, IsString } from "class-validator";
 
 export class ProfileAddDto {
-    @IsNotEmpty({ message: 'First name cannot be empty' })
+  @IsNotEmpty({ message: 'First name cannot be empty' })
   @IsString({ message: 'First name must be a string' })
   firstname: string;
 
@@ -14,6 +14,7 @@ export class ProfileAddDto {
   date_of_birth: Date;
 
   @IsPhoneNumber("IN", { message: 'Invalid phone number format' }) // 'ZZ' allows any country code
+  @IsNotEmpty({ message: 'Phone number cannot be empty' })
   phone_number: string;
 
   @IsNotEmpty({ message: 'Gender cannot be empty' })

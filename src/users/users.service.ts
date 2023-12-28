@@ -23,43 +23,14 @@ export class UsersService {
     private jwtService: JwtService,
   ) {}
 
-  // async registerUser(createUserDto: RegisterUserDto) {
-
-  //   if (!createUserDto) {
-  //     throw new HttpException("User registration details are missing", HttpStatus.BAD_REQUEST)
-  //   }
-
-  //   const alreadyExists = await this.prisma.user.findUnique({ where: { email: createUserDto.email } })
-
-  //   if (alreadyExists) {
-  //     throw new HttpException("Email already exists", HttpStatus.BAD_REQUEST)
-  //   }
-
-  //   const hash_password = await bcrypt.hash(createUserDto.password, 10);
-
-  //   const otp = Math.floor(1000 + Math.random() * 9000);
-
-  //   const user = await this.prisma.user.create({
-  //     data: {
-  //       email: createUserDto.email,
-  //       password: hash_password,
-  //       otp_verified: false,
-  //       active: false,
-  //       user_otp: otp,
-  //       device_token: createUserDto.device_token
-  //     }
-  //   })
-
-  //   await this.sendEmail(user, "Welcome and verify your email.", "Thank for joining us please verify email with code", otp);
-
-  //   delete user.password
-  //   return user;
-  // }
   async registerUser(createUserDto: RegisterUserDto) {
     try {
       if (!createUserDto) {
         throw new HttpException(
-          'User registration details are missing',
+          {
+            status: 'failure',
+            data: { message:'User registration details are missing' },
+          },
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -69,13 +40,17 @@ export class UsersService {
       });
 
       if (alreadyExists) {
-        return {
-          status: 'failure',
-          data: { message: 'Email already exists' },
-        };
+        throw new HttpException(
+          {
+            status: 'failure',
+            data: { message: 'Email already exists' },
+          }
+          ,
+          HttpStatus.CONFLICT
+        )
       }
 
-      const hash_password = await bcrypt.hash(createUserDto.password, 10);
+      const hash_password = await bcrypt.hash(createUserDto.password, 12);
 
       const otp = Math.floor(1000 + Math.random() * 9000);
 
@@ -105,13 +80,18 @@ export class UsersService {
     } catch (error) {
       // Handle specific errors with specific messages or codes
       // Here, we are just returning a generic error message
-      return {
-        status: 'failure',
-        data: {
-          message:
-            'An error occurred during registration, please try again later',
-        },
-      };
+      throw new HttpException(
+        {
+          status: 'failure',
+          data: {
+            message:
+              'An error occurred during registration, please try again later',
+          },
+        }
+        ,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
+
     }
   }
 
@@ -138,30 +118,7 @@ export class UsersService {
     await transporter.sendMail(emailOptions);
   }
 
-  // async loginUser(payload: LoginUserDto) {
-  //   // Check if the email exists in the database
-  //   const user = await this.prisma.user.findUnique({ where: { email: payload.email } });
 
-  //   if (!user) {
-  //     throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-  //   }
-
-  //   // Check if the provided password matches the hashed password in the database
-  //   const passwordMatches = await bcrypt.compare(payload.password, user.password);
-
-  //   if (!passwordMatches) {
-  //     throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-  //   }
-
-  //   const jwtPayload = {
-  //     user_id: user.id
-  //   };
-  //   const token = await this.jwtService.signAsync(jwtPayload);
-  //   // If the email and password are correct, return the user data (without sensitive info)
-  //   const { password: userPassword, ...userData} = user;
-
-  //   return {...userData, token};
-  // }
   async loginUser(payload: LoginUserDto) {
     try {
       // Check if the email exists in the database
@@ -170,17 +127,30 @@ export class UsersService {
       });
 
       if (!user) {
-        return {
-          status: 'failure',
-          data: { message: 'Invalid email or password' },
-        };
+        throw new HttpException(
+          {
+            status: 'failure',
+            data: {
+              status: 'failure',
+              message: 'Invalid email or password',
+            },
+          }
+          ,
+          HttpStatus.BAD_REQUEST
+        )
       }
             
       if (!user.otp_verified) {
-        return {
-          status: 'failure',
-          data: { message: 'User email is not verified, Please try again' },
-        };
+        throw new HttpException(
+          {
+            status: 'failure',
+            data: {
+              message: 'User email is not verified, Please try again',
+            },
+          }
+          ,
+          HttpStatus.NOT_ACCEPTABLE
+        )
       }
 
       // Check if the provided password matches the hashed password in the database
@@ -190,10 +160,14 @@ export class UsersService {
       );
 
       if (!passwordMatches) {
-        return {
-          status: 'failure',
-          data: { message: 'Invalid email or password' },
-        };
+        throw new HttpException(
+          {
+            status: 'failure',
+            data: { message: 'Invalid email or password' },
+          }
+          ,
+          HttpStatus.BAD_REQUEST
+        )
       }
 
       const jwtPayload = {
@@ -212,12 +186,16 @@ export class UsersService {
     } catch (error) {
       // Handle specific errors with specific messages or codes
       // Here, we are just returning a generic error message
-      return {
-        status: 'failure',
-        data: {
-          message: 'An error occurred during login, please try again later',
-        },
-      };
+      throw new HttpException(
+        {
+          status: 'failure',
+          data: {
+            message: 'An error occurred during login, please try again later',
+          },
+        }
+        ,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 
@@ -228,10 +206,14 @@ export class UsersService {
       });
 
       if (!user) {
-        return {
-          status: 'failure',
-          data: { message: 'Invalid email' },
-        };
+        throw new HttpException(
+          {
+            status: 'failure',
+            data: { message: 'Invalid email' },
+          }
+          ,
+          HttpStatus.BAD_REQUEST
+        )
       }
 
       const otp = Math.floor(1000 + Math.random() * 9000);
@@ -254,13 +236,17 @@ export class UsersService {
     } catch (error) {
       // Handle specific errors with specific messages or codes
       // Here, we are just returning a generic error message
-      return {
-        status: 'failure',
-        data: {
-          message:
-            'An error occurred during password reset request, please try again later',
-        },
-      };
+      throw new HttpException(
+        {
+          status: 'failure',
+          data: {
+            message:
+              'An error occurred during password reset request, please try again later',
+          },
+        }
+        ,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 
@@ -269,17 +255,25 @@ export class UsersService {
       const user = await this.prisma.user.findUnique({ where: { email } });
 
       if (!user) {
-        return {
-          status: 'failure',
-          data: { message: 'User not found' },
-        };
+        throw new HttpException(
+          {
+            status: 'failure',
+            data: { message: 'User not found' },
+          }
+          ,
+          HttpStatus.NOT_FOUND
+        )
       }
 
       if (user.user_otp !== parseInt(otp)) {
-        return {
-          status: 'failure',
-          data: { message: 'Invalid OTP' },
-        };
+        throw new HttpException(
+          {
+            status: 'failure',
+            data: { message: 'Invalid OTP' },
+          }
+          ,
+          HttpStatus.NOT_ACCEPTABLE
+        )
       }
 
       // Update user as OTP is verified
@@ -295,10 +289,14 @@ export class UsersService {
     } catch (error) {
       // Handle specific errors with specific messages or codes
       // Here, we are just returning a generic error message
-      return {
-        status: 'failure',
-        data: { message: 'An error occurred while otp verification' },
-      };
+      throw new HttpException(
+        {
+          status: 'failure',
+          data: { message: 'An error occurred while otp verification' },
+        }
+        ,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
   async resendOTP(email : string) {
@@ -306,10 +304,14 @@ export class UsersService {
       const user = await this.prisma.user.findUnique({ where: {email} });
 
       if (!user) {
-        return {
-          status: 'failure',
-          data: { message: 'User not found' },
-        };
+        throw new HttpException(
+          {
+            status: 'failure',
+            data: { message: 'User not found' },
+          }
+          ,
+          HttpStatus.NOT_FOUND
+        )
       }
 
       const otp = Math.floor(1000 + Math.random() * 9000);
@@ -333,31 +335,33 @@ export class UsersService {
     } catch (error) {
       // Handle specific errors with specific messages or codes
       // Here, we are just returning a generic error message
-      return {
-        status: 'failure',
-        data: { message: 'An error occurred while resend otp' },
-      };
+      throw new HttpException(
+        {
+          status: 'failure',
+          data: { message: 'An error occurred while resend otp' },
+        }
+        ,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 
   async changePassword(email: string, user_id: number, password: string) {
     try {
-      if (!email || !user_id || !password) {
-        return {
-          status: 'failure',
-          data: { message: 'Missing required fields' },
-        };
-      }
-
-      const user = await this.prisma.user.findUnique({
+       const user = await this.prisma.user.findUnique({
         where: { id: user_id, email },
       });
 
+ 
       if (!user) {
-        return {
-          status: 'failure',
-          data: { message: 'User not found' },
-        };
+        throw new HttpException(
+          {
+            status: 'failure',
+            data: { message: 'User not found' },
+          }
+          ,
+          HttpStatus.NOT_FOUND
+        )
       }
 
       // Hash the new password
@@ -376,13 +380,17 @@ export class UsersService {
     } catch (error) {
       // Handle specific errors with specific messages or codes
       // Here, we are just returning a generic error message
-      return {
-        status: 'failure',
-        data: {
-          message:
-            'An error occurred during password change, please try again later',
-        },
-      };
+      throw new HttpException(
+        {
+          status: 'failure',
+          data: {
+            message:
+              'An error occurred during password change, please try again later',
+          },
+        }
+        ,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 
@@ -393,10 +401,14 @@ export class UsersService {
       });
 
       if (!isUserExists) {
-        return {
-          status: 'failure',
-          data: { message: 'User not found' },
-        };
+        throw new HttpException(
+          {
+            status: 'failure',
+            data: { message: 'User not found' },
+          }
+          ,
+          HttpStatus.NOT_FOUND
+        )
       }
 
       const newProfile = await this.prisma.userDetails.create({
@@ -417,13 +429,17 @@ export class UsersService {
     } catch (error) {
       // Handle specific errors with specific messages or codes
       // Here, we are just returning a generic error message
-      return {
-        status: 'failure',
-        data: {
-          message:
-            'An error occurred during profile creation, please try again later',
-        },
-      };
+      throw new HttpException(
+        {
+          status: 'failure',
+          data: {
+            message:
+              'An error occurred during profile creation, please try again later',
+          },
+        }
+        ,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 
@@ -439,18 +455,26 @@ export class UsersService {
           data: userDetails,
         };
       } else {
-        return {
-          status: 'success',
-          data: { message: 'Profile details not found' },
-        };
+        throw new HttpException(
+          {
+            status: 'success',
+            data: { message: 'Profile details not found' },
+          }
+          ,
+          HttpStatus.NOT_FOUND
+        )
       }
     } catch (error) {
       // Handle specific errors with specific messages or codes
       // Here, we are just returning a generic error message
-      return {
-        status: 'failure',
-        data: { message: 'An error occurred while retrieving profile details' },
-      };
+      throw new HttpException(
+        {
+          status: 'failure',
+          data: { message: 'An error occurred while retrieving profile details' },
+        }
+        ,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 
@@ -461,10 +485,14 @@ export class UsersService {
       });
 
       if (!isUserExists) {
-        return {
-          status: 'failure',
-          data: { message: 'User not found' },
-        };
+        throw new HttpException(
+          {
+            status: 'failure',
+            data: { message: 'User not found' },
+          }
+          ,
+          HttpStatus.NOT_FOUND
+        )
       }
 
       const userDetails = await this.prisma.userDetails.findUnique({
@@ -472,10 +500,14 @@ export class UsersService {
       });
 
       if (!userDetails) {
-        return {
-          status: 'failure',
-          data: { message: 'Profile details not found' },
-        };
+        throw new HttpException(
+          {
+            status: 'failure',
+            data: { message: 'Profile details not found' },
+          }
+          ,
+          HttpStatus.NOT_FOUND
+        )
       }
 
       const updatedProfile = await this.prisma.userDetails.update({
@@ -496,13 +528,17 @@ export class UsersService {
     } catch (error) {
       // Handle specific errors with specific messages or codes
       // Here, we are just returning a generic error message
-      return {
-        status: 'failure',
-        data: {
-          message:
-            'An error occurred during profile update, please try again later',
-        },
-      };
+      throw new HttpException(
+        {
+          status: 'failure',
+          data: {
+            message:
+              'An error occurred during profile update, please try again later',
+          },
+        }
+        ,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      )
     }
   }
 
