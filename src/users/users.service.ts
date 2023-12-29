@@ -453,8 +453,26 @@ export class UsersService {
     }
   }
 
-  create(createUserDto: RegisterUserDto) {
-    return createUserDto;
+  async getAllSubscriptions() {
+    try {
+      const data = await this.prisma.userSubscription.findMany({});
+
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        data : data,
+        message: "Subscriptions fetched successfully"
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+  async create(createUserDto: RegisterUserDto) {
+   
   }
 
   findAll() {

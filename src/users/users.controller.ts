@@ -72,7 +72,11 @@ export class UsersController {
       return await this.usersService.updateProfile(updateProfileDto, user_id);
   }
 
- 
+  @Get('get_subscriptions')
+  async getSubscriptions(){
+    return await this.usersService.getAllSubscriptions();
+  }
+
   
   @Post()
   create(@Body() createUserDto: RegisterUserDto) {

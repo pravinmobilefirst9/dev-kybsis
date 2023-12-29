@@ -39,7 +39,8 @@ export class AssetsService {
               await this.prismaClient.plaidAssetItem.create({
                 data : {
                   asset_report_token,
-                  plaid_item_id : plaidItem.id
+                  plaid_item_id : plaidItem.id,
+                  user_id
                 }
               })
           }
@@ -91,7 +92,8 @@ export class AssetsService {
                   mask : account.mask,
                   name  : account.name,
                   subtype : account.subtype,
-                  type : account.type
+                  type : account.type,
+                  user_id : user_id
                 }
 
                 if (isAccountExists) {

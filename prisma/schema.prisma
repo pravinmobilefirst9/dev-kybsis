@@ -132,6 +132,8 @@ model User {
   investment_account            InvestmentAccounts[]
   asset_accounts                AssetAccount[]
   PlaidAssetItem                PlaidAssetItem[]
+  userSubscription              UserSubscription?
+  userPayments                  Payment[]
 }
 
 model Goal {
@@ -370,4 +372,50 @@ model AssetTransaction {
   updated_at           DateTime     @updatedAt
 
   @@unique([account_id, transaction_id, transaction_type, category_id])
+}
+
+model Subscriptions {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  price       Float
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userSubscription UserSubscription?
+  payments         Payment[]
+}
+
+model UserSubscription {
+  id              Int       @id @default(autoincrement())
+  user_id         Int       @unique
+  subscription_id Int       @unique
+  expiredAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user         User          @relation(fields: [user_id], references: [id])
+  subscription Subscriptions @relation(fields: [subscription_id], references: [id])
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  userId         Int
+  user           User          @relation(fields: [userId], references: [id])
+  subscription   Subscriptions @relation(fields: [subscriptionId], references: [id])
+  subscriptionId Int
+  amount         Float
+  currency       String
+  paymentMethod  String
+  transactionId  String
+  status         PaymentStatus
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }
