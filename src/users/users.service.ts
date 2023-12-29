@@ -52,6 +52,7 @@ export class UsersService {
           otp_verified: false,
           active: false,
           user_otp: otp,
+          user_otp_createdAt : new Date(),
           device_token: createUserDto.device_token,
         },
       });
@@ -59,7 +60,7 @@ export class UsersService {
       await this.sendEmail(
         user,
         'Welcome and verify your email.',
-        'Thank for joining us please verify email with code',
+        'Thank for joining us please verify email with code. Code will be valid for 10 mins only',
         otp,
       );
 
@@ -163,7 +164,7 @@ export class UsersService {
 
       await this.sendEmail(
         user,
-        'Password Reset',
+        'Password Reset OTP (valid for 10 mins only)',
         'Password reset OTP is ',
         otp,
       );
@@ -193,6 +194,13 @@ export class UsersService {
         )
       }
 
+      if (!user.user_otp_createdAt) {
+        throw new HttpException(
+          'OTP is expired',
+          HttpStatus.NOT_ACCEPTABLE
+        )
+      }
+
       if (user.user_otp !== parseInt(otp)) {
         throw new HttpException(
           'Invalid OTP',
@@ -200,9 +208,11 @@ export class UsersService {
         )
       }
 
-      const otpCreatedAt = user.user_otp_createdAt;
+
+
+      const otpCreatedAt = new Date(user.user_otp_createdAt);
       const timeDifference = new Date().getTime() - otpCreatedAt.getTime();
-      const otpValidityDuration = 1 * 60 * 1000;
+      const otpValidityDuration = 10 * 60 * 1000;
 
       if (timeDifference > otpValidityDuration) {
         throw new HttpException("OTP expired", HttpStatus.NOT_ACCEPTABLE);
@@ -248,7 +258,7 @@ export class UsersService {
 
       await this.sendEmail(
         user,
-        'Password Reset',
+        'Password Reset (valid for 10 mins only)',
         'Password reset OTP is ',
         otp,
       );

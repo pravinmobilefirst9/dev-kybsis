@@ -116,8 +116,8 @@ model User {
   password                      String
   otp_verified                  Boolean                         @default(false)
   user_otp                      Int
-  user_otp_createdAt            DateTime?                       
-  user_role                     UserRole                        @default(USER)
+  user_otp_createdAt            DateTime?
+  user_role                     UserRole                        @default(BASIC)
   device_token                  String
   created_at                    DateTime                        @default(now())
   updated_at                    DateTime                        @updatedAt
@@ -130,6 +130,8 @@ model User {
   plaidItems                    PlaidItem[]
   user_details                  UserDetails?
   investment_account            InvestmentAccounts[]
+  asset_accounts                AssetAccount[]
+  PlaidAssetItem                PlaidAssetItem[]
 }
 
 model Goal {
@@ -204,9 +206,8 @@ model Balance {
 }
 
 enum UserRole {
-  USER
-  ADMIN
-  MODERATOR
+  BASIC
+  PREMIUM
 }
 
 model InvestmentAccounts {
@@ -306,32 +307,35 @@ model TransactionCategory {
 model PlaidAssetItem {
   id                 Int      @id @default(autoincrement())
   asset_report_token String
+  user_id            Int
   plaid_item_id      Int      @unique
   created_at         DateTime @default(now())
   updated_at         DateTime @updatedAt
+  user               User     @relation(fields: [user_id], references: [id])
 
   PlaidItem PlaidItem @relation(fields: [plaid_item_id], references: [id])
 }
 
 model AssetAccount {
-  id                       Int      @id @default(autoincrement())
-  account_id               String   @unique
+  id                       Int                      @id @default(autoincrement())
+  account_id               String                   @unique
   balance_available        Decimal?
   balance_current          Decimal
   iso_currency_code        String?
   balance_limit            Decimal?
   unofficial_currency_code String?
   days_available           Int?
-
-  mask               String
-  name               String
-  ownership_type     String?
-  subtype            String
-  type               String
-  created_at         DateTime                 @default(now())
-  updated_at         DateTime                 @updatedAt
-  historicalBalances AssetHistoricalBalance[]
-  transactions       AssetTransaction[]
+  user_id                  Int
+  mask                     String
+  name                     String
+  ownership_type           String?
+  subtype                  String
+  type                     String
+  created_at               DateTime                 @default(now())
+  updated_at               DateTime                 @updatedAt
+  user                     User                     @relation(fields: [user_id], references: [id])
+  historicalBalances       AssetHistoricalBalance[]
+  transactions             AssetTransaction[]
 }
 
 model AssetHistoricalBalance {
