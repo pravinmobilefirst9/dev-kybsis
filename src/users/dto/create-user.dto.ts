@@ -1,5 +1,5 @@
 import { ClassTransformer, Transform } from "class-transformer";
-import { IsEmail, IsNotEmpty, IsString, Length, MinLength } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, Length, Matches, MinLength } from "class-validator";
 
 export class RegisterUserDto {
     @IsEmail({}, { message: 'Please provide a valid email address' })
@@ -8,7 +8,9 @@ export class RegisterUserDto {
 
     @IsNotEmpty({ message: 'Password cannot be empty' })
     @IsString({ message: 'Password must be a string' })
-    @Length(8, 20, { message: 'Password must be between 8 and 20 characters long' })
+    @Matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/, {
+        message: 'Password must contain at least 8 characters, one letter, one number, and one special character.',
+      })
     @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
     password: string;
 

@@ -419,3 +419,35 @@ enum PaymentStatus {
   FAILED
   REFUNDED
 }
+
+model AssetType {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assetFieldDetails AssetFieldDetails?
+}
+
+model AssetFieldDetails {
+  id        Int       @id @default(autoincrement())
+  asset_id  Int       @unique
+  name      String
+  label     String
+  type      String
+  options   String[]
+  order_id  Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  asset     AssetType @relation(fields: [asset_id], references: [id])
+}
+
+model UserAssetsDetails {
+  id Int @id @default(autoincrement())
+  data Json[] 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
