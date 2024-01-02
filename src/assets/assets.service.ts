@@ -169,14 +169,42 @@ export class AssetsService {
 
   async getAssetDetails (){
     try {
-      const data = await this.prismaClient.userAssetsDetails.findMany({
-        include: {
-          asset: true, 
-          asset_field_id: true, 
-          asset_sub_type: true, 
-          user: true,
-        },
+      const data = await this.prismaClient.assetType.findMany({
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          assetSubType: {
+            select: {
+              id: true,
+              asset_id: true,
+              name: true,
+              description: true,
+              UserAssetsDetails: {
+                select: {
+                  id: true,
+                  user_id: true,
+                  asset_id: true,
+                  asset_sub_id: true,
+                  field_id: true,
+                  value: true,
+                }
+              }
+            }
+          },
+          UserAssetsDetails: {
+            select: {
+              id: true,
+              user_id: true,
+              asset_id: true,
+              asset_sub_id: true,
+              field_id: true,
+              value: true,
+            }
+          }
+        }
       });
+
       return {
         success: true,
         statusCode: HttpStatus.OK,
