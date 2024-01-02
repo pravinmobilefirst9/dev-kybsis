@@ -364,9 +364,9 @@ export class UsersService {
 
       return {
         success: true,
+        message: "profile added succssfully",
         statusCode: HttpStatus.CREATED,
         data: newProfile,
-        message: "profile added succssfully"
       };
     } catch (error) {
       if (error instanceof HttpException) {

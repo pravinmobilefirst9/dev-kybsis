@@ -32,7 +32,6 @@ const assetsData  = [
           {name: "make", type: "text", label: "Make", order_id : 1},
           {name: "model", type: "text", label: "Model",order_id : 2},
           {name: "Year", type: "text", label: "Year", order_id : 3},
-          {name: "Color", type: "text", label : "Color", options : ["red", "yellow", "white", "pink", "black"], order_id : 4},
           {name: "value", type: "number", label : "Value", order_id:5},
           {name: "location", type: "text", label : "Location", order_id : 6},
           {name: "description", type: "textarea", label : "Description", order_id : 7},
@@ -45,7 +44,6 @@ const assetsData  = [
           {name: "make", type: "text", label: "Make",order_id : 1},
           {name: "model", type: "text", label: "Model",order_id : 2},
           {name: "Year", type: "text", label: "Year",order_id : 3 },
-          {name: "Color", type: "text", label : "Color",options : ["red", "yellow", "white", "pink", "black"], order_id : 4},
           {name: "value", type: "number", label : "Value", order_id : 5},
           {name: "location", type: "text", label : "Location",order_id : 6},
           {name: "description", type: "textarea", label : "Description", order_id : 7},
@@ -90,8 +88,8 @@ async function main() {
               ...subtypeData,
               assetFields: {
                 create: assetFields.map((fields) => {
-                  const {name, order_id, type, label, options} = fields
-                  return {name, order_id, type, label, options}
+                  const {name, order_id, type, label} = fields
+                  return {name, order_id, type, label}
                 }),
               },
             };
