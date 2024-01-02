@@ -29,28 +29,28 @@ const assetsData  = [
         name: "Auto", 
         description: "Four-door car with a closed roof",
         assetFields : [
-          {name: "make", type: "text", label: "Make", order_id : 1},
-          {name: "model", type: "text", label: "Model",order_id : 2},
-          {name: "Year", type: "text", label: "Year", order_id : 3},
-          {name: "value", type: "number", label : "Value", order_id:5},
-          {name: "location", type: "text", label : "Location", order_id : 6},
-          {name: "description", type: "textarea", label : "Description", order_id : 7},
+         
         ]
       },
       {
         name: "Manual", 
         description: "Four-door car with a closed roof",
         assetFields : [
-          {name: "make", type: "text", label: "Make",order_id : 1},
-          {name: "model", type: "text", label: "Model",order_id : 2},
-          {name: "Year", type: "text", label: "Year",order_id : 3 },
-          {name: "value", type: "number", label : "Value", order_id : 5},
-          {name: "location", type: "text", label : "Location",order_id : 6},
-          {name: "description", type: "textarea", label : "Description", order_id : 7},
+          
         ]
       }
     ]
   }
+]
+
+const assetFields = [
+  // For car and its subtype it is same
+  {name: "make", type: "text", label: "Make",order_id : 1},
+  {name: "model", type: "text", label: "Model",order_id : 2},
+  {name: "Year", type: "text", label: "Year",order_id : 3, options : ["2020","2022", "2023"]},
+  {name: "value", type: "number", label : "Value", order_id : 5},
+  {name: "location", type: "text", label : "Location",order_id : 6},
+  {name: "description", type: "textarea", label : "Description", order_id : 7},
 ]
 
 
@@ -83,19 +83,28 @@ async function main() {
         description,
         assetSubType : {
           create : assetSubType.map((subtype) => {
-            const { assetFields, ...subtypeData } = subtype;
+            const { assetFields,  description, name} = subtype;
             return {
-              ...subtypeData,
-              assetFields: {
-                create: assetFields.map((fields) => {
-                  const {name, order_id, type, label} = fields
-                  return {name, order_id, type, label}
-                }),
-              },
+              name,
+              description
             };
           })
         }
       }
+    })
+  }
+  
+  for (let index = 0; index < 2; index++) {
+    const fieldArr = assetFields.map((f) => {
+      return {
+        ...f,
+        asset_id : 1,
+        asset_sub_id : index + 1
+      }
+    })
+
+    await prisma.assetFields.createMany({
+      data : fieldArr
     })
   }
 }

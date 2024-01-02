@@ -168,9 +168,7 @@ export class AssetsService {
     }
   }
 
-  async getAssetDetails (userId: number){
-    
-   
+  async getAssetDetails (userId: number){   
     try {
       const userAssetsDetails = await this.prismaClient.userAssetsDetails.findMany({
         where: { user_id: userId },
@@ -210,18 +208,7 @@ export class AssetsService {
                 },
               },
             },
-          },
-          UserAssetsDetails: {
-            where: { user_id: userId },
-            select: {
-              id: true,
-              user_id: true,
-              asset_id: true,
-              asset_sub_id: true,
-              field_id: true,
-              value: true,
-            },
-          },
+          }
         },
       });
       return {
@@ -256,9 +243,7 @@ export class AssetsService {
   }
 
   async getAllAssetsSubTypes(asset_id : number){
-    try {
-      console.log({asset_id});
-      
+    try {     
       if (!asset_id) {
         throw new HttpException(
           "Asset id not found",
@@ -291,12 +276,19 @@ export class AssetsService {
       });
 
       if (!user) {
-        throw new HttpException('Invalid email', HttpStatus.BAD_REQUEST)
+        throw new HttpException('User not found', HttpStatus.BAD_REQUEST)
       }
 
       const formData = await this.prismaClient.assetFields.findMany({
           where : {
             asset_sub_id : asset_subtype_id
+          },
+          select : {
+            label : true,
+            name : true,
+            options : true,
+            type : true,
+            id : true
           }
       })
 
@@ -324,7 +316,45 @@ export class AssetsService {
     }
   }
 
+  async addUserAssetsDetails({asset_id, asset_sub_id, fieldData} : CreateAssetDto, user_id : number){
+    try {
+      const user = await this.prismaClient.user.findUnique({
+        where: { id : user_id },
+      });
 
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.BAD_REQUEST)
+      }
+      const userAssetsFieldsArr = fieldData.map((f) => {
+         return {
+            value : f.value,
+            field_id : f.field_id,
+            asset_id,
+            asset_sub_id,
+            user_id
+          }
+      })
+
+      await this.prismaClient.userAssetsDetails.createMany(
+        {
+          data : userAssetsFieldsArr
+        }
+      )
+
+      return {
+        success: true,
+        statusCode: HttpStatus.CREATED,
+        data: {},
+        message: "Asset created successfully"
+      };
+
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
 
   create(createAssetDto: CreateAssetDto) {
     return 'This action adds a new asset';

@@ -74,6 +74,15 @@ export class AssetsController {
     return await this.assetsService.getFormData(data, user_id); 
   }
 
+  @Post("create_asset")
+  @UseGuards(AuthGuard)
+  async addAsset(
+    @Req() request : any,
+    @Body() data : CreateAssetDto
+  ){
+    const {user_id} = request.auth;
+    return await this.assetsService.addUserAssetsDetails(data, user_id)
+    }
   
   @Post()
   create(@Body() createAssetDto: CreateAssetDto) {
