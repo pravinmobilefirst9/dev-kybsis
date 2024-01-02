@@ -456,6 +456,7 @@ CREATE TABLE "UserAssetsDetails" (
     "user_id" INTEGER NOT NULL,
     "asset_id" INTEGER NOT NULL,
     "asset_sub_id" INTEGER NOT NULL,
+    "field_id" INTEGER NOT NULL,
     "value" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -582,6 +583,9 @@ ALTER TABLE "AssetFields" ADD CONSTRAINT "AssetFields_asset_sub_id_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "UserAssetsDetails" ADD CONSTRAINT "UserAssetsDetails_asset_id_fkey" FOREIGN KEY ("asset_id") REFERENCES "AssetType"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserAssetsDetails" ADD CONSTRAINT "UserAssetsDetails_field_id_fkey" FOREIGN KEY ("field_id") REFERENCES "AssetFields"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserAssetsDetails" ADD CONSTRAINT "UserAssetsDetails_asset_sub_id_fkey" FOREIGN KEY ("asset_sub_id") REFERENCES "AssetSubType"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

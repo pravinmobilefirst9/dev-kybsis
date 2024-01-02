@@ -40,8 +40,11 @@ export class AssetsController {
     }
   }
 
-
-
+  @Get('/get_assets_details')
+  @UseGuards(AuthGuard)
+  async getAssetDetails(){
+    return await this.assetsService.getAssetDetails();
+  }
 
   @Post()
   create(@Body() createAssetDto: CreateAssetDto) {

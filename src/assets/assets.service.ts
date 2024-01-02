@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { PrismaService } from 'src/prisma.service';
+
 import { TransactionService } from 'src/transaction/transaction.service';
 import { PlaidAssetItem, PlaidItem } from '@prisma/client';
 
@@ -166,7 +167,29 @@ export class AssetsService {
     }
   }
 
-
+  async getAssetDetails (){
+    try {
+      const data = await this.prismaClient.userAssetsDetails.findMany({
+        include: {
+          asset: true, 
+          asset_field_id: true, 
+          asset_sub_type: true, 
+          user: true,
+        },
+      });
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: "Assets fetched successfully",
+        data : data
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
 
   create(createAssetDto: CreateAssetDto) {
     return 'This action adds a new asset';
