@@ -458,18 +458,23 @@ model AssetFields {
   updatedAt    DateTime @updatedAt
 
   asset_sub_type AssetSubType @relation(fields: [asset_sub_id], references: [id])
+  UserAssetsDetails UserAssetsDetails[]
+
+
 }
 
 model UserAssetsDetails {
   id           Int      @id @default(autoincrement())
   user_id      Int
   asset_id     Int
-  asset_sub_id Int      
+  asset_sub_id Int  
+  field_id Int    
   value        String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   asset          AssetType    @relation(fields: [asset_id], references: [id])
+  asset_field_id         AssetFields    @relation(fields: [field_id], references: [id])
   asset_sub_type AssetSubType @relation(fields: [asset_sub_id], references: [id])
   user           User         @relation(fields: [user_id], references: [id])
 }
