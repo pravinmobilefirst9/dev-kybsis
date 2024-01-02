@@ -172,44 +172,58 @@ export class AssetsService {
     
    
     try {
-      const data = await this.prismaClient.assetType.findMany({
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        assetSubType: {
-          select: {
-            id: true,
-            asset_id: true,
-            name: true,
-            description: true,
-            UserAssetsDetails: {
-              where: { user_id: userId }, 
-              select: {
-                id: true,
-                user_id: true,
-                asset_id: true,
-                asset_sub_id: true,
-                field_id: true,
-                value: true,
-              }
-            }
-          }
-        },
-        UserAssetsDetails: {
-          where: { user_id: userId }, // Filter UserAssetsDetails by user_id
-          select: {
-            id: true,
-            user_id: true,
-            asset_id: true,
-            asset_sub_id: true,
-            field_id: true,
-            value: true,
-          }
+      const userAssetsDetails = await this.prismaClient.userAssetsDetails.findMany({
+        where: { user_id: userId },
+        select: {
+          asset_sub_id: true
         }
-      }
-    });
-
+      });
+      
+      const assetSubIds = userAssetsDetails.map(uad => uad.asset_sub_id);
+      const data = await this.prismaClient.assetType.findMany({
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          assetSubType: {
+            where: {
+              id: {
+                in: assetSubIds,
+              },
+            },
+            select: {
+              id: true,
+              asset_id: true,
+              name: true,
+              description: true,
+              UserAssetsDetails: {
+                where: {
+                  user_id: userId,
+                },
+                select: {
+                  id: true,
+                  user_id: true,
+                  asset_id: true,
+                  asset_sub_id: true,
+                  field_id: true,
+                  value: true,
+                },
+              },
+            },
+          },
+          UserAssetsDetails: {
+            where: { user_id: userId },
+            select: {
+              id: true,
+              user_id: true,
+              asset_id: true,
+              asset_sub_id: true,
+              field_id: true,
+              value: true,
+            },
+          },
+        },
+      });
       return {
         success: true,
         statusCode: HttpStatus.OK,
