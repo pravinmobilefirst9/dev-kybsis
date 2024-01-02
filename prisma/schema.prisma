@@ -134,6 +134,7 @@ model User {
   PlaidAssetItem                PlaidAssetItem[]
   userSubscription              UserSubscription?
   userPayments                  Payment[]
+  userAssetsDetails             UserAssetsDetails[]
 }
 
 model Goal {
@@ -423,31 +424,52 @@ enum PaymentStatus {
 model AssetType {
   id          Int      @id @default(autoincrement())
   name        String
-  description String
+  description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  assetFieldDetails AssetFieldDetails?
+  assetSubType      AssetSubType[]
+  UserAssetsDetails UserAssetsDetails[]
 }
 
-model AssetFieldDetails {
-  id        Int       @id @default(autoincrement())
-  asset_id  Int       @unique
-  name      String
-  label     String
-  type      String
-  options   String[]
-  order_id  Int
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  asset     AssetType @relation(fields: [asset_id], references: [id])
+model AssetSubType {
+  id          Int      @id @default(autoincrement())
+  asset_id    Int
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  asset AssetType @relation(fields: [asset_id], references: [id])
+
+  assetFields        AssetFields[]
+  UserAssetsDetails UserAssetsDetails[]
+}
+
+model AssetFields {
+  id           Int      @id @default(autoincrement())
+  asset_sub_id Int
+  name         String
+  label        String
+  type         String
+  options      String[]
+  order_id     Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  asset_sub_type AssetSubType @relation(fields: [asset_sub_id], references: [id])
 }
 
 model UserAssetsDetails {
-  id Int @id @default(autoincrement())
-  data Json[] 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  user_id      Int
+  asset_id     Int
+  asset_sub_id Int      
+  value        String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  asset          AssetType    @relation(fields: [asset_id], references: [id])
+  asset_sub_type AssetSubType @relation(fields: [asset_sub_id], references: [id])
+  user           User         @relation(fields: [user_id], references: [id])
 }
-
-
