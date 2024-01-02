@@ -168,43 +168,47 @@ export class AssetsService {
     }
   }
 
-  async getAssetDetails (){
+  async getAssetDetails (userId: number){
+    
+   
     try {
       const data = await this.prismaClient.assetType.findMany({
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          assetSubType: {
-            select: {
-              id: true,
-              asset_id: true,
-              name: true,
-              description: true,
-              UserAssetsDetails: {
-                select: {
-                  id: true,
-                  user_id: true,
-                  asset_id: true,
-                  asset_sub_id: true,
-                  field_id: true,
-                  value: true,
-                }
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        assetSubType: {
+          select: {
+            id: true,
+            asset_id: true,
+            name: true,
+            description: true,
+            UserAssetsDetails: {
+              where: { user_id: userId }, 
+              select: {
+                id: true,
+                user_id: true,
+                asset_id: true,
+                asset_sub_id: true,
+                field_id: true,
+                value: true,
               }
             }
-          },
-          UserAssetsDetails: {
-            select: {
-              id: true,
-              user_id: true,
-              asset_id: true,
-              asset_sub_id: true,
-              field_id: true,
-              value: true,
-            }
+          }
+        },
+        UserAssetsDetails: {
+          where: { user_id: userId }, // Filter UserAssetsDetails by user_id
+          select: {
+            id: true,
+            user_id: true,
+            asset_id: true,
+            asset_sub_id: true,
+            field_id: true,
+            value: true,
           }
         }
-      });
+      }
+    });
 
       return {
         success: true,
