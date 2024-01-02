@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma.service';
 
 import { TransactionService } from 'src/transaction/transaction.service';
 import { PlaidAssetItem, PlaidItem } from '@prisma/client';
+import { AssetFormDetails } from './dto/asset-form.dto';
 
 @Injectable()
 export class AssetsService {
@@ -183,6 +184,23 @@ export class AssetsService {
         message: "Assets fetched successfully",
         data : data
       };
+    }
+    catch(error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+  async getAssetsLists (){
+    try {
+      return await this.prismaClient.assetType.findMany({
+        select : {
+          name : true,
+          description : true,
+          id : true
+        }
+      });
     } catch (error) {
       if (error instanceof HttpException) {
         throw error
@@ -190,6 +208,77 @@ export class AssetsService {
       throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
+
+  async getAllAssetsSubTypes(asset_id : number){
+    try {
+      console.log({asset_id});
+      
+      if (!asset_id) {
+        throw new HttpException(
+          "Asset id not found",
+          HttpStatus.BAD_REQUEST
+        )
+      }
+
+      return await this.prismaClient.assetSubType.findMany({
+        where : {
+          asset_id
+        },
+        select : {
+          name : true, 
+          id : true,
+          description : true,
+        }
+      })
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+  async getFormData({asset_id, asset_subtype_id} : AssetFormDetails, user_id : number){
+    try {
+      const user = await this.prismaClient.user.findUnique({
+        where: { id : user_id },
+      });
+
+      if (!user) {
+        throw new HttpException('Invalid email', HttpStatus.BAD_REQUEST)
+      }
+
+      const formData = await this.prismaClient.assetFields.findMany({
+          where : {
+            asset_sub_id : asset_subtype_id
+          }
+      })
+
+      const userFormData = await this.prismaClient.userAssetsDetails.findMany(
+        {
+          where : {
+            asset_id : asset_id,
+            asset_sub_id : asset_subtype_id
+          }
+        }
+      )
+
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        data: {formData, userFormData},
+        message: "Form fields fetched successfully"
+      };
+
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+
 
   create(createAssetDto: CreateAssetDto) {
     return 'This action adds a new asset';
