@@ -8,10 +8,14 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private prismaClient : PrismaService
+    ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // const request = context.switchToHttp().getRequest();
@@ -26,7 +30,23 @@ export class AuthGuard implements CanActivate {
       });
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
+      
+      const userExists = await this.prismaClient.user.findUnique({
+        where : {
+          id : payload.user_id
+        }
+      })
+      console.log({payload});
+      
+      if (!userExists) {
+        throw new HttpException(
+          "User does not exists",
+          HttpStatus.UNAUTHORIZED
+        )
+      }
+
       request['auth'] = payload;
+      
     } catch (error) {
       throw new HttpException("Unauthorized", HttpStatus.UNAUTHORIZED);
     }
