@@ -229,7 +229,7 @@ model InvestmentAccounts {
   // References
   User User @relation(fields: [user_id], references: [id])
 
-  nvestmentHolding InvestmentHolding[]
+  investmentHolding InvestmentHolding[]
   Transactions     InvestmentTransactions[]
   Balance          InvestmentBalance[]
 }

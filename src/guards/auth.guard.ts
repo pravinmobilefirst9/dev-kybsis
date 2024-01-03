@@ -36,7 +36,6 @@ export class AuthGuard implements CanActivate {
           id : payload.user_id
         }
       })
-      console.log({payload});
       
       if (!userExists) {
         throw new HttpException(

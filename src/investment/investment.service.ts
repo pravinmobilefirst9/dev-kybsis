@@ -280,23 +280,41 @@ export class InvestmentService {
           }
 
           // Save security holdings
-          const holdingOfAccount = holdings.filter((hld : any) => hld.account_id === account.account_id)                          
+          const holdingsOfAccount = holdings.filter((hld : any) => hld.account_id === account.account_id)                          
 
-          await this.prisma.investmentHolding.createMany({
-            skipDuplicates : true,
-            data : holdingOfAccount.map((hld : any) => {
-              return {
-                ...hld,
-                institution_price_as_of : hld.institution_price_as_of ? new Date(hld.institution_price_as_of) : null,
-                institution_price_datetime : hld.institution_price_datetime ?  new Date(hld.institution_price_datetime) : null
+          for (const holding of holdingsOfAccount) {
+            const isHoldingExists = await this.prisma.investmentHolding.findFirst({
+              where : {
+                account_id : holding.account_id,
+                security_id : holding.security_id
               }
-            })
-          });
-   
+            });
+            if (isHoldingExists) {
+              await this.prisma.investmentHolding.update({
+                data : {
+                  ...holding,
+                  institution_price_as_of : holding.institution_price_as_of ? new Date(holding.institution_price_as_of) : null,
+                  institution_price_datetime : holding.institution_price_datetime ?  new Date(holding.institution_price_datetime) : null
+                  
+                },
+                where : {id : isHoldingExists.id}
+              })
+            }
+            else{
+              await this.prisma.investmentHolding.create({
+                data : {
+                  ...holding,
+                  institution_price_as_of : holding.institution_price_as_of ? new Date(holding.institution_price_as_of) : null,
+                  institution_price_datetime : holding.institution_price_datetime ?  new Date(holding.institution_price_datetime) : null
+                },
+              })
+            }
+          }
+
           resultArray.push({
             account_id: account.account_id,
             item_id: itemData.id,
-            holdingOfAccount
+            holdings : holdingsOfAccount
           });
         }
       }
@@ -310,6 +328,112 @@ export class InvestmentService {
       throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
+
+
+  async fetchInvestmentHomePageData (user_id  : number){
+    try {
+
+      let investmentData : any = await this.prisma.investmentAccounts.findMany({
+        where : {user_id},
+        select : {
+          account_id : true,
+          id : true,
+          investmentHolding : true,
+          account_name : true
+        }, 
+    })
+
+    investmentData = investmentData.filter((acc : any) => acc.investmentHolding.length > 0)
+    
+    // Calculate total investment, profit, and loss
+    let totalInvestment = 0;
+    let totalProfit = 0;
+    let totalLoss = 0;
+    
+    investmentData.forEach((account) => {
+      account.investmentHolding.forEach((holding) => {
+        const value = holding.institution_value || 0;
+        const costBasis = holding.cost_basis || 0;
+        const profitLoss = value - costBasis;
+    
+        totalInvestment += costBasis;
+        if (profitLoss > 0) {
+          totalProfit += profitLoss;
+        } else {
+          totalLoss += Math.abs(profitLoss);
+        }
+      });
+    });
+    
+    // Calculate profit and loss percentages
+    const totalValue = totalInvestment + totalProfit - totalLoss;
+    const profitPercentage = (totalProfit / totalValue) * 100;
+    const lossPercentage = (totalLoss / totalValue) * 100;
+    
+    // Format pie chart data
+    const pieChartData = investmentData.map((account) => ({
+      accountName: account.account_name,
+      value: parseFloat(account.investmentHolding.reduce(
+        (acc, holding) => acc + (holding.institution_value || 0),
+        0
+      ).toFixed(3)),
+    }));
+
+   
+    // const accountsDetails = investmentData.map(async (account) => {     
+    //   const performance = await this.calculateAccountPerformance(account);     
+    //   return {
+    //     account_id: account.account_id,
+    //     account_name: account.account_name,
+    //     ...performance,
+    //   };
+    // });  
+    
+   return {
+      total_investment: parseFloat(totalInvestment.toFixed(3)),
+      profit_percentage: parseFloat(profitPercentage.toFixed(3)),
+      profit_amount: parseFloat(totalProfit.toFixed(3)),
+      loss_percentage: parseFloat(lossPercentage.toFixed(3)),
+      loss_amount: parseFloat(totalLoss.toFixed(3)),
+      pie_chart_data: pieChartData,
+    };
+              
+
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+  async calculateAccountPerformance (account : any) {
+      const { investmentHolding } = account;
+        
+      const totalInvestment = investmentHolding.reduce((total, holding) => {
+        return total + (holding.quantity * holding.cost_basis);
+      }, 0);
+    
+      const currentInvestmentValue = investmentHolding.reduce((total, holding) => {
+        return total + holding.institution_value;
+      }, 0);
+    
+      const profitLossAmount = currentInvestmentValue - totalInvestment;
+      
+      // const profitPercentage = ((profitAmount / initialInvestment) * 100).toFixed(2);
+      // const lossPercentage = ((lossAmount / initialInvestment) * 100).toFixed(2);
+
+      
+
+      return {
+        totalInvestment,
+        // profitAmount,
+        // profitPercentage,
+        // lossAmount,
+        // lossPercentage,
+        profitLossAmount
+      };
+  };
 
   create(createInvestmentDto: CreateInvestmentDto) {
     return 'This action adds a new investment';
