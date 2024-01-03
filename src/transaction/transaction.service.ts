@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from 'src/prisma.service';
-import { Configuration, InstitutionsGetByIdRequest, PlaidApi, PlaidEnvironments, CountryCode, InvestmentsTransactionsGetRequest, TransactionsEnrichRequest, AssetReportCreateRequest, AssetReportGetRequest, LiabilitiesGetRequest, AssetReportCreateResponse, AssetReportGetResponse } from 'plaid';
+import { Configuration, InstitutionsGetByIdRequest, PlaidApi, PlaidEnvironments, CountryCode, InvestmentsTransactionsGetRequest, TransactionsEnrichRequest, AssetReportCreateRequest, AssetReportGetRequest, LiabilitiesGetRequest, AssetReportCreateResponse, AssetReportGetResponse, InvestmentsHoldingsGetRequest } from 'plaid';
 import { PlaidItem } from '@prisma/client';
 import axios, { AxiosResponse } from 'axios';
 
@@ -184,6 +184,18 @@ export class TransactionService {
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
     }
+  }
+ 
+  async getInvestmentHoldings(access_token: string) {
+    const request: InvestmentsHoldingsGetRequest = {
+      access_token: access_token,
+    };
+    try {
+      const response = await this.client.investmentsHoldingsGet(request);
+      return response
+    } catch (error) {
+      return { data: null, status: "failure", message: error.message }
+    }    
   }
 
 

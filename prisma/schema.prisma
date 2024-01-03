@@ -217,7 +217,7 @@ model InvestmentAccounts {
   id                  Int      @id @default(autoincrement())
   user_id             Int
   account_name        String
-  account_id          String
+  account_id          String   @unique
   official_name       String?
   mask                String
   type                String
@@ -274,19 +274,24 @@ model InvestmentBalance {
 
 // Schema for Investment Holdings
 model InvestmentHolding {
-  id               Int    @id @default(autoincrement())
-  accountId        Int    
-  securityId       String
-  institutionValue Float
-  quantity         Float
-  costBasis        Float
-  securityName     String
-  tickerSymbol     String?
-  cusip            String?
+  id                         Int       @id @default(autoincrement())
+  account_id                 String
+  cost_basis                 Float
+  institution_price          Float
+  institution_price_as_of    DateTime?
+  institution_price_datetime DateTime?
+  institution_value          Float
+  iso_currency_code          String
+  quantity                   Float
+  security_id                String
+  unofficial_currency_code   String?
 
-  investment_account InvestmentAccounts @relation(fields: [accountId], references: [id])
-  created_at         DateTime           @default(now())
-  updated_at         DateTime           @default(now())
+  investment_account  InvestmentAccounts @relation(fields: [account_id], references: [account_id])
+  investment_security InvestmentSecurity @relation(fields: [security_id], references: [security_id])
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @default(now())
+
+  @@unique([account_id, security_id])
 }
 
 model InvestmentSecurity {
@@ -311,6 +316,8 @@ model InvestmentSecurity {
   update_datetime          DateTime?
   created_at               DateTime  @default(now())
   updated_at               DateTime  @default(now())
+
+  InvestmentHolding InvestmentHolding[]
 
   @@unique([security_id])
 }

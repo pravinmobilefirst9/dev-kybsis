@@ -21,7 +21,16 @@ export class InvestmentController {
       throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+  
 
+  @Post("sync_investment_holding_details")
+  @UseGuards(AuthGuard)
+  async syncInvestmentHoldingDetails(@Req() req : any){
+      const {user_id} = req.auth     
+      const result = await this.investmentService.syncInvestmentHoldingDetails(user_id);
+      return result;
+  }
+  
 
 
 
