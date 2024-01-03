@@ -14,17 +14,18 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
         // Check for DTO error
         if (Array.isArray(message)) {
-            responseObject.error = exception.response.message[0]
+            responseObject.message = exception.response.message[0]
         }
         else {
-            responseObject.error = exception.response
+            responseObject.message = exception.response
         }
 
         responseObject = {
-            ...responseObject,
+            success: false,
             statusCode : status,
-            method: request.method,
-            success: false
+            ...responseObject,
+            data:{}
+           
         }
         response
             .status(status)

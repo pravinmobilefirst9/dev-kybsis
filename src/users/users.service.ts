@@ -68,8 +68,8 @@ export class UsersService {
       return {
         success: true,
         statusCode: HttpStatus.CREATED,
-        data: user,
-        message: "User registered successfully"
+        message: "User registered successfully",
+        data: user
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -131,11 +131,12 @@ export class UsersService {
       return {
         success: true,
         statusCode: HttpStatus.OK,
-        message: "Login successfull",
         data: {
           ...userData,
           token,
         },
+        message: "Login successfull"
+        
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -227,8 +228,9 @@ export class UsersService {
       return {
         success: true,
         statusCode: HttpStatus.OK,
-        message: 'OTP verified successfully',
         data: { user_id: user.id },
+        message: 'OTP verified successfully'
+        
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -365,8 +367,9 @@ export class UsersService {
       return {
         success: true,
         statusCode: HttpStatus.CREATED,
+        message: "profile added succssfully",
         data: newProfile,
-        message: "profile added succssfully"
+       
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -386,8 +389,9 @@ export class UsersService {
         return {
           success: true,
           statusCode: HttpStatus.OK,
+          message: "User details fetched successfully",
           data: userDetails,
-          message: "User details fetched successfully"
+          
         };
       } else {
         throw new HttpException(
@@ -442,8 +446,9 @@ export class UsersService {
       return {
         success: true,
         statusCode: HttpStatus.OK,
+        message: "profile updated successfully",
         data: updatedProfile,
-        message: "profile updated successfully"
+       
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -460,8 +465,9 @@ export class UsersService {
       return {
         success: true,
         statusCode: HttpStatus.OK,
+        message: "Subscriptions fetched successfully",
         data : data,
-        message: "Subscriptions fetched successfully"
+       
       };
     } catch (error) {
       if (error instanceof HttpException) {
