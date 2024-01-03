@@ -229,8 +229,9 @@ model InvestmentAccounts {
   // References
   User User @relation(fields: [user_id], references: [id])
 
-  Transactions InvestmentTransactions[]
-  Balance      InvestmentBalance[]
+  nvestmentHolding InvestmentHolding[]
+  Transactions     InvestmentTransactions[]
+  Balance          InvestmentBalance[]
 }
 
 model InvestmentTransactions {
@@ -269,6 +270,23 @@ model InvestmentBalance {
 
   // References
   investment_account InvestmentAccounts @relation(fields: [account_id], references: [id])
+}
+
+// Schema for Investment Holdings
+model InvestmentHolding {
+  id               Int    @id @default(autoincrement())
+  accountId        Int    
+  securityId       String
+  institutionValue Float
+  quantity         Float
+  costBasis        Float
+  securityName     String
+  tickerSymbol     String?
+  cusip            String?
+
+  investment_account InvestmentAccounts @relation(fields: [accountId], references: [id])
+  created_at         DateTime           @default(now())
+  updated_at         DateTime           @default(now())
 }
 
 model InvestmentSecurity {
