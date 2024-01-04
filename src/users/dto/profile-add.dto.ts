@@ -1,4 +1,4 @@
-import { IsDate, IsIn, IsNotEmpty, IsPhoneNumber, IsString } from "class-validator";
+import { IsDate, IsIn, IsNotEmpty, IsPhoneNumber, IsString, Matches } from "class-validator";
 
 export class ProfileAddDto {
   @IsNotEmpty({ message: 'First name cannot be empty' })
@@ -21,6 +21,10 @@ export class ProfileAddDto {
   @IsString({ message: 'Gender must be a string' })
   // @IsIn(['male', 'female', 'other'], { message: 'Invalid gender value' })
   gender: string;
+
+  @IsNotEmpty({ message: 'ZIP code cannot be empty' })
+  @Matches(/^[0-9]{5}(?:-[0-9]{4})?$/, { message: 'Invalid ZIP code format' })
+  zipCode: string;
 }
 
 

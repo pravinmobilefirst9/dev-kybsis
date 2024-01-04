@@ -156,6 +156,7 @@ model UserDetails {
   dateofbirth DateTime
   phonenumber String
   gender      String
+  zipcode     String
   created_at  DateTime @default(now())
   updated_at  DateTime @default(now())
   user        User     @relation(fields: [user_id], references: [id])
