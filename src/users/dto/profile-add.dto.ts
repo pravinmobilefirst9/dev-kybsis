@@ -24,7 +24,7 @@ export class ProfileAddDto {
 
   @IsNotEmpty({ message: 'ZIP code cannot be empty' })
   @Matches(/^[0-9]{5}(?:-[0-9]{4})?$/, { message: 'Invalid ZIP code format' })
-  zipCode: string;
+  zip_code: string;
 }
 
 

@@ -394,7 +394,7 @@ export class UsersService {
           dateofbirth: new Date(profileData.date_of_birth),
           gender: profileData.gender,
           phonenumber: profileData.phone_number,
-          zipcode : profileData.zipCode,
+          zipcode : profileData.zip_code,
           user: { connect: { id: user_id } }, // Optional: Connect user_id to UserDetails
         },
         update: {
@@ -402,7 +402,7 @@ export class UsersService {
           lastname: profileData.lastname,
           dateofbirth: new Date(profileData.date_of_birth),
           gender: profileData.gender,
-          zipcode : profileData.zipCode,
+          zipcode : profileData.zip_code,
           phonenumber: profileData.phone_number,
         },
       });
