@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateInvestmentDto } from './dto/create-investment.dto';
 import { UpdateInvestmentDto } from './dto/update-investment.dto';
 import { PrismaService } from 'src/prisma.service';
 import { TransactionService } from 'src/transaction/transaction.service';
+import { CreateManualInvestmentDto } from './dto/create-investment.dto';
 
 @Injectable()
 export class InvestmentService {
@@ -449,36 +449,65 @@ export class InvestmentService {
     }
   }
 
-  calculateAccountPerformance (account : any) {
-      const { investmentHolding } = account;
-        
-      let totalInvestment = investmentHolding.reduce((total, holding) => {
-        return total + (holding.quantity * holding.cost_basis);
-      }, 0);
-      
-      const currentInvestmentValue = investmentHolding.reduce((total, holding) => {
-        return total + holding.institution_value;
-      }, 0);
-    
-      const profitLossAmount = currentInvestmentValue - totalInvestment
-      
-      const profitLossPercentage = parseInt(((Math.abs(profitLossAmount) / totalInvestment) * 100).toString())
+  async fetchAllInvestmentCategories () {
+    try {
+      const investmentCategories = await this.prisma.investmentCategories.findMany({
+        select : {
+          name : true,
+          id : true
+        }
+      });
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: 'Investment categories fetched successfully',
+        data: investmentCategories,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+  async addUserInvestment(data : CreateManualInvestmentDto, user_id : number){
+    try {
+      const isCategoryExists = await this.prisma.investmentCategories.findUnique({
+        where: {
+          id :data.categoryId
+        }
+      })
 
-      
+      if (!isCategoryExists) {
+        throw new HttpException(
+          "Invalid category, Category not found",
+          HttpStatus.BAD_REQUEST
+        )
+      }
+      const newInvestment = await this.prisma.manualInvestments.create({
+        data : {
+          amount : data.amount,
+          currency : data.currency,
+          name : data.name,
+          price : data.price,
+          quantity : data.quantity,
+          category_id : data.categoryId,
+          user_id
+        }
+      })
 
       return {
-        totalInvestment,
-        // profitAmount,
-        // profitPercentage,
-        // lossAmount,
-        // lossPercentage,
-        profitLossPercentage,
-        profitLossAmount
+        success: true,
+        statusCode: HttpStatus.CREATED,
+        message: 'Investment added successfully!',
+        data: newInvestment,
       };
-  };
-
-  create(createInvestmentDto: CreateInvestmentDto) {
-    return 'This action adds a new investment';
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
   }
 
   findAll() {

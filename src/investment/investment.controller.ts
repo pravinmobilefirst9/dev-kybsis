@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, HttpException, HttpStatus } from '@nestjs/common';
 import { InvestmentService } from './investment.service';
-import { CreateInvestmentDto } from './dto/create-investment.dto';
 import { UpdateInvestmentDto } from './dto/update-investment.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { CreateManualInvestmentDto } from './dto/create-investment.dto';
 
 @Controller('investment')
 export class InvestmentController {
@@ -39,13 +39,23 @@ export class InvestmentController {
     return result;
   }  
 
-
-
-
-  @Post()
-  create(@Body() createInvestmentDto: CreateInvestmentDto) {
-    return this.investmentService.create(createInvestmentDto);
+  @Get("investment_categories")
+  @UseGuards(AuthGuard)
+  async getAllInvestmentCategories(){
+    return await this.investmentService.fetchAllInvestmentCategories()
   }
+
+
+  @Post("add_user_investment")
+  @UseGuards(AuthGuard)
+  async addUserInvestment(@Req() req : any, @Body() data : CreateManualInvestmentDto){
+    const {user_id} = req.auth     
+    const result = await this.investmentService.addUserInvestment(data, user_id);
+    return result;
+  }
+
+
+
 
   @Get()
   findAll() {

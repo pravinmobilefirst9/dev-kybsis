@@ -53,6 +53,20 @@ const assetFields = [
   {name: "description", type: "textarea", label : "Description", order_id : 7},
 ]
 
+const investmentCategories = [
+  {"name": "Stocks"},
+  {"name": "Bonds"},
+  {"name": "Real Estate"},
+  {"name": "Mutual Funds"},
+  {"name": "Exchange-Traded Funds (ETFs)"},
+  {"name": "Cryptocurrencies"},
+  {"name": "Commodities"},
+  {"name": "Options"},
+  {"name": "Retirement Accounts"},
+  {"name": "Savings Accounts"}
+]
+
+
 
 
 
@@ -107,6 +121,11 @@ async function main() {
       data : fieldArr
     })
   }
+
+  await prisma.investmentCategories.deleteMany({})
+  await prisma.investmentCategories.createMany({
+    data : investmentCategories
+  })
 }
 
 main()

@@ -135,6 +135,7 @@ model User {
   userSubscription              UserSubscription?
   userPayments                  Payment[]
   userAssetsDetails             UserAssetsDetails[]
+  manualInvestments             ManualInvestments[]
 }
 
 model Goal {
@@ -230,8 +231,8 @@ model InvestmentAccounts {
   User User @relation(fields: [user_id], references: [id])
 
   investmentHolding InvestmentHolding[]
-  Transactions     InvestmentTransactions[]
-  Balance          InvestmentBalance[]
+  Transactions      InvestmentTransactions[]
+  Balance           InvestmentBalance[]
 }
 
 model InvestmentTransactions {
@@ -292,6 +293,31 @@ model InvestmentHolding {
   updated_at          DateTime           @default(now())
 
   @@unique([account_id, security_id])
+}
+
+model InvestmentCategories {
+  id          Int      @id @default(autoincrement())
+  name        String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+
+  manualInvestments ManualInvestments[]
+}
+
+model ManualInvestments {
+  id          Int      @id @default(autoincrement())
+  name        String
+  amount      Float
+  currency    String
+  price       Int
+  quantity    Int
+  user_id     Int
+  category_id Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+
+  user               User                 @relation(fields: [user_id], references: [id])
+  investmentCategory InvestmentCategories @relation(fields: [category_id], references: [id])
 }
 
 model InvestmentSecurity {
