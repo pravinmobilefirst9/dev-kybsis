@@ -338,7 +338,7 @@ export class InvestmentService {
         select : {
           account_id : true,
           id : true,
-          investmentHolding : true,
+          investmentHolding : {include : {investment_security : true}},
           account_name : true
         }, 
     })
@@ -354,9 +354,10 @@ export class InvestmentService {
       account.investmentHolding.forEach((holding) => {
         const value = holding.institution_value || 0;
         const costBasis = holding.cost_basis || 0;
-        const profitLoss = value - costBasis;
+        const quantity = holding.quantity;
+        const profitLoss = (value)- (costBasis * quantity);
     
-        totalInvestment += costBasis;
+        totalInvestment += costBasis * quantity;
         if (profitLoss > 0) {
           totalProfit += profitLoss;
         } else {
@@ -369,27 +370,66 @@ export class InvestmentService {
     const totalValue = totalInvestment + totalProfit - totalLoss;
     const profitPercentage = (totalProfit / totalValue) * 100;
     const lossPercentage = (totalLoss / totalValue) * 100;
-    
+    let totalHoldings = []
+    let totalSecurities = []
+    let resultSecurityData = []
     // Format pie chart data
-    const pieChartData = investmentData.map((account) => ({
-      accountName: account.account_name,
+    const pieChartData = investmentData.map((account) => {
+      totalHoldings = [...totalHoldings, ...account.investmentHolding]
+      return {accountName: account.account_name,
       value: parseFloat(account.investmentHolding.reduce(
         (acc, holding) => acc + (holding.institution_value || 0),
         0
-      ).toFixed(3)),
-    }));
+      ).toFixed(3)),}
+    }); 
+    
+    totalHoldings.map((hld) => !totalSecurities.includes(hld.security_id) && totalSecurities.push(hld.security_id))
+    
+    totalSecurities.map((security) => {
+      const allHoldings = totalHoldings.filter((hld) => hld.security_id === security);
 
-   
-    const accountsDetails = investmentData.map((account) => {     
-      const performance = this.calculateAccountPerformance(account);     
-      return {
-        account_id: account.account_id,
-        account_name: account.account_name,
-        ...performance,
-      };
-    });  
-    
-    
+      let totalInvestment = 0
+      let totalProfit = 0;
+      let totalLoss = 0;      
+      let value = 0
+      let quantity = 0;
+      let costBasis = 0
+      let market_value = 0
+      let total_quantity = 0
+      allHoldings.forEach((holding) => {
+        value = holding.institution_value || 0;
+        market_value = holding.institution_price
+        costBasis = holding.cost_basis || 0;
+        quantity = holding.quantity;
+        const profitLoss = (value)- (costBasis * quantity);
+        total_quantity += quantity
+        totalInvestment += (costBasis * quantity);
+        if (profitLoss > 0) {
+          totalProfit += profitLoss;
+        } else {
+          totalLoss += Math.abs(profitLoss);
+        }
+      });
+
+      totalInvestment = parseFloat(totalInvestment.toFixed(2))
+      market_value = parseFloat(market_value.toFixed(2))
+      totalProfit = parseFloat(totalProfit.toFixed(2))
+      totalLoss = parseFloat(totalLoss.toFixed(2))
+      total_quantity = parseFloat(total_quantity.toFixed(2))
+      const obj = { 
+        security_id : security,
+        name : allHoldings[0].investment_security.name,
+        totalInvestment,
+        market_value,
+        total_quantity,
+        totalProfit,
+        totalLoss,
+      }
+
+      resultSecurityData.push(obj)
+
+    })
+
    return {
       total_investment: parseFloat(totalInvestment.toFixed(3)),
       profit_percentage: parseFloat(profitPercentage.toFixed(3)),
@@ -397,7 +437,7 @@ export class InvestmentService {
       loss_percentage: parseFloat(lossPercentage.toFixed(3)),
       loss_amount: parseFloat(totalLoss.toFixed(3)),
       pie_chart_data: pieChartData,
-      accountsDetails
+      resultSecurityData
     };
               
 
@@ -412,18 +452,17 @@ export class InvestmentService {
   calculateAccountPerformance (account : any) {
       const { investmentHolding } = account;
         
-      const totalInvestment = investmentHolding.reduce((total, holding) => {
+      let totalInvestment = investmentHolding.reduce((total, holding) => {
         return total + (holding.quantity * holding.cost_basis);
       }, 0);
-    
+      
       const currentInvestmentValue = investmentHolding.reduce((total, holding) => {
         return total + holding.institution_value;
       }, 0);
     
-      const profitLossAmount = currentInvestmentValue - totalInvestment;
+      const profitLossAmount = currentInvestmentValue - totalInvestment
       
-      // const profitPercentage = ((profitAmount / initialInvestment) * 100).toFixed(2);
-      // const lossPercentage = ((lossAmount / initialInvestment) * 100).toFixed(2);
+      const profitLossPercentage = parseInt(((Math.abs(profitLossAmount) / totalInvestment) * 100).toString())
 
       
 
@@ -433,6 +472,7 @@ export class InvestmentService {
         // profitPercentage,
         // lossAmount,
         // lossPercentage,
+        profitLossPercentage,
         profitLossAmount
       };
   };
