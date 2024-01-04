@@ -52,7 +52,7 @@ export class UsersService {
           otp_verified: false,
           active: false,
           user_otp: otp,
-          user_otp_createdAt : new Date(),
+          user_otp_createdAt: new Date(),
           device_token: createUserDto.device_token,
         },
       });
@@ -60,11 +60,25 @@ export class UsersService {
       await this.sendEmail(
         user,
         'Welcome and verify your email.',
-        'Thank for joining us please verify email with code. Code will be valid for 10 mins only',
+        `Thank you for joining Kybsis! We're excited to have you on board.
+        
+        To complete your signup, please verify your email address by entering the following code in the app:
+        
+        Verification Code: ${otp}
+        
+        This code will expire in 10 minutes.
+        
+        If you didn't request this code, please ignore this email.
+        
+        We're looking forward to seeing you in the app!
+        
+        Sincerely,
+        The Kybsis Team`,
         otp,
       );
 
       delete user.password;
+      delete user.user_otp;
       return {
         success: true,
         statusCode: HttpStatus.CREATED,
@@ -97,7 +111,7 @@ export class UsersService {
       text: message,
     };
 
-    emailOptions.text += ' Your Notification Code is : ' + otp;
+    // emailOptions.text += ' Your Notification Code is : ' + otp;
 
     await transporter.sendMail(emailOptions);
   }
@@ -107,6 +121,14 @@ export class UsersService {
     try {
       const user = await this.prisma.user.findUnique({
         where: { email: payload.email },
+        select: {
+          id: true,
+          user_role: true,
+          email: true,
+          active: true,
+          password: true,
+
+        }
       });
       if (!user) {
         throw new HttpException('Invalid email or password', HttpStatus.UNAUTHORIZED);
@@ -122,7 +144,7 @@ export class UsersService {
       }
 
       const jwtPayload = {
-        user_id: user.id, role : user.user_role
+        user_id: user.id, role: user.user_role
       };
 
       const token = await this.jwtService.signAsync(jwtPayload);
@@ -136,7 +158,7 @@ export class UsersService {
           token,
         },
         message: "Login successfull"
-        
+
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -165,8 +187,18 @@ export class UsersService {
 
       await this.sendEmail(
         user,
-        'Password Reset OTP (valid for 10 mins only)',
-        'Password reset OTP is ',
+        'Forgot password',
+        `
+        Here's a new verification code to complete your password reset:
+
+        Verification Code: ${otp}
+        
+        This code will expire in 10 minutes.
+        
+        Please enter this code in the app to verify your email address.
+                
+        Thanks,
+        The Kybsis Team`,
         otp,
       );
       return {
@@ -222,7 +254,7 @@ export class UsersService {
       // Update user as OTP is verified
       await this.prisma.user.update({
         where: { email },
-        data: { otp_verified: true, active : true},
+        data: { otp_verified: true, active: true },
       });
 
       return {
@@ -230,7 +262,7 @@ export class UsersService {
         statusCode: HttpStatus.OK,
         data: { user_id: user.id },
         message: 'OTP verified successfully'
-        
+
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -255,20 +287,29 @@ export class UsersService {
 
       await this.prisma.user.update({
         where: { email: email },
-        data: { user_otp: otp, otp_verified: false, user_otp_createdAt : new Date() },
+        data: { user_otp: otp, otp_verified: false, user_otp_createdAt: new Date() },
       });
 
       await this.sendEmail(
         user,
-        'Password Reset (valid for 10 mins only)',
-        'Password reset OTP is ',
+        'OTP Resend',
+        `
+        Here's a new verification code to continue:
+
+        Verification Code: ${otp}
+
+        This code will expire in 10 minutes.
+
+        Thanks,
+        The Kybsis Team
+        `,
         otp,
       );
 
       return {
         success: true,
         statusCode: HttpStatus.OK,
-        message: 'Email resent with OTP for password reset',
+        message: 'Email resent with OTP',
         data: null,
       };
     } catch (error) {
@@ -279,7 +320,7 @@ export class UsersService {
     }
   }
 
-  async changePassword({email, otp, password, user_id} : UpdatePasswordDTO) {
+  async changePassword({ email, otp, password, user_id }: UpdatePasswordDTO) {
     try {
       const user = await this.prisma.user.findUnique({
         where: { id: user_id, email },
@@ -293,7 +334,7 @@ export class UsersService {
           HttpStatus.NOT_FOUND
         )
       }
-      
+
       if (user.user_otp !== parseInt(otp)) {
         throw new HttpException(
           'Invalid OTP',
@@ -313,7 +354,7 @@ export class UsersService {
       // Update the user's password in the database
       await this.prisma.user.update({
         where: { id: user_id, email },
-        data: { password: hashedPassword, otp_verified : false},
+        data: { password: hashedPassword, otp_verified: false },
       });
 
       return {
@@ -369,7 +410,7 @@ export class UsersService {
         statusCode: HttpStatus.CREATED,
         message: "profile added succssfully",
         data: newProfile,
-       
+
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -391,7 +432,7 @@ export class UsersService {
           statusCode: HttpStatus.OK,
           message: "User details fetched successfully",
           data: userDetails,
-          
+
         };
       } else {
         throw new HttpException(
@@ -448,7 +489,7 @@ export class UsersService {
         statusCode: HttpStatus.OK,
         message: "profile updated successfully",
         data: updatedProfile,
-       
+
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -466,8 +507,8 @@ export class UsersService {
         success: true,
         statusCode: HttpStatus.OK,
         message: "Subscriptions fetched successfully",
-        data : data,
-       
+        data: data,
+
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -478,7 +519,7 @@ export class UsersService {
   }
 
   async create(createUserDto: RegisterUserDto) {
-   
+
   }
 
   findAll() {

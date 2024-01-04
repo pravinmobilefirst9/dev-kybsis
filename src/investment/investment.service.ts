@@ -380,14 +380,15 @@ export class InvestmentService {
     }));
 
    
-    // const accountsDetails = investmentData.map(async (account) => {     
-    //   const performance = await this.calculateAccountPerformance(account);     
-    //   return {
-    //     account_id: account.account_id,
-    //     account_name: account.account_name,
-    //     ...performance,
-    //   };
-    // });  
+    const accountsDetails = investmentData.map((account) => {     
+      const performance = this.calculateAccountPerformance(account);     
+      return {
+        account_id: account.account_id,
+        account_name: account.account_name,
+        ...performance,
+      };
+    });  
+    
     
    return {
       total_investment: parseFloat(totalInvestment.toFixed(3)),
@@ -396,6 +397,7 @@ export class InvestmentService {
       loss_percentage: parseFloat(lossPercentage.toFixed(3)),
       loss_amount: parseFloat(totalLoss.toFixed(3)),
       pie_chart_data: pieChartData,
+      accountsDetails
     };
               
 
@@ -407,7 +409,7 @@ export class InvestmentService {
     }
   }
 
-  async calculateAccountPerformance (account : any) {
+  calculateAccountPerformance (account : any) {
       const { investmentHolding } = account;
         
       const totalInvestment = investmentHolding.reduce((total, holding) => {
