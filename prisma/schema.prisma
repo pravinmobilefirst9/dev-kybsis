@@ -84,7 +84,8 @@ model PlaidItem {
   plaid         PlaidInstitutionImportHistory[]
   user          User                            @relation(fields: [user_id], references: [id])
 
-  AssetPlaidItem PlaidAssetItem?
+  AssetPlaidItem     PlaidAssetItem?
+  investmentAccounts InvestmentAccounts[]
 }
 
 model PlaidInstitutionImportHistory {
@@ -218,6 +219,7 @@ enum UserRole {
 model InvestmentAccounts {
   id                  Int      @id @default(autoincrement())
   user_id             Int
+  pliad_id            Int
   account_name        String
   account_id          String   @unique
   official_name       String?
@@ -229,7 +231,8 @@ model InvestmentAccounts {
   updated_at          DateTime
 
   // References
-  User User @relation(fields: [user_id], references: [id])
+  User      User      @relation(fields: [user_id], references: [id])
+  plaidItem PlaidItem @relation(fields: [pliad_id], references: [id])
 
   investmentHolding InvestmentHolding[]
   Transactions      InvestmentTransactions[]
@@ -297,10 +300,10 @@ model InvestmentHolding {
 }
 
 model InvestmentCategories {
-  id          Int      @id @default(autoincrement())
-  name        String
-  created_at  DateTime @default(now())
-  updated_at  DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 
   manualInvestments ManualInvestments[]
 }

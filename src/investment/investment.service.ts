@@ -62,6 +62,7 @@ export class InvestmentService {
           // If account is not exists the create new one with balance
           existingAccount = await this.prisma.investmentAccounts.create({
             data: {
+              plaidItem: { connect: { id: itemData.id } },
               account_name: account.name,
               account_id: account.account_id,
               official_name: account.official_name || '--',
@@ -231,12 +232,13 @@ export class InvestmentService {
               user_id: user_id,
             },
           });
-  
+
           const currentTime = new Date();
           if (!existingAccount) {
             // If account is not exists the create new one with balance
             existingAccount = await this.prisma.investmentAccounts.create({
               data: {
+                plaidItem: { connect: { id: itemData.id } },
                 account_name: account.name,
                 account_id: account.account_id,
                 official_name: account.official_name || '--',
@@ -250,7 +252,7 @@ export class InvestmentService {
                 User: { connect: { id: user_id } },
               },
             });
-  
+
             await this.prisma.investmentBalance.create({
               data: {
                 available_balance: account.balances.available || 0,
@@ -280,42 +282,44 @@ export class InvestmentService {
           }
 
           // Save security holdings
-          const holdingsOfAccount = holdings.filter((hld : any) => hld.account_id === account.account_id)                          
+          const holdingsOfAccount = holdings.filter((hld: any) => hld.account_id === account.account_id)
 
           for (const holding of holdingsOfAccount) {
             const isHoldingExists = await this.prisma.investmentHolding.findFirst({
-              where : {
-                account_id : holding.account_id,
-                security_id : holding.security_id
+              where: {
+                account_id: holding.account_id,
+                security_id: holding.security_id
               }
             });
             if (isHoldingExists) {
               await this.prisma.investmentHolding.update({
-                data : {
+                data: {
                   ...holding,
-                  institution_price_as_of : holding.institution_price_as_of ? new Date(holding.institution_price_as_of) : null,
-                  institution_price_datetime : holding.institution_price_datetime ?  new Date(holding.institution_price_datetime) : null
-                  
+                  institution_price_as_of: holding.institution_price_as_of ? new Date(holding.institution_price_as_of) : null,
+                  institution_price_datetime: holding.institution_price_datetime ? new Date(holding.institution_price_datetime) : null
+
                 },
-                where : {id : isHoldingExists.id}
+                where: { id: isHoldingExists.id }
               })
             }
-            else{
+            else {
               await this.prisma.investmentHolding.create({
-                data : {
+                data: {
                   ...holding,
-                  institution_price_as_of : holding.institution_price_as_of ? new Date(holding.institution_price_as_of) : null,
-                  institution_price_datetime : holding.institution_price_datetime ?  new Date(holding.institution_price_datetime) : null
+                  institution_price_as_of: holding.institution_price_as_of ? new Date(holding.institution_price_as_of) : null,
+                  institution_price_datetime: holding.institution_price_datetime ? new Date(holding.institution_price_datetime) : null
                 },
               })
             }
           }
 
-          resultArray.push({
-            account_id: account.account_id,
-            item_id: itemData.id,
-            holdings : holdingsOfAccount
-          });
+          if (holdingsOfAccount.length > 0) {
+            resultArray.push({
+              account_id: account.account_id,
+              item_id: itemData.id,
+              holdings: holdingsOfAccount
+            });
+          }
         }
       }
 
@@ -330,116 +334,131 @@ export class InvestmentService {
   }
 
 
-  async fetchInvestmentHomePageData (user_id  : number){
+  async fetchInvestmentHomePageData(user_id: number) {
     try {
 
-      let investmentData : any = await this.prisma.investmentAccounts.findMany({
-        where : {user_id},
-        select : {
-          account_id : true,
-          id : true,
-          investmentHolding : {include : {investment_security : true}},
-          account_name : true
-        }, 
-    })
+      let investmentData: any = await this.prisma.investmentAccounts.findMany({
+        where: { user_id },
+        select: {
+          account_id: true,
+          id: true,
+          investmentHolding: { include: { investment_security: true } },
+          account_name: true,
+          plaidItem: true,
+        },
+      })
 
-    investmentData = investmentData.filter((acc : any) => acc.investmentHolding.length > 0)
-    
-    // Calculate total investment, profit, and loss
-    let totalInvestment = 0;
-    let totalProfit = 0;
-    let totalLoss = 0;
-    
-    investmentData.forEach((account) => {
-      account.investmentHolding.forEach((holding) => {
-        const value = holding.institution_value || 0;
-        const costBasis = holding.cost_basis || 0;
-        const quantity = holding.quantity;
-        const profitLoss = (value)- (costBasis * quantity);
-    
-        totalInvestment += costBasis * quantity;
-        if (profitLoss > 0) {
-          totalProfit += profitLoss;
-        } else {
-          totalLoss += Math.abs(profitLoss);
-        }
-      });
-    });
-    
-    // Calculate profit and loss percentages
-    const totalValue = totalInvestment + totalProfit - totalLoss;
-    const profitPercentage = (totalProfit / totalValue) * 100;
-    const lossPercentage = (totalLoss / totalValue) * 100;
-    let totalHoldings = []
-    let totalSecurities = []
-    let resultSecurityData = []
-    // Format pie chart data
-    const pieChartData = investmentData.map((account) => {
-      totalHoldings = [...totalHoldings, ...account.investmentHolding]
-      return {accountName: account.account_name,
-      value: parseFloat(account.investmentHolding.reduce(
-        (acc, holding) => acc + (holding.institution_value || 0),
-        0
-      ).toFixed(3)),}
-    }); 
-    
-    totalHoldings.map((hld) => !totalSecurities.includes(hld.security_id) && totalSecurities.push(hld.security_id))
-    
-    totalSecurities.map((security) => {
-      const allHoldings = totalHoldings.filter((hld) => hld.security_id === security);
+      investmentData = investmentData.filter((acc: any) => acc.investmentHolding.length > 0)
 
-      let totalInvestment = 0
+      if (investmentData.length === 0) {
+        throw new HttpException("Investment data not found", HttpStatus.NOT_FOUND)
+      }
+      // Calculate total investment, profit, and loss
+      let totalInvestment = 0;
       let totalProfit = 0;
-      let totalLoss = 0;      
-      let value = 0
-      let quantity = 0;
-      let costBasis = 0
-      let market_value = 0
-      let total_quantity = 0
-      allHoldings.forEach((holding) => {
-        value = holding.institution_value || 0;
-        market_value = holding.institution_price
-        costBasis = holding.cost_basis || 0;
-        quantity = holding.quantity;
-        const profitLoss = (value)- (costBasis * quantity);
-        total_quantity += quantity
-        totalInvestment += (costBasis * quantity);
-        if (profitLoss > 0) {
-          totalProfit += profitLoss;
-        } else {
-          totalLoss += Math.abs(profitLoss);
-        }
+      let totalLoss = 0;
+
+      investmentData.forEach((account) => {
+        account.investmentHolding.forEach((holding) => {
+          const value = holding.institution_value || 0;
+          const costBasis = holding.cost_basis || 0;
+          const quantity = holding.quantity;
+          const profitLoss = (value) - (costBasis * quantity);
+
+          totalInvestment += costBasis * quantity;
+          if (profitLoss > 0) {
+            totalProfit += profitLoss;
+          } else {
+            totalLoss += Math.abs(profitLoss);
+          }
+        });
       });
 
-      totalInvestment = parseFloat(totalInvestment.toFixed(2))
-      market_value = parseFloat(market_value.toFixed(2))
-      totalProfit = parseFloat(totalProfit.toFixed(2))
-      totalLoss = parseFloat(totalLoss.toFixed(2))
-      total_quantity = parseFloat(total_quantity.toFixed(2))
-      const obj = { 
-        security_id : security,
-        name : allHoldings[0].investment_security.name,
-        totalInvestment,
-        market_value,
-        total_quantity,
-        totalProfit,
-        totalLoss,
+      // Calculate profit and loss percentages
+      const totalValue = totalInvestment + totalProfit - totalLoss;
+      const profitPercentage = (totalProfit / totalValue) * 100;
+      const lossPercentage = (totalLoss / totalValue) * 100;
+      let totalHoldings = []
+      let totalSecurities = []
+      let resultSecurityData = []
+      // Format pie chart data
+
+      const pieChartData = [
+        { "label": "Total Investment", "value": totalInvestment },
+        { "label": "Profit Percentage", "value": profitPercentage },
+        { "label": "Loss Percentage", "value": lossPercentage }
+      ]
+
+
+
+      investmentData.map((account) => {
+        totalHoldings = [...totalHoldings, ...account.investmentHolding]
+      });
+
+      totalHoldings.map((hld) => !totalSecurities.includes(hld.security_id) && totalSecurities.push(hld.security_id))
+
+      totalSecurities.map((security) => {
+        const allHoldings = totalHoldings.filter((hld) => hld.security_id === security);
+
+        let totalInvestment = 0
+        let totalProfit = 0;
+        let totalLoss = 0;
+        let value = 0
+        let quantity = 0;
+        let costBasis = 0
+        let market_value = 0
+        let total_quantity = 0
+        allHoldings.forEach((holding) => {
+          value = holding.institution_value || 0;
+          market_value = holding.institution_price
+          costBasis = holding.cost_basis || 0;
+          quantity = holding.quantity;
+          const profitLoss = (value) - (costBasis * quantity);
+          total_quantity += quantity
+          totalInvestment += (costBasis * quantity);
+          if (profitLoss > 0) {
+            totalProfit += profitLoss;
+          } else {
+            totalLoss += Math.abs(profitLoss);
+          }
+        });
+
+        totalInvestment = parseFloat(totalInvestment.toFixed(2))
+        market_value = parseFloat(market_value.toFixed(2))
+        totalProfit = parseFloat(totalProfit.toFixed(2))
+        totalLoss = parseFloat(totalLoss.toFixed(2))
+        total_quantity = parseFloat(total_quantity.toFixed(2))
+        const obj = {
+          security_id: security,
+          name: allHoldings[0].investment_security.name,
+          totalInvestment,
+          market_value,
+          total_quantity,
+          totalProfit,
+          totalLoss,
+        }
+
+        resultSecurityData.push(obj)
+
+      })
+
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: "Investment data fetched succssfully",
+        data: {
+          total_investment: parseFloat(totalInvestment.toFixed(3)),
+          profit_percentage: parseFloat(profitPercentage.toFixed(3)),
+          profit_amount: parseFloat(totalProfit.toFixed(3)),
+          loss_percentage: parseFloat(lossPercentage.toFixed(3)),
+          loss_amount: parseFloat(totalLoss.toFixed(3)),
+          pie_chart_data: pieChartData,
+          resultSecurityData,
+        }
       }
 
-      resultSecurityData.push(obj)
+        ;
 
-    })
-
-   return {
-      total_investment: parseFloat(totalInvestment.toFixed(3)),
-      profit_percentage: parseFloat(profitPercentage.toFixed(3)),
-      profit_amount: parseFloat(totalProfit.toFixed(3)),
-      loss_percentage: parseFloat(lossPercentage.toFixed(3)),
-      loss_amount: parseFloat(totalLoss.toFixed(3)),
-      pie_chart_data: pieChartData,
-      resultSecurityData
-    };
-              
 
     } catch (error) {
       if (error instanceof HttpException) {
@@ -449,12 +468,12 @@ export class InvestmentService {
     }
   }
 
-  async fetchAllInvestmentCategories () {
+  async fetchAllInvestmentCategories() {
     try {
       const investmentCategories = await this.prisma.investmentCategories.findMany({
-        select : {
-          name : true,
-          id : true
+        select: {
+          name: true,
+          id: true
         }
       });
       return {
@@ -470,11 +489,11 @@ export class InvestmentService {
       throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
-  async addUserInvestment(data : CreateManualInvestmentDto, user_id : number){
+  async addUserInvestment(data: CreateManualInvestmentDto, user_id: number) {
     try {
       const isCategoryExists = await this.prisma.investmentCategories.findUnique({
         where: {
-          id :data.categoryId
+          id: data.categoryId
         }
       })
 
@@ -485,13 +504,13 @@ export class InvestmentService {
         )
       }
       const newInvestment = await this.prisma.manualInvestments.create({
-        data : {
-          amount : data.amount,
-          currency : data.currency,
-          name : data.name,
-          price : data.price,
-          quantity : data.quantity,
-          category_id : data.categoryId,
+        data: {
+          amount: data.amount,
+          currency: data.currency,
+          name: data.name,
+          price: data.price,
+          quantity: data.quantity,
+          category_id: data.categoryId,
           user_id
         }
       })
