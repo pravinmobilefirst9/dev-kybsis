@@ -11,20 +11,23 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
         let responseObject: any = {}
         let message = exception.response.message
-
+        let data = exception.response.data || {} 
+              
         // Check for DTO error
         if (Array.isArray(message)) {
             responseObject.message = exception.response.message[0]
         }
-        else {
+        else if (!message) {
             responseObject.message = exception.response
         }
+        
 
         responseObject = {
             success: false,
             statusCode : status,
+            message,
             ...responseObject,
-            data:{}
+            data
            
         }
         response

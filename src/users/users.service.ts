@@ -131,18 +131,23 @@ export class UsersService {
         }
       });
       if (!user) {
-        throw new HttpException('Invalid email or password', HttpStatus.UNAUTHORIZED);
-      }
-      if (!user.active) {
-        throw new HttpException('User email is not verified. Please verify your email before login.', HttpStatus.FORBIDDEN);
+        throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
       }
       const passwordMatches = await bcrypt.compare(payload.password, user.password);
       if (!passwordMatches) {
         throw new HttpException('Invalid email or password',
-          HttpStatus.UNAUTHORIZED // 401 - Unauthorized
+        HttpStatus.UNAUTHORIZED // 401 - Unauthorized
         );
       }
-
+      
+      if (!user.active) {
+        throw new HttpException({
+          message : 'User email is not verified. Please verify your email before login.',
+          data : {
+            active : false
+          }
+        }, HttpStatus.FORBIDDEN);
+      }
       const jwtPayload = {
         user_id: user.id, role: user.user_role
       };
@@ -394,7 +399,7 @@ export class UsersService {
           dateofbirth: new Date(profileData.date_of_birth),
           gender: profileData.gender,
           phonenumber: profileData.phone_number,
-          zipcode : profileData.zip_code,
+          zipcode : profileData.zipcode,
           user: { connect: { id: user_id } }, // Optional: Connect user_id to UserDetails
         },
         update: {
@@ -402,7 +407,7 @@ export class UsersService {
           lastname: profileData.lastname,
           dateofbirth: new Date(profileData.date_of_birth),
           gender: profileData.gender,
-          zipcode : profileData.zip_code,
+          zipcode : profileData.zipcode,
           phonenumber: profileData.phone_number,
         },
       });
