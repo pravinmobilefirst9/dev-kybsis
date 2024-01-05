@@ -68,6 +68,9 @@ export class AssetsService {
         where: {
           PlaidItem: { user_id },
         },
+        include : {
+          PlaidItem : true
+        }
       });
 
       for (const assetItem of plaidAssetItems) {
@@ -75,7 +78,7 @@ export class AssetsService {
           const response = await this.transactionService.getAssetsReport(
             assetItem.asset_report_token,
           );
-
+      
           let data = response.data;
           // Add the data into Asset Account table
           data.report.items.map((reportItem: any) => {
@@ -97,6 +100,7 @@ export class AssetsService {
                 subtype: account.subtype,
                 type: account.type,
                 user_id: user_id,
+                plaid_asset_item_id : assetItem.id
               };
 
               if (isAccountExists) {
@@ -372,6 +376,50 @@ export class AssetsService {
     }
   }
 
+
+  async getPlaidAssets(user_id : number){
+    try {
+      const plaidAssets = await this.prismaClient.plaidAssetItem.findMany({
+        where : {user_id},
+        select : {
+          id : true,
+          PlaidItem : {
+            select : {
+              id : true,
+              ins_name : true,
+              ins_id : true,
+            }
+          },
+          AssetAccount : {
+            where: {user_id},
+            select : {
+              id : true,
+              balance_available : true,
+              balance_current : true,
+              name : true,
+              account_id : true,
+              type : true,
+              subtype : true,
+              mask : true,
+            }
+          }
+        },
+      })
+      console.log({plaidAssets});
+      
+
+      return plaidAssets
+      
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error.toString(),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
   create(createAssetDto: CreateAssetDto) {
     return 'This action adds a new asset';
   }

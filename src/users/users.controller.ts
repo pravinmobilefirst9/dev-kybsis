@@ -36,6 +36,11 @@ export class UsersController {
       const { email, otp } = body;
       return await this.usersService.verifyOTP(email, otp);
   }
+  @Post('verify-login-otp')
+  async verifyLoginOTP(@Body() body: VerifyOtpDTO) {
+      const { email, otp } = body;
+      return await this.usersService.verifyLoginOTP(email, otp);
+  }
 
   @Post('resend_otp')
   async resendOTP(@Body() body: ResendOTP) {

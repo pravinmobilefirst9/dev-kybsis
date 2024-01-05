@@ -38,7 +38,7 @@ export class UsersService {
       });
 
       if (alreadyExists) {
-        throw new HttpException('Email already exists', HttpStatus.CONFLICT);
+        throw new HttpException('Email already exist, We can help you with login', HttpStatus.CONFLICT);
       }
 
       const hash_password = await bcrypt.hash(createUserDto.password, 12);
@@ -259,7 +259,7 @@ export class UsersService {
       // Update user as OTP is verified
       await this.prisma.user.update({
         where: { email },
-        data: { otp_verified: true, active: true },
+        data: { otp_verified: true },
       });
 
       return {
@@ -269,6 +269,84 @@ export class UsersService {
         message: 'OTP verified successfully'
 
       };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+  async verifyLoginOTP (email : string, otp : string){
+    try {
+      const user = await this.prisma.user.findUnique({ where: { email },
+        select : {
+          id : true,
+          user_role: true,
+          email: true,
+          active: true,
+          user_otp_createdAt : true,
+          user_otp : true,
+          device_token : true
+        }
+      });
+      
+      if (!user) {
+        throw new HttpException(
+          "User not found"
+          ,
+          HttpStatus.NOT_FOUND
+        )
+      }
+
+      if (!user.user_otp_createdAt) {
+        throw new HttpException(
+          'OTP is expired',
+          HttpStatus.NOT_ACCEPTABLE
+        )
+      }
+
+      if (user.user_otp !== parseInt(otp)) {
+        throw new HttpException(
+          'Invalid OTP',
+          HttpStatus.NOT_ACCEPTABLE
+        )
+      }
+
+      
+      const otpCreatedAt = new Date(user.user_otp_createdAt);
+      const timeDifference = new Date().getTime() - otpCreatedAt.getTime();
+      const otpValidityDuration = 10 * 60 * 1000;
+
+      if (timeDifference > otpValidityDuration) {
+        throw new HttpException("OTP is expired", HttpStatus.NOT_ACCEPTABLE);
+      }
+
+      // Update user as OTP is verified
+      await this.prisma.user.update({
+        where: { email },
+        data: { otp_verified: true, active: true },
+      });
+
+      const jwtPayload = {
+        user_id: user.id, role: user.user_role
+      };
+
+
+       const token = await this.jwtService.signAsync(jwtPayload);
+
+       delete user.user_otp_createdAt
+       delete user.user_otp
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        data: {
+          ...user,
+          token,
+        },
+        message: "Login successfull"
+      };
+
     } catch (error) {
       if (error instanceof HttpException) {
         throw error

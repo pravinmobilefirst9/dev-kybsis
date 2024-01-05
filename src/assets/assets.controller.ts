@@ -82,6 +82,14 @@ export class AssetsController {
     return await this.assetsService.addUserAssetsDetails(data, user_id)
   }
 
+  @Post("get_plaid_assets")
+  @UseGuards(AuthGuard)
+  async getPlaidAssets( @Req() request: any,
+  ){
+    const { user_id } = request.auth;
+    return await this.assetsService.getPlaidAssets(user_id)
+  }
+
   @Post()
   create(@Body() createAssetDto: CreateAssetDto) {
     return this.assetsService.create(createAssetDto);

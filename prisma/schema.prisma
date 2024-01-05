@@ -372,11 +372,14 @@ model PlaidAssetItem {
   user               User     @relation(fields: [user_id], references: [id])
 
   PlaidItem PlaidItem @relation(fields: [plaid_item_id], references: [id])
+
+  AssetAccount AssetAccount[]
 }
 
 model AssetAccount {
   id                       Int                      @id @default(autoincrement())
   account_id               String                   @unique
+  plaid_asset_item_id      Int
   balance_available        Decimal?
   balance_current          Decimal
   iso_currency_code        String?
@@ -392,6 +395,7 @@ model AssetAccount {
   created_at               DateTime                 @default(now())
   updated_at               DateTime                 @updatedAt
   user                     User                     @relation(fields: [user_id], references: [id])
+  plaid_asset_item         PlaidAssetItem           @relation(fields: [plaid_asset_item_id], references: [id])
   historicalBalances       AssetHistoricalBalance[]
   transactions             AssetTransaction[]
 }
