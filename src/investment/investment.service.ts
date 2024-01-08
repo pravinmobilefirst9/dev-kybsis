@@ -505,13 +505,14 @@ export class InvestmentService {
       }
       const newInvestment = await this.prisma.manualInvestments.create({
         data: {
+          current_price : data.currentPrice,
           amount: data.amount,
           currency: data.currency,
           name: data.name,
           price: data.price,
           quantity: data.quantity,
           category_id: data.categoryId,
-          user_id
+          user_id,
         }
       })
 

@@ -309,16 +309,17 @@ model InvestmentCategories {
 }
 
 model ManualInvestments {
-  id          Int      @id @default(autoincrement())
-  name        String
-  amount      Float
-  currency    String
-  price       Int
-  quantity    Int
-  user_id     Int
-  category_id Int
-  created_at  DateTime @default(now())
-  updated_at  DateTime @default(now())
+  id            Int      @id @default(autoincrement())
+  name          String
+  amount        Float
+  currency      String
+  price         Int
+  current_price Int
+  quantity      Int
+  user_id       Int
+  category_id   Int
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now())
 
   user               User                 @relation(fields: [user_id], references: [id])
   investmentCategory InvestmentCategories @relation(fields: [category_id], references: [id])
