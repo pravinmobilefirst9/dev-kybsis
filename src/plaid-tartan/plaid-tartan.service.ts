@@ -37,16 +37,16 @@ export class PlaidTartanService {
         throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
       }
 
-      const institution_details = await this.transactionService.getInstitutionDetails(createPlaidTartanDto.institution_id);
+      // const institution_details = await this.transactionService.getInstitutionDetails(createPlaidTartanDto.institution_id);
       
       await this.prisma.plaidItem.create({
         data: {
-          public_token: createPlaidTartanDto.public_token,
+          public_token: "none",
           access_token: createPlaidTartanDto.access_token,
           plaid_item_id: createPlaidTartanDto.plaid_item_id,
           ins_id: createPlaidTartanDto.institution_id,
           user_id: user_id, // Connect the Plaid item to the user
-          ins_name : institution_details.data.name
+          ins_name : createPlaidTartanDto.institution_name
         },
       });
 
