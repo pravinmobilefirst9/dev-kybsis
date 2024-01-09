@@ -20,8 +20,6 @@ export class PlaidTartanService {
       const existingPlaidItem = await this.prisma.plaidItem.findFirst({
         where: {
           access_token: createPlaidTartanDto.access_token,
-          plaid_item_id: createPlaidTartanDto.plaid_item_id,
-          user_id: user_id,
         },
       });
 
@@ -41,7 +39,7 @@ export class PlaidTartanService {
 
       const institution_details = await this.transactionService.getInstitutionDetails(createPlaidTartanDto.institution_id);
       
-      const newPlaidItem = await this.prisma.plaidItem.create({
+      await this.prisma.plaidItem.create({
         data: {
           public_token: createPlaidTartanDto.public_token,
           access_token: createPlaidTartanDto.access_token,
@@ -52,9 +50,17 @@ export class PlaidTartanService {
         },
       });
 
-      return newPlaidItem;
+      return  {
+        success: true,
+        statusCode: HttpStatus.CREATED,
+        message: "Access token registered successfully!",
+        data: {}
+      };
     } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
 

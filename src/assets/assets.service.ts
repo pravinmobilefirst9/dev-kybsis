@@ -21,9 +21,9 @@ export class AssetsService {
           user_id,
         },
       });
-
+      
       if (plaidItems.length === 0) {
-        return { status: 'failure', message: 'Access tokens are empty' };
+        throw new HttpException("Access token is not generated for this user", HttpStatus.BAD_REQUEST);
       }
       for (const plaidItem of plaidItems) {
         try {
@@ -33,9 +33,9 @@ export class AssetsService {
           );
           const { asset_report_token } = response.data;
 
-          const isExists = await this.prismaClient.plaidAssetItem.findFirst({
+          const isExists = await this.prismaClient.plaidAssetItem.findUnique({
             where: {
-              asset_report_token: asset_report_token,
+              plaid_item_id: plaidItem.id,
             },
           });
           if (!isExists) {
@@ -44,6 +44,17 @@ export class AssetsService {
                 asset_report_token,
                 plaid_item_id: plaidItem.id,
                 user_id,
+              },
+            });
+          }
+          else{
+            await this.prismaClient.plaidAssetItem.update({
+              where : {
+                plaid_item_id: plaidItem.id,
+              },
+              data: {
+                asset_report_token,
+                user_id
               },
             });
           }
@@ -170,7 +181,12 @@ export class AssetsService {
         }
       }
 
-      return reports;
+      return  {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: "Assets data imported successfully",
+        data: {}
+      };;
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -405,9 +421,6 @@ export class AssetsService {
           }
         },
       })
-      console.log({plaidAssets});
-      
-
       return plaidAssets
       
     } catch (error) {

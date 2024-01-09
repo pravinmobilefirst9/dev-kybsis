@@ -40,7 +40,7 @@ export class AssetsController {
     }
   }
 
-  @Get('/get_assets_details')
+  @Get('get_assets_details')
   @UseGuards(AuthGuard)
   async getAssetDetails(@Req() req: any) {
     const { user_id } = req.auth
