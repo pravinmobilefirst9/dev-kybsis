@@ -14,13 +14,8 @@ export class PlaidTartanController {
     @Body() createPlaidTartanDto: CreatePlaidTartanDto, 
     @Req() req : any
   ) {
-    try {
       const {user_id} = req.auth     
-      const result = await this.plaidTartanService.addPlaidItems(createPlaidTartanDto, user_id);
-      return { message: result };
-    } catch (error) {
-      throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+      return await this.plaidTartanService.addPlaidItems(createPlaidTartanDto, user_id);
   }
 
 

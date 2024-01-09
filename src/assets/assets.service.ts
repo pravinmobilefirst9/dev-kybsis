@@ -228,7 +228,7 @@ export class AssetsService {
                   user_id: true,
                   asset_id: true,
                   asset_sub_id: true,
-                  field_id: true,
+                  asset_field : {select : {id : true, name : true}},
                   value: true,
                 },
               },
@@ -421,7 +421,13 @@ export class AssetsService {
           }
         },
       })
-      return plaidAssets
+
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: 'Plaid assets fetched successfully',
+        data: plaidAssets,
+      };
       
     } catch (error) {
       if (error instanceof HttpException) {
