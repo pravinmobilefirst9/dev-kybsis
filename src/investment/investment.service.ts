@@ -168,8 +168,9 @@ export class InvestmentService {
 
     return {
       message: 'Investment details, securities, accounts are sync successfully',
-      status: 'success',
-      data: resultArray,
+      success: true,
+      statusCode: HttpStatus.OK,
+      data: {},
     };
   }
 
@@ -323,7 +324,12 @@ export class InvestmentService {
         }
       }
 
-      return resultArray;
+      return {
+        message: 'Investment holdings are sync successfully',
+        success: true,
+        statusCode: HttpStatus.OK,
+        data: {},
+      };
 
     } catch (error) {
       if (error instanceof HttpException) {
@@ -336,7 +342,6 @@ export class InvestmentService {
 
   async fetchInvestmentHomePageData(user_id: number) {
     try {
-
       let investmentData: any = await this.prisma.investmentAccounts.findMany({
         where: { user_id },
         select: {
@@ -505,14 +510,14 @@ export class InvestmentService {
       }
       const newInvestment = await this.prisma.manualInvestments.create({
         data: {
-          current_price : data.currentPrice,
-          amount: data.amount,
+          current_price: data.currentPrice,
           currency: data.currency,
           name: data.name,
-          price: data.price,
           quantity: data.quantity,
           category_id: data.categoryId,
           user_id,
+          code : data.investmentCode,
+          purchase_price : data.purchasePrice,
         }
       })
 

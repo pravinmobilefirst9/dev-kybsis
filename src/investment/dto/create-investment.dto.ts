@@ -4,11 +4,10 @@ export class CreateManualInvestmentDto {
     @IsNotEmpty({ message: 'Name cannot be empty' })
     @IsString({ message: 'Name must be a string' })
     name: string;
-  
-    @IsNotEmpty({ message: 'Amount cannot be empty' })
-    @IsNumber({}, { message: 'Amount must be a number' })
-    @IsPositive({ message: 'Amount must be a positive number' })
-    amount: number;
+    
+    @IsNotEmpty({ message: 'Code cannot be empty' })
+    @IsString({ message: 'Code must be a string' })
+    investmentCode: string;
   
     @IsNotEmpty({ message: 'Currency cannot be empty' })
     @IsString({ message: 'Currency must be a string' })
@@ -17,7 +16,7 @@ export class CreateManualInvestmentDto {
     @IsNotEmpty({ message: 'Price cannot be empty' })
     @IsInt({ message: 'Price must be an integer' })
     @Min(0, { message: 'Price must be greater than or equal to 0' })
-    price: number;
+    purchasePrice: number;
     
     @IsNotEmpty({ message: 'current price cannot be empty' })
     @IsInt({ message: 'current price must be an integer' })
