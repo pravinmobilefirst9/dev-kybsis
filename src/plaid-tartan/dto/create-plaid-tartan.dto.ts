@@ -9,7 +9,8 @@ export class CreatePlaidTartanDto {
   @IsNotEmpty({ message: 'Access token cannot be empty' })
   access_token: string;
 
-  @IsUUID('4', { message: 'Invalid institution ID format' })
+  @IsString({ message: 'Institution id must be a string' })
+  @IsNotEmpty({ message: 'Institution id cannot be empty' })
   institution_id: string;
 
   @IsString({ message: 'Institution name must be a string' })
