@@ -64,12 +64,16 @@ export class AssetsService {
       }
 
       return {
-        success: 'success',
-        message: 'Plaid asset item added successfully',
+        success: true,
+        statusCode: HttpStatus.CREATED,
+        message: 'Asset report token generated successfully',
+        data: {}
       };
     } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)    }
   }
 
   async importAssetReports(user_id: number) {
@@ -188,8 +192,10 @@ export class AssetsService {
         data: {}
       };;
     } catch (error) {
-      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)    }
   }
 
   async getAssetDetails(userId: number) {
@@ -240,7 +246,7 @@ export class AssetsService {
         success: true,
         statusCode: HttpStatus.OK,
         message: 'Assets fetched successfully',
-        data: data,
+        data: data.filter((asset) => asset.assetSubType.length !== 0),
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -254,13 +260,21 @@ export class AssetsService {
   }
   async getAssetsLists() {
     try {
-      return await this.prismaClient.assetType.findMany({
+      const assetList =  await this.prismaClient.assetType.findMany({
         select: {
           name: true,
           description: true,
           id: true,
         },
       });
+
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: 'Assets list fetched successfully',
+        data: assetList,
+      };
+
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -278,7 +292,7 @@ export class AssetsService {
         throw new HttpException('Asset id not found', HttpStatus.BAD_REQUEST);
       }
 
-      return await this.prismaClient.assetSubType.findMany({
+      const assetSubTypes = await this.prismaClient.assetSubType.findMany({
         where: {
           asset_id,
         },
@@ -288,6 +302,13 @@ export class AssetsService {
           description: true,
         },
       });
+
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: 'Assets list fetched successfully',
+        data: assetSubTypes
+      };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -330,6 +351,13 @@ export class AssetsService {
           asset_id: asset_id,
           asset_sub_id: asset_subtype_id,
         },
+        select : {
+          id : true,
+          asset_id : true,
+          asset_sub_id : true,
+          asset_field : {select : {name : true, id : true}},
+          value : true
+        }
       });
 
       return {

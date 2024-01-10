@@ -12,9 +12,10 @@ import { AssetsModule } from './assets/assets.module';
 import { LiabilitiesModule } from './liabilities/liabilities.module';
 import { PaymentModule } from './payment/payment.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { BudgetModule } from './budget/budget.module';
 
 @Module({
-  imports: [UsersModule, PlaidTartanModule, TransactionModule, InvestmentModule, TransactionCategoriesModule, AssetsModule, LiabilitiesModule, PaymentModule, SubscriptionModule],
+  imports: [UsersModule, PlaidTartanModule, TransactionModule, InvestmentModule, TransactionCategoriesModule, AssetsModule, LiabilitiesModule, PaymentModule, SubscriptionModule, BudgetModule],
   controllers: [AppController],
   providers: [AppService, PrismaService, AuthGuard,],
 })
