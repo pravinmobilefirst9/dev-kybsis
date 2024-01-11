@@ -385,14 +385,17 @@ export class InvestmentService {
       });
 
       // Calculate profit and loss percentages
-      const totalValue = totalInvestment + totalProfit - totalLoss;
-      const profitPercentage = (totalProfit / totalValue) * 100;
-      const lossPercentage = (totalLoss / totalValue) * 100;
+      let totalValue = totalInvestment + totalProfit - totalLoss;
+      let profitPercentage = (totalProfit / totalValue) * 100;
+      let lossPercentage = (totalLoss / totalValue) * 100;
       let totalHoldings = []
       let totalSecurities = []
       let resultSecurityData = []
       // Format pie chart data
 
+      totalInvestment = parseFloat(totalInvestment.toFixed(2));
+      profitPercentage = Math.ceil(profitPercentage)
+      lossPercentage = Math.ceil(lossPercentage)
       const pieChartData = [
         { "label": "Total Investment", "value": totalInvestment },
         { "label": "Profit Percentage", "value": profitPercentage },
