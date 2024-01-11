@@ -17,7 +17,8 @@ export class PlaidTartanService {
     user_id: number,
   ) {
     try {
-      const existingPlaidItem = await this.prisma.plaidItem.findFirst({
+      // If same access token is found in whole database then throw error
+      let  existingPlaidItem = await this.prisma.plaidItem.findFirst({
         where: {
           access_token: createPlaidTartanDto.access_token,
         },
@@ -30,26 +31,45 @@ export class PlaidTartanService {
         );
       }
 
-      const user = await this.prisma.user.findUnique({
-        where: { id: user_id },
+      let isBankExists = await this.prisma.plaidItem.findFirst({
+        where: {
+          ins_id : createPlaidTartanDto.institution_id,
+          user_id 
+        },
       });
-      if (!user) {
-        throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
+
+      // IF the Bank/Institution i.e. ins_id is already exists then update its acceess token or create a new one
+
+      if (isBankExists) {
+        // When access token changed account_id's also change
+        // Afterwords we need to wipe all data regarding invesments, institution etc.
+        await this.prisma.plaidItem.update({
+          data: {
+            public_token: "none",
+            access_token: createPlaidTartanDto.access_token,
+            plaid_item_id: createPlaidTartanDto.plaid_item_id,
+            ins_id: createPlaidTartanDto.institution_id,
+            user_id: user_id,
+            ins_name : createPlaidTartanDto.institution_name
+          },
+          where : {id : isBankExists.id}
+        });
+      }
+      else{
+        await this.prisma.plaidItem.create({
+          data: {
+            public_token: "none",
+            access_token: createPlaidTartanDto.access_token,
+            plaid_item_id: createPlaidTartanDto.plaid_item_id,
+            ins_id: createPlaidTartanDto.institution_id,
+            user_id: user_id,
+            ins_name : createPlaidTartanDto.institution_name
+          },
+        });
       }
 
       // const institution_details = await this.transactionService.getInstitutionDetails(createPlaidTartanDto.institution_id);
       
-      await this.prisma.plaidItem.create({
-        data: {
-          public_token: "none",
-          access_token: createPlaidTartanDto.access_token,
-          plaid_item_id: createPlaidTartanDto.plaid_item_id,
-          ins_id: createPlaidTartanDto.institution_id,
-          user_id: user_id, // Connect the Plaid item to the user
-          ins_name : createPlaidTartanDto.institution_name
-        },
-      });
-
       return  {
         success: true,
         statusCode: HttpStatus.CREATED,
