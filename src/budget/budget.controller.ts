@@ -1,16 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { BudgetService } from './budget.service';
 import { CreateBudgetDto } from './dto/create-budget.dto';
 import { UpdateBudgetDto } from './dto/update-budget.dto';
+import { AuthGuard } from 'src/guards/auth.guard';
+
 
 @Controller('budget')
 export class BudgetController {
   constructor(private readonly budgetService: BudgetService) {}
 
-  @Post()
-  create(@Body() createBudgetDto: CreateBudgetDto) {
-    return this.budgetService.create(createBudgetDto);
-  }
+  // @Post()
+  // create(@Body() createBudgetDto: CreateBudgetDto) {
+  //   return this.budgetService.create(createBudgetDto);
+  // }
 
   @Get()
   findAll() {
@@ -22,13 +24,22 @@ export class BudgetController {
     return this.budgetService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBudgetDto: UpdateBudgetDto) {
-    return this.budgetService.update(+id, updateBudgetDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateBudgetDto: UpdateBudgetDto) {
+  //   return this.budgetService.update(+id, updateBudgetDto);
+  // }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.budgetService.remove(+id);
+  }
+  @Post('create-budget')
+  @UseGuards(AuthGuard)
+  async addBudget(
+    @Req() request: any,
+    @Body() createBudgetDto: CreateBudgetDto,
+  ) {
+    const { user_id } = request.auth;
+    return await this.budgetService.addUserBudgetDetails(createBudgetDto, user_id);
   }
 }

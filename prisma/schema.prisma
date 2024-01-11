@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -6,19 +7,27 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
 model Collaboration {
   id              Int      @id @default(autoincrement())
   user_id         Int
   collaborator_id Int
   account_id      Int
+  budget_id       Int            // This field connects a Collaboration to a Budget
   status          Boolean
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
+
+  // Add the relation scalar field here
+  budget          Budget   @relation(fields: [budget_id], references: [id]) // This line creates the many to one relation
+
   collaborator    User     @relation("CollaboratorCollaborations", fields: [collaborator_id], references: [id])
   user            User     @relation("UserCollaborations", fields: [user_id], references: [id])
+  // ... other fields and relations
 }
-
+enum Duration  {
+    Monthly 
+    Annually
+  }
 model Budget {
   id                  Int             @id @default(autoincrement())
   user_id             Int
@@ -26,14 +35,17 @@ model Budget {
   amount              Float
   budgets_category_id Int
   account_id          Int
-  set_limit           Float
+  set_limit           Float?
   start_date          DateTime
   end_date            DateTime
   created_at          DateTime        @default(now())
   updated_at          DateTime        @default(now())
-  duration            DateTime
+  duration            Duration
+  collaborations      Collaboration[] // This line indicates that a Budget can have many Collaborations
+
   // BudgetsCategory     BudgetsCategory @relation(fields: [budgets_category_id], references: [id])
   User                User            @relation(fields: [user_id], references: [id])
+  // ... other fields and relations
 }
 // model Budget {
 //   id             Int      @id @default(autoincrement())
