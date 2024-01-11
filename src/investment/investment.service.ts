@@ -343,6 +343,20 @@ export class InvestmentService {
 
   async fetchInvestmentHomePageData(user_id: number) {
     try {
+      /*
+        holding : No of shares purchased by user
+        securities : Global shares available to all users with their current market value
+        Notes : 
+          1) holdings can contain duplicate security values when user has purchased same security
+              from multiple accounts.
+
+          If an institution changes, it doesn't necessarily mean that the security ID
+           will remain the same. Security IDs are generally unique to the specific institution's 
+           implementation of the Plaid API. If an institution changes or if you're working
+           with data from different institutions, 
+          you may encounter different security IDs for the same financial instrument.
+      */
+      // Fetch all investment data of user with its holdings
       let investmentData: any = await this.prisma.investmentAccounts.findMany({
         where: { user_id },
         select: {
@@ -363,7 +377,7 @@ export class InvestmentService {
       let totalInvestment = 0;
       let totalProfit = 0;
       let totalLoss = 0;
-
+      
       investmentData.forEach((account) => {
         account.investmentHolding.forEach((holding) => {
           // value = current investment market value * no of quantity held by user
@@ -396,11 +410,17 @@ export class InvestmentService {
       totalInvestment = parseFloat(totalInvestment.toFixed(2));
       profitPercentage = Math.ceil(profitPercentage)
       lossPercentage = Math.ceil(lossPercentage)
-      const pieChartData = [
-        { "label": "Total Investment", "value": totalInvestment },
-        { "label": "Profit Percentage", "value": profitPercentage },
-        { "label": "Loss Percentage", "value": lossPercentage }
-      ]
+      // const pieChartData = [
+      //   { "label": "Total Investment", "value": totalInvestment },
+      //   { "label": "Profit Percentage", "value": profitPercentage },
+      //   { "label": "Loss Percentage", "value": lossPercentage }
+      // ]
+
+      const pieChartData = {
+        totalInvestment,
+        profitPercentage,
+        lossPercentage
+      }
 
 
 

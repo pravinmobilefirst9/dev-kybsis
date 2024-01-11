@@ -268,10 +268,10 @@ model InvestmentTransactions {
   price                     Float
   quantity                  Decimal
   security_id               String
-  subtype                   String
-  type                      String
+  subtype                   String?
+  type                      String?
   unofficial_currency_code  String?
-  platform                  String             @default("plaid")
+  platform                  String?            @default("plaid")
   created_at                DateTime           @default(now())
   updated_at                DateTime           @default(now())
   // References
