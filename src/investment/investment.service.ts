@@ -176,6 +176,7 @@ export class InvestmentService {
 
   async syncInvestmentHoldingDetails(user_id: number) {
     try {
+      // Get access tokens of that users
       const plaid_items = await this.prisma.plaidItem.findMany({
         where: { user_id },
       });
@@ -365,9 +366,13 @@ export class InvestmentService {
 
       investmentData.forEach((account) => {
         account.investmentHolding.forEach((holding) => {
+          // value = current investment market value * no of quantity held by user
           const value = holding.institution_value || 0;
+          // cost basis = user has spend money for 1 share
           const costBasis = holding.cost_basis || 0;
+          // quantity = no of shares holding by users
           const quantity = holding.quantity;
+          // current investment value - user cost basis * quantity
           const profitLoss = (value) - (costBasis * quantity);
 
           totalInvestment += costBasis * quantity;
@@ -400,8 +405,10 @@ export class InvestmentService {
         totalHoldings = [...totalHoldings, ...account.investmentHolding]
       });
 
+      // total securities held by users
       totalHoldings.map((hld) => !totalSecurities.includes(hld.security_id) && totalSecurities.push(hld.security_id))
 
+      // Calulate profit loss total investment and their percentage for each security held by user
       totalSecurities.map((security) => {
         const allHoldings = totalHoldings.filter((hld) => hld.security_id === security);
 
@@ -413,6 +420,7 @@ export class InvestmentService {
         let costBasis = 0
         let market_value = 0
         let total_quantity = 0
+        let portfolio_value = 0
         allHoldings.forEach((holding) => {
           value = holding.institution_value || 0;
           market_value = holding.institution_price
@@ -427,12 +435,15 @@ export class InvestmentService {
             totalLoss += Math.abs(profitLoss);
           }
         });
-
+        
+        // Convert all values to 2 decimal : ex. 2.34
         totalInvestment = parseFloat(totalInvestment.toFixed(2))
         market_value = parseFloat(market_value.toFixed(2))
+        portfolio_value = market_value * total_quantity
         totalProfit = parseFloat(totalProfit.toFixed(2))
         totalLoss = parseFloat(totalLoss.toFixed(2))
         total_quantity = parseFloat(total_quantity.toFixed(2))
+        let growth_percentage = 25
         const obj = {
           security_id: security,
           name: allHoldings[0].investment_security.name,
@@ -441,6 +452,8 @@ export class InvestmentService {
           total_quantity,
           totalProfit,
           totalLoss,
+          growth_percentage,
+          portfolio_value
         }
 
         resultSecurityData.push(obj)
@@ -460,11 +473,7 @@ export class InvestmentService {
           pie_chart_data: pieChartData,
           resultSecurityData,
         }
-      }
-
-        ;
-
-
+      };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error
