@@ -341,7 +341,7 @@ export class InvestmentService {
   }
 
 
-  async fetchInvestmentHomePageData(user_id: number) {
+  async fetchPlaidInvestmentHomePageData(user_id: number) {
     try {
       /*
         holding : No of shares purchased by user
@@ -388,7 +388,7 @@ export class InvestmentService {
           const quantity = holding.quantity;
           // current investment value - user cost basis * quantity
           const profitLoss = (value) - (costBasis * quantity);
-
+          
           totalInvestment += costBasis * quantity;
           if (profitLoss > 0) {
             totalProfit += profitLoss;
@@ -417,7 +417,7 @@ export class InvestmentService {
       // ]
 
       const pieChartData = {
-        totalInvestment,
+        total_investment : totalInvestment,
         profitPercentage,
         lossPercentage
       }
@@ -462,7 +462,7 @@ export class InvestmentService {
         // Convert all values to 2 decimal : ex. 2.34
         totalInvestment = parseFloat(totalInvestment.toFixed(2))
         market_value = parseFloat(market_value.toFixed(2))
-        portfolio_value = market_value * total_quantity
+        portfolio_value = parseFloat((market_value * total_quantity).toFixed(2))
         totalProfit = parseFloat(totalProfit.toFixed(2))
         totalLoss = parseFloat(totalLoss.toFixed(2))
         total_quantity = parseFloat(total_quantity.toFixed(2))
@@ -486,7 +486,7 @@ export class InvestmentService {
       return {
         success: true,
         statusCode: HttpStatus.OK,
-        message: "Investment data fetched succssfully",
+        message: "Plaid investment data fetched succssfully",
         data: {
           total_investment: parseFloat(totalInvestment.toFixed(3)),
           profit_percentage: parseFloat(profitPercentage.toFixed(3)),
@@ -505,6 +505,105 @@ export class InvestmentService {
     }
   }
 
+
+  async fetchInvestmentManualData(user_id : number){
+    try {
+      const allManualInvestments = await this.prisma.manualInvestments.findMany({
+        where : {
+          user_id
+        }
+      })
+
+      // Calculate total investment, profit, and loss
+      let total_investment = 0;
+      let totalProfit = 0;
+      let totalLoss = 0;
+      let investmentsResult = []
+      allManualInvestments.forEach((investment) => {
+        const marketPrice = investment.current_price || 0;
+        const userPurchasePrice = investment.purchase_price;
+        const quantity = investment.quantity;
+        const profitLoss = (marketPrice * quantity) - (userPurchasePrice * quantity)
+
+        total_investment += (userPurchasePrice * quantity);
+        if (profitLoss > 0) {
+          totalProfit += profitLoss;
+        } else {
+          totalLoss += Math.abs(profitLoss);          
+        }
+      })
+      
+      let totalValue = total_investment + totalProfit - totalLoss;
+      let profitPercentage = Math.ceil((totalProfit / totalValue) * 100);
+      let lossPercentage = Math.ceil((totalLoss / totalValue) * 100);
+      
+      const pieChartData = {
+        total_investment,
+        profitPercentage,
+        lossPercentage,
+        totalProfit,
+        totalLoss
+      }
+
+      allManualInvestments.map((investment) => {
+        let market_value = investment.current_price || 0;
+        let userPurchasePrice = investment.purchase_price;
+        let total_quantity = investment.quantity;
+        let profitLoss = (market_value * total_quantity) - (userPurchasePrice * total_quantity)
+        let totalInvestment = (userPurchasePrice * total_quantity);
+        let name = investment.name
+
+        market_value = parseFloat(market_value.toFixed(2))
+        userPurchasePrice = parseFloat(userPurchasePrice.toFixed(2))
+        total_quantity = parseFloat(total_quantity.toFixed(2))
+        profitLoss = parseFloat(profitLoss.toFixed(2))
+        let growth_percentage = 25
+        
+        let portfolio_value = market_value * total_quantity
+        
+        let profitLossPercentage = Math.ceil((Math.abs(profitLoss) / totalInvestment) * 100)
+        totalInvestment = parseFloat(totalInvestment.toFixed(2))
+
+        let profitLossObj = {
+          totalProfit : 0,
+          totalLoss : 0
+        }
+        if (profitLoss > 0) {
+          profitLossObj.totalProfit = profitLoss;
+        }else{
+          profitLossObj.totalLoss = profitLoss
+        }
+
+        investmentsResult.push({
+          growth_percentage,
+          market_value,
+          totalInvestment,
+          total_quantity,
+          name,
+          ...profitLossObj,
+          portfolio_value,
+          profitLossPercentage
+        })
+
+      })
+
+
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: "Manual investment data fetched succssfully",
+        data: {
+          pie_chart_data: pieChartData,
+          allInvestmentResult :investmentsResult
+
+        }
+      };    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
   async fetchAllInvestmentCategories() {
     try {
       const investmentCategories = await this.prisma.investmentCategories.findMany({

@@ -31,11 +31,19 @@ export class InvestmentController {
       return result;
   }
 
-  @Get("get_investment_data")
+  @Get("get_plaid_investment_data")
   @UseGuards(AuthGuard)
   async getInvestementHomePageData(@Req() req : any){
     const {user_id} = req.auth     
-    const result = await this.investmentService.fetchInvestmentHomePageData(user_id);
+    const result = await this.investmentService.fetchPlaidInvestmentHomePageData(user_id);
+    return result;
+  }  
+
+  @Get("get_manual_investment_data")
+  @UseGuards(AuthGuard)
+  async getManualInvestementHomePageData(@Req() req : any){
+    const {user_id} = req.auth     
+    const result = await this.investmentService.fetchInvestmentManualData(user_id);
     return result;
   }  
 
