@@ -341,7 +341,7 @@ export class InvestmentService {
   }
 
 
-  async fetchInvestmentHomePageData(user_id: number) {
+  async fetchPlaidInvestmentHomePageData(user_id: number) {
     try {
       /*
         holding : No of shares purchased by user
@@ -388,7 +388,7 @@ export class InvestmentService {
           const quantity = holding.quantity;
           // current investment value - user cost basis * quantity
           const profitLoss = (value) - (costBasis * quantity);
-
+          
           totalInvestment += costBasis * quantity;
           if (profitLoss > 0) {
             totalProfit += profitLoss;
@@ -486,7 +486,7 @@ export class InvestmentService {
       return {
         success: true,
         statusCode: HttpStatus.OK,
-        message: "Investment data fetched succssfully",
+        message: "Plaid investment data fetched succssfully",
         data: {
           total_investment: parseFloat(totalInvestment.toFixed(3)),
           profit_percentage: parseFloat(profitPercentage.toFixed(3)),
@@ -505,6 +505,94 @@ export class InvestmentService {
     }
   }
 
+
+  async fetchInvestmentManualData(user_id : number){
+    try {
+      const allManualInvestments = await this.prisma.manualInvestments.findMany({
+        where : {
+          user_id
+        }
+      })
+
+      // Calculate total investment, profit, and loss
+      let totalInvestment = 0;
+      let totalProfit = 0;
+      let totalLoss = 0;
+      let investmentsResult = []
+      allManualInvestments.forEach((investment) => {
+        const marketPrice = investment.current_price || 0;
+        const userPurchasePrice = investment.purchase_price;
+        const quantity = investment.quantity;
+        const profitLoss = (marketPrice * quantity) - (userPurchasePrice * quantity)
+
+        totalInvestment += (userPurchasePrice * quantity);
+        if (profitLoss > 0) {
+          totalProfit += profitLoss;
+        } else {
+          totalLoss += Math.abs(profitLoss);          
+        }
+      })
+      
+      let totalValue = totalInvestment + totalProfit - totalLoss;
+      let profitPercentage = Math.ceil((totalProfit / totalValue) * 100);
+      let lossPercentage = Math.ceil((totalLoss / totalValue) * 100);
+      
+      const pieChartData = {
+        totalInvestment,
+        profitPercentage,
+        lossPercentage,
+        totalProfit,
+        totalLoss
+      }
+
+      allManualInvestments.map((investment) => {
+        let marketPrice = investment.current_price || 0;
+        let userPurchasePrice = investment.purchase_price;
+        let quantity = investment.quantity;
+        let profitLoss = (marketPrice * quantity) - (userPurchasePrice * quantity)
+        let totalInvestment = (userPurchasePrice * quantity);
+        let name = investment.name
+
+        marketPrice = parseFloat(marketPrice.toFixed(2))
+        userPurchasePrice = parseFloat(userPurchasePrice.toFixed(2))
+        quantity = parseFloat(quantity.toFixed(2))
+        profitLoss = parseFloat(profitLoss.toFixed(2))
+        let growth_percentage = 25
+        
+        totalInvestment = parseFloat(totalInvestment.toFixed(2))
+        let portfolio_value = marketPrice * quantity
+
+        let profitLossPercentage = Math.ceil((Math.abs(profitLoss) / totalInvestment) * 100)
+        investmentsResult.push({
+          growth_percentage,
+          marketPrice,
+          userPurchasePrice,
+          quantity,
+          name,
+          profitLoss,
+          portfolio_value,
+          profitLossPercentage
+        })
+
+      })
+
+
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: "Manual investment data fetched succssfully",
+        data: {
+          pie_chart_data: pieChartData,
+          allInvestmentResult :investmentsResult
+
+        }
+      };    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
   async fetchAllInvestmentCategories() {
     try {
       const investmentCategories = await this.prisma.investmentCategories.findMany({
