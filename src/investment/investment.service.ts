@@ -515,7 +515,7 @@ export class InvestmentService {
       })
 
       // Calculate total investment, profit, and loss
-      let totalInvestment = 0;
+      let total_investment = 0;
       let totalProfit = 0;
       let totalLoss = 0;
       let investmentsResult = []
@@ -525,7 +525,7 @@ export class InvestmentService {
         const quantity = investment.quantity;
         const profitLoss = (marketPrice * quantity) - (userPurchasePrice * quantity)
 
-        totalInvestment += (userPurchasePrice * quantity);
+        total_investment += (userPurchasePrice * quantity);
         if (profitLoss > 0) {
           totalProfit += profitLoss;
         } else {
@@ -533,12 +533,12 @@ export class InvestmentService {
         }
       })
       
-      let totalValue = totalInvestment + totalProfit - totalLoss;
+      let totalValue = total_investment + totalProfit - totalLoss;
       let profitPercentage = Math.ceil((totalProfit / totalValue) * 100);
       let lossPercentage = Math.ceil((totalLoss / totalValue) * 100);
       
       const pieChartData = {
-        totalInvestment,
+        total_investment,
         profitPercentage,
         lossPercentage,
         totalProfit,
@@ -546,28 +546,28 @@ export class InvestmentService {
       }
 
       allManualInvestments.map((investment) => {
-        let marketPrice = investment.current_price || 0;
+        let market_value = investment.current_price || 0;
         let userPurchasePrice = investment.purchase_price;
-        let quantity = investment.quantity;
-        let profitLoss = (marketPrice * quantity) - (userPurchasePrice * quantity)
-        let totalInvestment = (userPurchasePrice * quantity);
+        let total_quantity = investment.quantity;
+        let profitLoss = (market_value * total_quantity) - (userPurchasePrice * total_quantity)
+        let totalInvestment = (userPurchasePrice * total_quantity);
         let name = investment.name
 
-        marketPrice = parseFloat(marketPrice.toFixed(2))
+        market_value = parseFloat(market_value.toFixed(2))
         userPurchasePrice = parseFloat(userPurchasePrice.toFixed(2))
-        quantity = parseFloat(quantity.toFixed(2))
+        total_quantity = parseFloat(total_quantity.toFixed(2))
         profitLoss = parseFloat(profitLoss.toFixed(2))
         let growth_percentage = 25
         
-        totalInvestment = parseFloat(totalInvestment.toFixed(2))
-        let portfolio_value = marketPrice * quantity
-
+        let portfolio_value = market_value * total_quantity
+        
         let profitLossPercentage = Math.ceil((Math.abs(profitLoss) / totalInvestment) * 100)
+        totalInvestment = parseFloat(totalInvestment.toFixed(2))
         investmentsResult.push({
           growth_percentage,
-          marketPrice,
-          userPurchasePrice,
-          quantity,
+          market_value,
+          totalInvestment,
+          total_quantity,
           name,
           profitLoss,
           portfolio_value,
