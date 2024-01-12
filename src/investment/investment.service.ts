@@ -563,13 +563,24 @@ export class InvestmentService {
         
         let profitLossPercentage = Math.ceil((Math.abs(profitLoss) / totalInvestment) * 100)
         totalInvestment = parseFloat(totalInvestment.toFixed(2))
+
+        let profitLossObj = {
+          totalProfit : 0,
+          totalLoss : 0
+        }
+        if (profitLoss > 0) {
+          profitLossObj.totalProfit = profitLoss;
+        }else{
+          profitLossObj.totalLoss = profitLoss
+        }
+
         investmentsResult.push({
           growth_percentage,
           market_value,
           totalInvestment,
           total_quantity,
           name,
-          profitLoss,
+          ...profitLossObj,
           portfolio_value,
           profitLossPercentage
         })
