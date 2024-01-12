@@ -42,4 +42,28 @@ export class BudgetController {
     const { user_id } = request.auth;
     return await this.budgetService.addUserBudgetDetails(createBudgetDto, user_id);
   }
+
+  @Patch('update-budget')
+  @UseGuards(AuthGuard)
+  async updateBudget(
+    @Req() request: any,
+    @Body() updateBudgetDto: UpdateBudgetDto,
+  ) {
+    const { user_id } = request.auth;
+    return await this.budgetService.updateUserBudgetDetails(updateBudgetDto, user_id);
+  }
+
+  @Post('budget_details')
+  @UseGuards(AuthGuard) 
+  async getBudgetDetail(@Req() req: any) {
+      const { user_id } = req.auth; 
+      return await this.budgetService.getBudgetDetails(user_id);
+  }
+
+  @Post('budget_category')
+  @UseGuards(AuthGuard) 
+  async getBudgetCategories(@Req() req: any) {
+      const { user_id } = req.auth; 
+      return await this.budgetService.getBudgetCategories(user_id);
+  }
 }

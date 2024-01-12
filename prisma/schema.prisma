@@ -43,7 +43,7 @@ model Budget {
   duration            Duration
   collaborations      Collaboration[] // This line indicates that a Budget can have many Collaborations
 
-  // BudgetsCategory     BudgetsCategory @relation(fields: [budgets_category_id], references: [id])
+  BudgetCategory      BudgetCategories @relation(fields: [budgets_category_id], references: [id])
   User                User            @relation(fields: [user_id], references: [id])
   // ... other fields and relations
 }
@@ -384,6 +384,7 @@ model BudgetCategories {
   category_ids  String[]
   created_at    DateTime @default(now())
   updated_at    DateTime @default(now())
+   Budgets       Budget[]
 }
 
 model PlaidAssetItem {

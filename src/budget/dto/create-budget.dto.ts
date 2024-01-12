@@ -22,9 +22,10 @@ import {
     @IsNotEmpty({ message: 'Name should not be empty.' })
     readonly name: string;
   
-    @IsString({ message: 'Category must be a string.' })
+   
+    @IsNumber({}, { message: 'Set limit must be a number.' })
     @IsNotEmpty({ message: 'Category should not be empty.' })
-    readonly category: string;
+    readonly categoryId: number;
   
     @IsString({ message: 'Account must be a string.' })
     @IsNotEmpty({ message: 'Account should not be empty.' })
