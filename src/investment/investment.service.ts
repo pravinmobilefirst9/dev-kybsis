@@ -462,7 +462,7 @@ export class InvestmentService {
         // Convert all values to 2 decimal : ex. 2.34
         totalInvestment = parseFloat(totalInvestment.toFixed(2))
         market_value = parseFloat(market_value.toFixed(2))
-        portfolio_value = market_value * total_quantity
+        portfolio_value = parseFloat((market_value * total_quantity).toFixed(2))
         totalProfit = parseFloat(totalProfit.toFixed(2))
         totalLoss = parseFloat(totalLoss.toFixed(2))
         total_quantity = parseFloat(total_quantity.toFixed(2))
