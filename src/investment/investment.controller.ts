@@ -39,6 +39,14 @@ export class InvestmentController {
     return result;
   }  
 
+  @Get("get_all_investment_data")
+  @UseGuards(AuthGuard)
+  async getInvestementAllData(@Req() req : any){
+    const {user_id} = req.auth     
+    const result = await this.investmentService.fetchAllInvestmentData(user_id);
+    return result;
+  }  
+
   @Get("get_manual_investment_data")
   @UseGuards(AuthGuard)
   async getManualInvestementHomePageData(@Req() req : any){

@@ -365,6 +365,7 @@ export class InvestmentService {
           investmentHolding: { include: { investment_security: true } },
           account_name: true,
           plaidItem: true,
+          created_at : true
         },
       })
 
@@ -421,8 +422,7 @@ export class InvestmentService {
         profitPercentage,
         lossPercentage
       }
-
-
+     
 
       investmentData.map((account) => {
         totalHoldings = [...totalHoldings, ...account.investmentHolding]
@@ -476,7 +476,7 @@ export class InvestmentService {
           totalProfit,
           totalLoss,
           growth_percentage,
-          portfolio_value
+          portfolio_value,
         }
 
         resultSecurityData.push(obj)
@@ -505,6 +505,32 @@ export class InvestmentService {
     }
   }
 
+  async fetchAllInvestmentData(user_id : number){
+    try {
+      const plaidData = await this.fetchPlaidInvestmentHomePageData(user_id)
+      const manualInvestmentData = await this.fetchInvestmentManualData(user_id)
+
+
+      let resultObj = {
+        total_investment : plaidData.data.total_investment + manualInvestmentData.data.pie_chart_data.total_investment,
+        profitPercentage : plaidData.data.pie_chart_data.profitPercentage + manualInvestmentData.data.pie_chart_data.profitPercentage,
+        lossPercentage : plaidData.data.pie_chart_data.lossPercentage + manualInvestmentData.data.pie_chart_data.lossPercentage,
+        allInvestments :  [...plaidData.data.resultSecurityData, ...manualInvestmentData.data.allInvestmentResult]
+      }
+
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: "All investment data fetched succssfully",
+        data : resultObj
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
 
   async fetchInvestmentManualData(user_id : number){
     try {
@@ -582,7 +608,8 @@ export class InvestmentService {
           name,
           ...profitLossObj,
           portfolio_value,
-          profitLossPercentage
+          profitLossPercentage,
+          created_at : investment.created_at
         })
 
       })
