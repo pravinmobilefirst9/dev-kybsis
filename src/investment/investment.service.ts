@@ -417,7 +417,7 @@ export class InvestmentService {
       // ]
 
       const pieChartData = {
-        totalInvestment,
+        total_investment : totalInvestment,
         profitPercentage,
         lossPercentage
       }
