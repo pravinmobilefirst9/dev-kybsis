@@ -39,7 +39,7 @@ private calculateEndDate(startDate: Date, duration: 'Monthly' | 'Annually'): Dat
     return endDate;
   }
   async addUserBudgetDetails(createBudgetDto: CreateBudgetDto, userId: number) {
-    const { duration, name, categoryId, account, amount, startDate, collaborators } = createBudgetDto;
+    const { duration, name, categoryId, amount, startDate, collaborators } = createBudgetDto;
   
     // Find the category ID based on the category name
     
@@ -55,7 +55,6 @@ private calculateEndDate(startDate: Date, duration: 'Monthly' | 'Annually'): Dat
         name: createBudgetDto.name,
         amount: createBudgetDto.amount,
         budgets_category_id: categoryId,
-        account_id: 123,
         start_date: createBudgetDto.startDate,
         end_date: endDate,
         set_limit: createBudgetDto.setLimit, // Assuming this is provided in CreateBudgetDto
@@ -87,7 +86,7 @@ private calculateEndDate(startDate: Date, duration: 'Monthly' | 'Annually'): Dat
   }
   
   async updateUserBudgetDetails(updateBudgetDto: UpdateBudgetDto, userId: number) {
-    const { id, name, amount, categoryId, account, startDate, duration, setLimit, collaborators } = updateBudgetDto;
+    const { id, name, amount, categoryId, startDate, duration, setLimit, collaborators } = updateBudgetDto;
   
     // Check if the budget exists and belongs to the user
     const existingBudget = await this.prisma.budget.findFirst({

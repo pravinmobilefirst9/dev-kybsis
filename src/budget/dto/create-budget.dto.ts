@@ -27,9 +27,7 @@ import {
     @IsNotEmpty({ message: 'Category should not be empty.' })
     readonly categoryId: number;
   
-    @IsString({ message: 'Account must be a string.' })
-    @IsNotEmpty({ message: 'Account should not be empty.' })
-    readonly account: string;
+    
   
     @IsNumber({}, { message: 'Amount must be a number.' })
     readonly amount: number;

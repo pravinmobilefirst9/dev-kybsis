@@ -34,7 +34,6 @@ model Budget {
   name                String
   amount              Float
   budgets_category_id Int
-  account_id          Int
   set_limit           Float?
   start_date          DateTime
   end_date            DateTime
