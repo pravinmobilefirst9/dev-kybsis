@@ -11,8 +11,7 @@ model Collaboration {
   id              Int      @id @default(autoincrement())
   user_id         Int
   collaborator_id Int
-  account_id      Int
-  budget_id       Int            // This field connects a Collaboration to a Budget
+  budget_id       Int           
   status          Boolean
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt

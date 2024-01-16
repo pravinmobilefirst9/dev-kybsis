@@ -41,12 +41,6 @@ private calculateEndDate(startDate: Date, duration: 'Monthly' | 'Annually'): Dat
   async addUserBudgetDetails(createBudgetDto: CreateBudgetDto, userId: number) {
     const { duration, name, categoryId, amount, startDate, collaborators } = createBudgetDto;
   
-    // Find the category ID based on the category name
-    
-   
-    
-  
-    
     const endDate = this.calculateEndDate(startDate, duration);
     // Create a new budget record
     try{
@@ -57,17 +51,12 @@ private calculateEndDate(startDate: Date, duration: 'Monthly' | 'Annually'): Dat
         budgets_category_id: categoryId,
         start_date: createBudgetDto.startDate,
         end_date: endDate,
-        set_limit: createBudgetDto.setLimit, // Assuming this is provided in CreateBudgetDto
-        duration: createBudgetDto.duration,  // Assuming this is provided in CreateBudgetDto
+        set_limit: createBudgetDto.setLimit, 
+        duration: createBudgetDto.duration,  
         user_id:userId
-        // ... other fields
       },
     });
-    
-  
-    // Add logic for collaborators if needed
-    // ...
-  
+     
     return {
       success: true,
       statusCode: HttpStatus.CREATED,
