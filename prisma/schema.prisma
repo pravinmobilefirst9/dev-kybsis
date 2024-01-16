@@ -356,7 +356,7 @@ model InvestmentSecurity {
   proxy_security_id        String?
   sedol                    String?
   ticker_symbol            String?
-  type                     String
+  type                     String?
   unofficial_currency_code String?
   update_datetime          DateTime?
   created_at               DateTime  @default(now())

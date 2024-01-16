@@ -222,9 +222,9 @@ const assetsData  = [
 
 const assetFields = [
   // For car and its subtype it is same
-  {name: "make", type: "text", label: "Make",order_id : 1},
+  {name: "make", type: "date", label: "Make",order_id : 1},
   {name: "model", type: "text", label: "Model",order_id : 2},
-  {name: "Year", type: "text", label: "Year",order_id : 3, options : ["2020","2022", "2023"]},
+  {name: "Year", type: "options", label: "Year",order_id : 3, options : ["2020","2022", "2023"]},
   {name: "value", type: "number", label : "Value", order_id : 5},
   {name: "location", type: "text", label : "Location",order_id : 6},
   {name: "description", type: "textarea", label : "Description", order_id : 7},
@@ -233,16 +233,16 @@ const assetFieldsRealEstate = [
   // For car and its subtype it is same
   {name: "address", type: "text", label: "Address",order_id : 1},
   {name: "value", type: "text", label: "Value",order_id : 2},
-  {name: "type", type: "text", label: "Type of Property",order_id : 3, options : ["Apartment","Townhouse", "Condominium", "Single-Family Home"]},
+  {name: "type", type: "options", label: "Type of Property",order_id : 3, options : ["Apartment","Townhouse", "Condominium", "Single-Family Home"]},
   {name: "value", type: "number", label : "Value", order_id : 4},
-  {name: "year", type: "number", label : "Year of purchase",order_id : 5},
+  {name: "year", type: "date", label : "Date of purchase",order_id : 5},
   {name: "details", type: "textarea", label : "Additional Details", order_id : 6},
 ]
 
 const assetFieldsJwellary = [
   // For car and its subtype it is same
   {name: "piece", type: "text", label: "Piece",order_id : 1},
-  {name: "value", type: "text", label: "Value/Price",order_id : 2},
+  {name: "value", type: "number", label: "Value/Price",order_id : 2},
   {name: "location", type: "text", label : "Location", order_id : 3},
   {name: "details", type: "textarea", label : "Additional Details", order_id : 4},
 ]
@@ -250,7 +250,7 @@ const assetFieldsJwellary = [
 const assetFieldsArt = [
   // For car and its subtype it is same
   {name: "piece", type: "text", label: "Piece",order_id : 1},
-  {name: "value", type: "text", label: "Value/Price",order_id : 2},
+  {name: "value", type: "number", label: "Value/Price",order_id : 2},
   {name: "location", type: "text", label : "Location", order_id : 3},
   {name: "details", type: "textarea", label : "Additional Details", order_id : 4},
 ]
