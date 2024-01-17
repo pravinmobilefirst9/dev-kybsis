@@ -53,7 +53,7 @@ export class TransactionService {
       const response = await this.client.transactionsGet({
         access_token: plaid_item.access_token,
         start_date: "2010-04-14",
-        end_date: "2024-04-17",
+        end_date: new Date().toDateString(),
       });
 
       await this.prisma.plaidInstitutionImportHistory.create({

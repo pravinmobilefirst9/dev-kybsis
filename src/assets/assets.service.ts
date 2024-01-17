@@ -336,6 +336,7 @@ export class AssetsService {
       const formData = await this.prismaClient.assetFields.findMany({
         where: {
           asset_sub_id: asset_subtype_id,
+          asset_id : asset_id
         },
         select: {
           label: true,
@@ -345,6 +346,10 @@ export class AssetsService {
           id: true,
         },
       });
+
+      if (formData.length === 0) {
+        throw new HttpException ("Invalid asset id or asset sub_type id", HttpStatus.BAD_REQUEST)
+      }
 
       const userFormData = await this.prismaClient.userAssetsDetails.findMany({
         where: {

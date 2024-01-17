@@ -1,0 +1,1846 @@
+{
+    "report": {
+        "asset_report_id": "4ec8413b-5648-487a-8d84-6dfe79b05909",
+        "client_report_id": null,
+        "date_generated": "2024-01-17T06:26:33Z",
+        "days_requested": 30,
+        "items": [
+            {
+                "accounts": [
+                    {
+                        "account_id": "9pPBPyjdWMuEg9K5xPMXi87AEr6BkLu4z1W5Z",
+                        "balances": {
+                            "available": null,
+                            "current": 56302.06,
+                            "iso_currency_code": "CAD",
+                            "limit": null,
+                            "margin_loan_amount": null,
+                            "unofficial_currency_code": null
+                        },
+                        "days_available": 0,
+                        "historical_balances": [],
+                        "mask": "8888",
+                        "name": "Plaid Mortgage",
+                        "official_name": null,
+                        "owners": [
+                            {
+                                "addresses": [
+                                    {
+                                        "data": {
+                                            "city": "Gingham",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "478 Plaid Street"
+                                        },
+                                        "primary": true
+                                    },
+                                    {
+                                        "data": {
+                                            "city": "Tartan",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "2493 Leisure Lane"
+                                        },
+                                        "primary": false
+                                    }
+                                ],
+                                "emails": [
+                                    {
+                                        "data": "accountholder0@example.com",
+                                        "primary": true,
+                                        "type": "primary"
+                                    },
+                                    {
+                                        "data": "accountholder1@example.com",
+                                        "primary": false,
+                                        "type": "secondary"
+                                    },
+                                    {
+                                        "data": "extraordinarily.long.email.username.123456@reallylonghostname.com",
+                                        "primary": false,
+                                        "type": "other"
+                                    }
+                                ],
+                                "names": [
+                                    "Alberta Bobbeth Charleson"
+                                ],
+                                "phone_numbers": [
+                                    {
+                                        "data": "1112223333",
+                                        "primary": false,
+                                        "type": "home"
+                                    },
+                                    {
+                                        "data": "1112224444",
+                                        "primary": false,
+                                        "type": "work"
+                                    },
+                                    {
+                                        "data": "1112225555",
+                                        "primary": false,
+                                        "type": "mobile"
+                                    }
+                                ]
+                            }
+                        ],
+                        "ownership_type": null,
+                        "subtype": "mortgage",
+                        "transactions": [],
+                        "type": "loan"
+                    },
+                    {
+                        "account_id": "ArLjLyWx5kCgJXBpxlWGcn58vomxy7u9RDXze",
+                        "balances": {
+                            "available": null,
+                            "current": 1000,
+                            "iso_currency_code": "CAD",
+                            "limit": null,
+                            "margin_loan_amount": null,
+                            "unofficial_currency_code": null
+                        },
+                        "days_available": 30,
+                        "historical_balances": [
+                            {
+                                "current": 1000,
+                                "date": "2024-01-16",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2024-01-15",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2024-01-14",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2024-01-13",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2024-01-12",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2024-01-11",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2024-01-10",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2024-01-09",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2024-01-08",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2024-01-07",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2024-01-06",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2024-01-05",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2024-01-04",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2024-01-03",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2024-01-02",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2024-01-01",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2023-12-31",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2023-12-30",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2023-12-29",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2023-12-28",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2023-12-27",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2023-12-26",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 1000,
+                                "date": "2023-12-25",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 2000,
+                                "date": "2023-12-24",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 2000,
+                                "date": "2023-12-23",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 2000,
+                                "date": "2023-12-22",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 2000,
+                                "date": "2023-12-21",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 2000,
+                                "date": "2023-12-20",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 2000,
+                                "date": "2023-12-19",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 2000,
+                                "date": "2023-12-18",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            }
+                        ],
+                        "mask": "2222",
+                        "name": "Plaid CD",
+                        "official_name": "Plaid Bronze Standard 0.2% Interest CD",
+                        "owners": [
+                            {
+                                "addresses": [
+                                    {
+                                        "data": {
+                                            "city": "Gingham",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "478 Plaid Street"
+                                        },
+                                        "primary": true
+                                    },
+                                    {
+                                        "data": {
+                                            "city": "Tartan",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "2493 Leisure Lane"
+                                        },
+                                        "primary": false
+                                    }
+                                ],
+                                "emails": [
+                                    {
+                                        "data": "accountholder0@example.com",
+                                        "primary": true,
+                                        "type": "primary"
+                                    },
+                                    {
+                                        "data": "accountholder1@example.com",
+                                        "primary": false,
+                                        "type": "secondary"
+                                    },
+                                    {
+                                        "data": "extraordinarily.long.email.username.123456@reallylonghostname.com",
+                                        "primary": false,
+                                        "type": "other"
+                                    }
+                                ],
+                                "names": [
+                                    "Alberta Bobbeth Charleson"
+                                ],
+                                "phone_numbers": [
+                                    {
+                                        "data": "1112223333",
+                                        "primary": false,
+                                        "type": "home"
+                                    },
+                                    {
+                                        "data": "1112224444",
+                                        "primary": false,
+                                        "type": "work"
+                                    },
+                                    {
+                                        "data": "1112225555",
+                                        "primary": false,
+                                        "type": "mobile"
+                                    }
+                                ]
+                            }
+                        ],
+                        "ownership_type": null,
+                        "subtype": "cd",
+                        "transactions": [
+                            {
+                                "account_id": "ArLjLyWx5kCgJXBpxlWGcn58vomxy7u9RDXze",
+                                "amount": 1000,
+                                "date": "2023-12-25",
+                                "iso_currency_code": "CAD",
+                                "original_description": "CD DEPOSIT .INITIAL.",
+                                "pending": false,
+                                "transaction_id": "Kjbgb3W4wNCnzeKNrVB9IZA1e9WNXGFRjLvX1",
+                                "unofficial_currency_code": null
+                            }
+                        ],
+                        "type": "depository"
+                    },
+                    {
+                        "account_id": "Ex8Z8lWwRBFZAQ6oBaeXiR9y83N4qru4Z7Kbz",
+                        "balances": {
+                            "available": 100,
+                            "current": 110,
+                            "iso_currency_code": "CAD",
+                            "limit": null,
+                            "margin_loan_amount": null,
+                            "unofficial_currency_code": null
+                        },
+                        "days_available": 30,
+                        "historical_balances": [
+                            {
+                                "current": 110,
+                                "date": "2024-01-16",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 110,
+                                "date": "2024-01-15",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 110,
+                                "date": "2024-01-14",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 110,
+                                "date": "2024-01-13",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 110,
+                                "date": "2024-01-12",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 110,
+                                "date": "2024-01-11",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 110,
+                                "date": "2024-01-10",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 110,
+                                "date": "2024-01-09",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 110,
+                                "date": "2024-01-08",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 116.33,
+                                "date": "2024-01-07",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 116.33,
+                                "date": "2024-01-06",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 116.33,
+                                "date": "2024-01-05",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 116.33,
+                                "date": "2024-01-04",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 116.33,
+                                "date": "2024-01-03",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 116.33,
+                                "date": "2024-01-02",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 116.33,
+                                "date": "2024-01-01",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 116.33,
+                                "date": "2023-12-31",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 116.33,
+                                "date": "2023-12-30",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 116.33,
+                                "date": "2023-12-29",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 116.33,
+                                "date": "2023-12-28",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 116.33,
+                                "date": "2023-12-27",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 116.33,
+                                "date": "2023-12-26",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 121.73,
+                                "date": "2023-12-25",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 121.73,
+                                "date": "2023-12-24",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -378.27,
+                                "date": "2023-12-23",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -361.94,
+                                "date": "2023-12-22",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -272.54,
+                                "date": "2023-12-21",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -272.54,
+                                "date": "2023-12-20",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -272.54,
+                                "date": "2023-12-19",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -272.54,
+                                "date": "2023-12-18",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            }
+                        ],
+                        "mask": "0000",
+                        "name": "Plaid Checking",
+                        "official_name": "Plaid Gold Standard 0% Interest Checking",
+                        "owners": [
+                            {
+                                "addresses": [
+                                    {
+                                        "data": {
+                                            "city": "Gingham",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "478 Plaid Street"
+                                        },
+                                        "primary": true
+                                    },
+                                    {
+                                        "data": {
+                                            "city": "Tartan",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "2493 Leisure Lane"
+                                        },
+                                        "primary": false
+                                    }
+                                ],
+                                "emails": [
+                                    {
+                                        "data": "accountholder0@example.com",
+                                        "primary": true,
+                                        "type": "primary"
+                                    },
+                                    {
+                                        "data": "accountholder1@example.com",
+                                        "primary": false,
+                                        "type": "secondary"
+                                    },
+                                    {
+                                        "data": "extraordinarily.long.email.username.123456@reallylonghostname.com",
+                                        "primary": false,
+                                        "type": "other"
+                                    }
+                                ],
+                                "names": [
+                                    "Alberta Bobbeth Charleson"
+                                ],
+                                "phone_numbers": [
+                                    {
+                                        "data": "1112223333",
+                                        "primary": false,
+                                        "type": "home"
+                                    },
+                                    {
+                                        "data": "1112224444",
+                                        "primary": false,
+                                        "type": "work"
+                                    },
+                                    {
+                                        "data": "1112225555",
+                                        "primary": false,
+                                        "type": "mobile"
+                                    }
+                                ]
+                            }
+                        ],
+                        "ownership_type": null,
+                        "subtype": "checking",
+                        "transactions": [
+                            {
+                                "account_id": "Ex8Z8lWwRBFZAQ6oBaeXiR9y83N4qru4Z7Kbz",
+                                "amount": 89.4,
+                                "date": "2023-12-22",
+                                "iso_currency_code": "CAD",
+                                "original_description": "SparkFun",
+                                "pending": false,
+                                "transaction_id": "k1ngnzoxXQSbxwakVvWjh5je1ZbgM7TL3Xb5K",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "account_id": "Ex8Z8lWwRBFZAQ6oBaeXiR9y83N4qru4Z7Kbz",
+                                "amount": 4.33,
+                                "date": "2023-12-23",
+                                "iso_currency_code": "CAD",
+                                "original_description": "Starbucks",
+                                "pending": false,
+                                "transaction_id": "JPnonBW4dNFRrEJN7ypaF4gD6yBzakFBG9L8v",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "account_id": "Ex8Z8lWwRBFZAQ6oBaeXiR9y83N4qru4Z7Kbz",
+                                "amount": 12,
+                                "date": "2023-12-23",
+                                "iso_currency_code": "CAD",
+                                "original_description": "McDonalds #3322",
+                                "pending": false,
+                                "transaction_id": "5Zdqdya4zMF1n5GMBd4jtk7oMwmzgbt5EWDrW",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "account_id": "Ex8Z8lWwRBFZAQ6oBaeXiR9y83N4qru4Z7Kbz",
+                                "amount": -500,
+                                "date": "2023-12-24",
+                                "iso_currency_code": "CAD",
+                                "original_description": "United Airlines **** REFUND ****",
+                                "pending": false,
+                                "transaction_id": "wBdrdQ1bDXc61wqMnvr8U5B49N68LvTPa56XJ",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "account_id": "Ex8Z8lWwRBFZAQ6oBaeXiR9y83N4qru4Z7Kbz",
+                                "amount": 5.4,
+                                "date": "2023-12-26",
+                                "iso_currency_code": "CAD",
+                                "original_description": "Uber 063015 SF**POOL**",
+                                "pending": false,
+                                "transaction_id": "V8dKdkmaoyuNe7rp3qRzCm1QEabgRWu9vwJMx",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "account_id": "Ex8Z8lWwRBFZAQ6oBaeXiR9y83N4qru4Z7Kbz",
+                                "amount": 6.33,
+                                "date": "2024-01-08",
+                                "iso_currency_code": "CAD",
+                                "original_description": "Uber 072515 SF**POOL**",
+                                "pending": false,
+                                "transaction_id": "D3gQgyG1KzCae3Gvo46giwJgb7B98Xh3rk8q6",
+                                "unofficial_currency_code": null
+                            }
+                        ],
+                        "type": "depository"
+                    },
+                    {
+                        "account_id": "GaW1WK6ybxHklbA1ndJgFBZ8bEdnrPF6Jvekr",
+                        "balances": {
+                            "available": null,
+                            "current": 410,
+                            "iso_currency_code": "CAD",
+                            "limit": 2000,
+                            "margin_loan_amount": null,
+                            "unofficial_currency_code": null
+                        },
+                        "days_available": 30,
+                        "historical_balances": [
+                            {
+                                "current": 410,
+                                "date": "2024-01-16",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 410,
+                                "date": "2024-01-15",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 410,
+                                "date": "2024-01-14",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 410,
+                                "date": "2024-01-13",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 410,
+                                "date": "2024-01-12",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 410,
+                                "date": "2024-01-11",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 410,
+                                "date": "2024-01-10",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -90,
+                                "date": "2024-01-09",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -90,
+                                "date": "2024-01-08",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -90,
+                                "date": "2024-01-07",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -90,
+                                "date": "2024-01-06",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -90,
+                                "date": "2024-01-05",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -590,
+                                "date": "2024-01-04",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3668.5,
+                                "date": "2024-01-03",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3668.5,
+                                "date": "2024-01-02",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3668.5,
+                                "date": "2024-01-01",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3668.5,
+                                "date": "2023-12-31",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3668.5,
+                                "date": "2023-12-30",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3668.5,
+                                "date": "2023-12-29",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3668.5,
+                                "date": "2023-12-28",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3668.5,
+                                "date": "2023-12-27",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3668.5,
+                                "date": "2023-12-26",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3668.5,
+                                "date": "2023-12-25",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3668.5,
+                                "date": "2023-12-24",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3747,
+                                "date": "2023-12-23",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3747,
+                                "date": "2023-12-22",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3747,
+                                "date": "2023-12-21",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3747,
+                                "date": "2023-12-20",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3747,
+                                "date": "2023-12-19",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": -3747,
+                                "date": "2023-12-18",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            }
+                        ],
+                        "mask": "3333",
+                        "name": "Plaid Credit Card",
+                        "official_name": "Plaid Diamond 12.5% APR Interest Credit Card",
+                        "owners": [
+                            {
+                                "addresses": [
+                                    {
+                                        "data": {
+                                            "city": "Gingham",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "478 Plaid Street"
+                                        },
+                                        "primary": true
+                                    },
+                                    {
+                                        "data": {
+                                            "city": "Tartan",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "2493 Leisure Lane"
+                                        },
+                                        "primary": false
+                                    }
+                                ],
+                                "emails": [
+                                    {
+                                        "data": "accountholder0@example.com",
+                                        "primary": true,
+                                        "type": "primary"
+                                    },
+                                    {
+                                        "data": "accountholder1@example.com",
+                                        "primary": false,
+                                        "type": "secondary"
+                                    },
+                                    {
+                                        "data": "extraordinarily.long.email.username.123456@reallylonghostname.com",
+                                        "primary": false,
+                                        "type": "other"
+                                    }
+                                ],
+                                "names": [
+                                    "Alberta Bobbeth Charleson"
+                                ],
+                                "phone_numbers": [
+                                    {
+                                        "data": "1112223333",
+                                        "primary": false,
+                                        "type": "home"
+                                    },
+                                    {
+                                        "data": "1112224444",
+                                        "primary": false,
+                                        "type": "work"
+                                    },
+                                    {
+                                        "data": "1112225555",
+                                        "primary": false,
+                                        "type": "mobile"
+                                    }
+                                ]
+                            }
+                        ],
+                        "ownership_type": null,
+                        "subtype": "credit card",
+                        "transactions": [
+                            {
+                                "account_id": "GaW1WK6ybxHklbA1ndJgFBZ8bEdnrPF6Jvekr",
+                                "amount": 78.5,
+                                "date": "2023-12-24",
+                                "iso_currency_code": "CAD",
+                                "original_description": "Touchstone Climbing",
+                                "pending": false,
+                                "transaction_id": "dPoQo79De3FpndB54VXLhQ5Lx3az76cJqm31j",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "account_id": "GaW1WK6ybxHklbA1ndJgFBZ8bEdnrPF6Jvekr",
+                                "amount": 2078.5,
+                                "date": "2024-01-04",
+                                "iso_currency_code": "CAD",
+                                "original_description": "AUTOMATIC PAYMENT - THANK",
+                                "pending": false,
+                                "transaction_id": "x3azakmgLWCQJlDMbZaki4gwx1QGvEF6ZqEaa",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "account_id": "GaW1WK6ybxHklbA1ndJgFBZ8bEdnrPF6Jvekr",
+                                "amount": 500,
+                                "date": "2024-01-04",
+                                "iso_currency_code": "CAD",
+                                "original_description": "KFC",
+                                "pending": false,
+                                "transaction_id": "3e3m3kxGVXCZXPVa53Kpi1m5B8dDRosZLBayl",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "account_id": "GaW1WK6ybxHklbA1ndJgFBZ8bEdnrPF6Jvekr",
+                                "amount": 500,
+                                "date": "2024-01-04",
+                                "iso_currency_code": "CAD",
+                                "original_description": "Madison Bicycle Shop",
+                                "pending": false,
+                                "transaction_id": "Bzp7pyWDNKCQMJg69DmXi8VPxpwoQ4c41QGo5",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "account_id": "GaW1WK6ybxHklbA1ndJgFBZ8bEdnrPF6Jvekr",
+                                "amount": 500,
+                                "date": "2024-01-05",
+                                "iso_currency_code": "CAD",
+                                "original_description": "Tectra Inc",
+                                "pending": false,
+                                "transaction_id": "zdN3No1aBwcoVv6JBQWGiGWJd1oMD8SlKzGbd",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "account_id": "GaW1WK6ybxHklbA1ndJgFBZ8bEdnrPF6Jvekr",
+                                "amount": 500,
+                                "date": "2024-01-10",
+                                "iso_currency_code": "CAD",
+                                "original_description": "United Airlines",
+                                "pending": false,
+                                "transaction_id": "rlrbrNogXWfqj4gP8VxWFR5j9vqABlC7XnvRk",
+                                "unofficial_currency_code": null
+                            }
+                        ],
+                        "type": "credit"
+                    },
+                    {
+                        "account_id": "WEaraqALwyieQqpDZX4Pc9gBkxZJ13S6o8mgq",
+                        "balances": {
+                            "available": 200,
+                            "current": 210,
+                            "iso_currency_code": "CAD",
+                            "limit": null,
+                            "margin_loan_amount": null,
+                            "unofficial_currency_code": null
+                        },
+                        "days_available": 30,
+                        "historical_balances": [
+                            {
+                                "current": 210,
+                                "date": "2024-01-16",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2024-01-15",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2024-01-14",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2024-01-13",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2024-01-12",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2024-01-11",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2024-01-10",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2024-01-09",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2024-01-08",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2024-01-07",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2024-01-06",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2024-01-05",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2024-01-04",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2024-01-03",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2024-01-02",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2024-01-01",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2023-12-31",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2023-12-30",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2023-12-29",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2023-12-28",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2023-12-27",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 210,
+                                "date": "2023-12-26",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 235,
+                                "date": "2023-12-25",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 235,
+                                "date": "2023-12-24",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 235,
+                                "date": "2023-12-23",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 235,
+                                "date": "2023-12-22",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 235,
+                                "date": "2023-12-21",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 230.78,
+                                "date": "2023-12-20",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 230.78,
+                                "date": "2023-12-19",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 230.78,
+                                "date": "2023-12-18",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            }
+                        ],
+                        "mask": "1111",
+                        "name": "Plaid Saving",
+                        "official_name": "Plaid Silver Standard 0.1% Interest Saving",
+                        "owners": [
+                            {
+                                "addresses": [
+                                    {
+                                        "data": {
+                                            "city": "Gingham",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "478 Plaid Street"
+                                        },
+                                        "primary": true
+                                    },
+                                    {
+                                        "data": {
+                                            "city": "Tartan",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "2493 Leisure Lane"
+                                        },
+                                        "primary": false
+                                    }
+                                ],
+                                "emails": [
+                                    {
+                                        "data": "accountholder0@example.com",
+                                        "primary": true,
+                                        "type": "primary"
+                                    },
+                                    {
+                                        "data": "accountholder1@example.com",
+                                        "primary": false,
+                                        "type": "secondary"
+                                    },
+                                    {
+                                        "data": "extraordinarily.long.email.username.123456@reallylonghostname.com",
+                                        "primary": false,
+                                        "type": "other"
+                                    }
+                                ],
+                                "names": [
+                                    "Alberta Bobbeth Charleson"
+                                ],
+                                "phone_numbers": [
+                                    {
+                                        "data": "1112223333",
+                                        "primary": false,
+                                        "type": "home"
+                                    },
+                                    {
+                                        "data": "1112224444",
+                                        "primary": false,
+                                        "type": "work"
+                                    },
+                                    {
+                                        "data": "1112225555",
+                                        "primary": false,
+                                        "type": "mobile"
+                                    }
+                                ]
+                            }
+                        ],
+                        "ownership_type": null,
+                        "subtype": "savings",
+                        "transactions": [
+                            {
+                                "account_id": "WEaraqALwyieQqpDZX4Pc9gBkxZJ13S6o8mgq",
+                                "amount": -4.22,
+                                "date": "2023-12-21",
+                                "iso_currency_code": "CAD",
+                                "original_description": "INTRST PYMNT",
+                                "pending": false,
+                                "transaction_id": "qEKnK4ob51iqJ8mPgvElFKamGkqQLjCg5ZqKM",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "account_id": "WEaraqALwyieQqpDZX4Pc9gBkxZJ13S6o8mgq",
+                                "amount": 25,
+                                "date": "2023-12-26",
+                                "iso_currency_code": "CAD",
+                                "original_description": "CREDIT CARD 3333 PAYMENT *//",
+                                "pending": false,
+                                "transaction_id": "lLb8bBo9gQf5dQ1bM8jZf3ZvDore7BFp5kv3d",
+                                "unofficial_currency_code": null
+                            }
+                        ],
+                        "type": "depository"
+                    },
+                    {
+                        "account_id": "b4L7LPo6ezFMAjqkdVyLibgxrapmzKFmgj48M",
+                        "balances": {
+                            "available": null,
+                            "current": 320.76,
+                            "iso_currency_code": "CAD",
+                            "limit": null,
+                            "margin_loan_amount": null,
+                            "unofficial_currency_code": null
+                        },
+                        "days_available": 0,
+                        "historical_balances": [],
+                        "mask": "5555",
+                        "name": "Plaid TFSA",
+                        "official_name": null,
+                        "owners": [
+                            {
+                                "addresses": [
+                                    {
+                                        "data": {
+                                            "city": "Gingham",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "478 Plaid Street"
+                                        },
+                                        "primary": true
+                                    },
+                                    {
+                                        "data": {
+                                            "city": "Tartan",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "2493 Leisure Lane"
+                                        },
+                                        "primary": false
+                                    }
+                                ],
+                                "emails": [
+                                    {
+                                        "data": "accountholder0@example.com",
+                                        "primary": true,
+                                        "type": "primary"
+                                    },
+                                    {
+                                        "data": "accountholder1@example.com",
+                                        "primary": false,
+                                        "type": "secondary"
+                                    },
+                                    {
+                                        "data": "extraordinarily.long.email.username.123456@reallylonghostname.com",
+                                        "primary": false,
+                                        "type": "other"
+                                    }
+                                ],
+                                "names": [
+                                    "Alberta Bobbeth Charleson"
+                                ],
+                                "phone_numbers": [
+                                    {
+                                        "data": "1112223333",
+                                        "primary": false,
+                                        "type": "home"
+                                    },
+                                    {
+                                        "data": "1112224444",
+                                        "primary": false,
+                                        "type": "work"
+                                    },
+                                    {
+                                        "data": "1112225555",
+                                        "primary": false,
+                                        "type": "mobile"
+                                    }
+                                ]
+                            }
+                        ],
+                        "ownership_type": null,
+                        "subtype": "tfsa",
+                        "transactions": [],
+                        "type": "investment"
+                    },
+                    {
+                        "account_id": "mpmEm3wgWXu5aAWx1vyefZB6vrewWNCgRNv6B",
+                        "balances": {
+                            "available": null,
+                            "current": 23631.9805,
+                            "iso_currency_code": "CAD",
+                            "limit": null,
+                            "margin_loan_amount": null,
+                            "unofficial_currency_code": null
+                        },
+                        "days_available": 0,
+                        "historical_balances": [],
+                        "mask": "6666",
+                        "name": "Plaid RRSP",
+                        "official_name": null,
+                        "owners": [
+                            {
+                                "addresses": [
+                                    {
+                                        "data": {
+                                            "city": "Gingham",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "478 Plaid Street"
+                                        },
+                                        "primary": true
+                                    },
+                                    {
+                                        "data": {
+                                            "city": "Tartan",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "2493 Leisure Lane"
+                                        },
+                                        "primary": false
+                                    }
+                                ],
+                                "emails": [
+                                    {
+                                        "data": "accountholder0@example.com",
+                                        "primary": true,
+                                        "type": "primary"
+                                    },
+                                    {
+                                        "data": "accountholder1@example.com",
+                                        "primary": false,
+                                        "type": "secondary"
+                                    },
+                                    {
+                                        "data": "extraordinarily.long.email.username.123456@reallylonghostname.com",
+                                        "primary": false,
+                                        "type": "other"
+                                    }
+                                ],
+                                "names": [
+                                    "Alberta Bobbeth Charleson"
+                                ],
+                                "phone_numbers": [
+                                    {
+                                        "data": "1112223333",
+                                        "primary": false,
+                                        "type": "home"
+                                    },
+                                    {
+                                        "data": "1112224444",
+                                        "primary": false,
+                                        "type": "work"
+                                    },
+                                    {
+                                        "data": "1112225555",
+                                        "primary": false,
+                                        "type": "mobile"
+                                    }
+                                ]
+                            }
+                        ],
+                        "ownership_type": null,
+                        "subtype": "rrsp",
+                        "transactions": [],
+                        "type": "investment"
+                    },
+                    {
+                        "account_id": "noyWyx9MmQSB4Rp9LvdMCqMGx5wzpETAPRyva",
+                        "balances": {
+                            "available": 43200,
+                            "current": 43200,
+                            "iso_currency_code": "CAD",
+                            "limit": null,
+                            "margin_loan_amount": null,
+                            "unofficial_currency_code": null
+                        },
+                        "days_available": 30,
+                        "historical_balances": [
+                            {
+                                "current": 43200,
+                                "date": "2024-01-16",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2024-01-15",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2024-01-14",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2024-01-13",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2024-01-12",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2024-01-11",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2024-01-10",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2024-01-09",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2024-01-08",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2024-01-07",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2024-01-06",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2024-01-05",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2024-01-04",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2024-01-03",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2024-01-02",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2024-01-01",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2023-12-31",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2023-12-30",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2023-12-29",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2023-12-28",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2023-12-27",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2023-12-26",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 43200,
+                                "date": "2023-12-25",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 49050,
+                                "date": "2023-12-24",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 49050,
+                                "date": "2023-12-23",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 49050,
+                                "date": "2023-12-22",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 49050,
+                                "date": "2023-12-21",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 49050,
+                                "date": "2023-12-20",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 49050,
+                                "date": "2023-12-19",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            },
+                            {
+                                "current": 49050,
+                                "date": "2023-12-18",
+                                "iso_currency_code": "CAD",
+                                "unofficial_currency_code": null
+                            }
+                        ],
+                        "mask": "4444",
+                        "name": "Plaid Money Market",
+                        "official_name": "Plaid Platinum Standard 1.85% Interest Money Market",
+                        "owners": [
+                            {
+                                "addresses": [
+                                    {
+                                        "data": {
+                                            "city": "Gingham",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "478 Plaid Street"
+                                        },
+                                        "primary": true
+                                    },
+                                    {
+                                        "data": {
+                                            "city": "Tartan",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "2493 Leisure Lane"
+                                        },
+                                        "primary": false
+                                    }
+                                ],
+                                "emails": [
+                                    {
+                                        "data": "accountholder0@example.com",
+                                        "primary": true,
+                                        "type": "primary"
+                                    },
+                                    {
+                                        "data": "accountholder1@example.com",
+                                        "primary": false,
+                                        "type": "secondary"
+                                    },
+                                    {
+                                        "data": "extraordinarily.long.email.username.123456@reallylonghostname.com",
+                                        "primary": false,
+                                        "type": "other"
+                                    }
+                                ],
+                                "names": [
+                                    "Alberta Bobbeth Charleson"
+                                ],
+                                "phone_numbers": [
+                                    {
+                                        "data": "1112223333",
+                                        "primary": false,
+                                        "type": "home"
+                                    },
+                                    {
+                                        "data": "1112224444",
+                                        "primary": false,
+                                        "type": "work"
+                                    },
+                                    {
+                                        "data": "1112225555",
+                                        "primary": false,
+                                        "type": "mobile"
+                                    }
+                                ]
+                            }
+                        ],
+                        "ownership_type": null,
+                        "subtype": "money market",
+                        "transactions": [
+                            {
+                                "account_id": "noyWyx9MmQSB4Rp9LvdMCqMGx5wzpETAPRyva",
+                                "amount": 5850,
+                                "date": "2023-12-25",
+                                "iso_currency_code": "CAD",
+                                "original_description": "ACH Electronic CreditGUSTO PAY 123456",
+                                "pending": false,
+                                "transaction_id": "aa1j1NGBJrHaWZGExVrbiMjzy9bRgvTZvz9m9",
+                                "unofficial_currency_code": null
+                            }
+                        ],
+                        "type": "depository"
+                    },
+                    {
+                        "account_id": "yx4B4JRM9WFZn1KRbwQJiw5PD41BKdS4kmqxN",
+                        "balances": {
+                            "available": null,
+                            "current": 65262,
+                            "iso_currency_code": "CAD",
+                            "limit": null,
+                            "margin_loan_amount": null,
+                            "unofficial_currency_code": null
+                        },
+                        "days_available": 0,
+                        "historical_balances": [],
+                        "mask": "7777",
+                        "name": "Plaid Student Loan",
+                        "official_name": null,
+                        "owners": [
+                            {
+                                "addresses": [
+                                    {
+                                        "data": {
+                                            "city": "Gingham",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "478 Plaid Street"
+                                        },
+                                        "primary": true
+                                    },
+                                    {
+                                        "data": {
+                                            "city": "Tartan",
+                                            "country": "CA",
+                                            "postal_code": "T0B 0Z0",
+                                            "region": "AB",
+                                            "street": "2493 Leisure Lane"
+                                        },
+                                        "primary": false
+                                    }
+                                ],
+                                "emails": [
+                                    {
+                                        "data": "accountholder0@example.com",
+                                        "primary": true,
+                                        "type": "primary"
+                                    },
+                                    {
+                                        "data": "accountholder1@example.com",
+                                        "primary": false,
+                                        "type": "secondary"
+                                    },
+                                    {
+                                        "data": "extraordinarily.long.email.username.123456@reallylonghostname.com",
+                                        "primary": false,
+                                        "type": "other"
+                                    }
+                                ],
+                                "names": [
+                                    "Alberta Bobbeth Charleson"
+                                ],
+                                "phone_numbers": [
+                                    {
+                                        "data": "1112223333",
+                                        "primary": false,
+                                        "type": "home"
+                                    },
+                                    {
+                                        "data": "1112224444",
+                                        "primary": false,
+                                        "type": "work"
+                                    },
+                                    {
+                                        "data": "1112225555",
+                                        "primary": false,
+                                        "type": "mobile"
+                                    }
+                                ]
+                            }
+                        ],
+                        "ownership_type": null,
+                        "subtype": "student",
+                        "transactions": [],
+                        "type": "loan"
+                    }
+                ],
+                "date_last_updated": "2024-01-17T06:26:31Z",
+                "institution_id": "ins_40",
+                "institution_name": "Tangerine - Personal",
+                "item_id": "Q1rnrPAXQGSGvZVEBX4zCMZRvnlKKPUpNwZ79"
+            }
+        ],
+        "user": {
+            "client_user_id": "ENTER_USER_ID_HERE",
+            "email": "ENTER_EMAIL_HERE",
+            "first_name": "ENTER_FIRST_NAME_HERE",
+            "last_name": "ENTER_LAST_NAME_HERE",
+            "middle_name": "ENTER_MIDDLE_NAME_HERE",
+            "phone_number": "1-415-867-5309",
+            "ssn": "111-22-1234"
+        }
+    },
+    "request_id": "GJ6oWDephObDSdF",
+    "warnings": []
+}

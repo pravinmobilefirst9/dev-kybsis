@@ -217,7 +217,27 @@ const assetsData  = [
       assetFields : []
     }
   ]
+  },
+  {
+    // 5
+    "name": "Cash",
+    "description": "Liquid assets in the form of cash",
+    "assetSubType": [
+      // 9
+      {
+        "name": "Physical Cash",
+        "description": "Actual physical currency notes and coins",
+        "assetFields": []
+      },
+      // 10
+      {
+        "name": "Bank Deposits",
+        "description": "Cash held in bank accounts",
+        "assetFields": []
+      }
+    ]
   }
+  
 ]
 
 const assetFields = [
@@ -253,6 +273,17 @@ const assetFieldsArt = [
   {name: "value", type: "number", label: "Value/Price",order_id : 2},
   {name: "location", type: "text", label : "Location", order_id : 3},
   {name: "details", type: "textarea", label : "Additional Details", order_id : 4},
+]
+
+const cashAssetsFieldsPhysical = [
+  {name: "amount", type: "number", label: "Amount",order_id : 1},
+  {name: "details", type: "textarea", label : "Additional Details", order_id : 2},
+
+]
+const cashAssetFieldsBankDeposit = [
+    {name: "bank_name", type: "text", label: "Bank Name",order_id : 1},
+    {name: "account_number", type: "text", label: "Account Number",order_id : 2},
+    {name: "amount", type: "number", label: "Amount",order_id : 3}
 ]
 
 const investmentCategories = [
@@ -371,6 +402,42 @@ async function main() {
       data : fieldArr
     })
   }
+  // For Cash 
+  for (let index = 8; index < 10; index++) {
+    switch (index) {
+      case 8:
+        const cashFieldArr = cashAssetsFieldsPhysical.map((f) => {
+          return {
+            ...f,
+            asset_id : 5,
+            asset_sub_id : index + 1
+          }
+        })
+    
+        await prisma.assetFields.createMany({
+          data : cashFieldArr
+        })
+        break;
+      
+      case 9:
+        const bankFieldArr = cashAssetFieldsBankDeposit.map((f) => {
+          return {
+            ...f,
+            asset_id : 5,
+            asset_sub_id : index + 1
+          }
+        })
+    
+        await prisma.assetFields.createMany({
+          data : bankFieldArr
+        })
+        break;
+      default:
+        break;
+    }
+    
+  }
+
 
   // await prisma.investmentCategories.deleteMany({})
   await prisma.investmentCategories.createMany({
