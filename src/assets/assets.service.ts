@@ -4,7 +4,7 @@ import { UpdateAssetDto } from './dto/update-asset.dto';
 import { PrismaService } from 'src/prisma.service';
 
 import { TransactionService } from 'src/transaction/transaction.service';
-import { PlaidAssetItem, PlaidItem } from '@prisma/client';
+import { PlaidAssetItem, PlaidItem, UserManualAssets } from '@prisma/client';
 import { AssetFormDetails } from './dto/asset-form.dto';
 
 @Injectable()
@@ -199,54 +199,34 @@ export class AssetsService {
   }
 
   async getAssetDetails(userId: number) {
-    try {
-      const userAssetsDetails =
-        await this.prismaClient.userAssetsDetails.findMany({
-          where: { user_id: userId },
-          select: {
-            asset_sub_id: true,
-          },
-        });
+    try { 
 
-      const assetSubIds = userAssetsDetails.map((uad) => uad.asset_sub_id);
-      const data = await this.prismaClient.assetType.findMany({
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          assetSubType: {
-            where: {
-              id: {
-                in: assetSubIds,
-              },
-            },
-            select: {
-              id: true,
-              asset_id: true,
-              name: true,
-              description: true,
-              UserAssetsDetails: {
-                where: {
-                  user_id: userId,
-                },
-                select: {
-                  id: true,
-                  user_id: true,
-                  asset_id: true,
-                  asset_sub_id: true,
-                  asset_field : {select : {id : true, name : true}},
-                  value: true,
-                },
-              },
-            },
+      const details = await this.prismaClient.userManualAssets.findMany({
+        select :{
+          id : true,
+          asset_subtype_id : true,
+          asset_type_id : true,
+          asset_fields : {
+            select : {
+              value : true,
+              field_id : true,
+              id : true,
+              asset_field: {
+                select : {
+                  label : true,
+                  id : true
+                }
+              }
+            }
           },
-        },
-      });
+        }
+      })
+
       return {
         success: true,
         statusCode: HttpStatus.OK,
         message: 'Assets fetched successfully',
-        data: data.filter((asset) => asset.assetSubType.length !== 0),
+        data: details,
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -321,7 +301,7 @@ export class AssetsService {
   }
 
   async getFormData(
-    { asset_id, asset_subtype_id }: AssetFormDetails,
+    { asset_id, asset_subtype_id, asset_type_id}: AssetFormDetails,
     user_id: number,
   ) {
     try {
@@ -332,43 +312,46 @@ export class AssetsService {
       if (!user) {
         throw new HttpException('User not found', HttpStatus.BAD_REQUEST);
       }
+      // Get user manual asset
+      let userManualAsset = null
+      
+      if (asset_id) {
+        userManualAsset = await this.prismaClient.userManualAssets.findUnique({
+          where : {
+            id : asset_id
+          },
+          select: {
+            id : true,
+            asset_type_id : true,
+            asset_subtype_id : true,
+            asset_fields : true
+          }
+        })
 
+        if (!userManualAsset) {
+          throw new HttpException("Invalid Asset ID", HttpStatus.NOT_FOUND)
+        }
+      }
+
+      // Find Assets fields by asset_type_id and asset_subtype_id
       const formData = await this.prismaClient.assetFields.findMany({
         where: {
           asset_sub_id: asset_subtype_id,
-          asset_id : asset_id
+          asset_id : asset_type_id
         },
         select: {
           label: true,
-          name: true,
+          // name: true,
           options: true,
           type: true,
           id: true,
         },
       });
 
-      if (formData.length === 0) {
-        throw new HttpException ("Invalid asset id or asset sub_type id", HttpStatus.BAD_REQUEST)
-      }
-
-      const userFormData = await this.prismaClient.userAssetsDetails.findMany({
-        where: {
-          asset_id: asset_id,
-          asset_sub_id: asset_subtype_id,
-        },
-        select : {
-          id : true,
-          asset_id : true,
-          asset_sub_id : true,
-          asset_field : {select : {name : true, id : true}},
-          value : true
-        }
-      });
-
       return {
         success: true,
         statusCode: HttpStatus.OK,
-        data: { formData, userFormData },
+        data: { formData, userManualAsset },
         message: 'Form fields fetched successfully',
       };
     } catch (error) {
@@ -383,7 +366,7 @@ export class AssetsService {
   }
 
   async addUserAssetsDetails(
-    { asset_id, asset_sub_id, fieldData }: CreateAssetDto,
+    { asset_type_id, asset_sub_id, fieldData }: CreateAssetDto,
     user_id: number,
   ) {
     try {
@@ -394,19 +377,27 @@ export class AssetsService {
       if (!user) {
         throw new HttpException('User not found', HttpStatus.BAD_REQUEST);
       }
+
+      // Create parent Asset
+      const newAsset = await this.prismaClient.userManualAssets.create({
+        data : {
+          asset_type_id,
+          asset_subtype_id : asset_sub_id,
+          user_id
+        }
+      })
+      // add fields data of assets
       const userAssetsFieldsArr = fieldData.map((f) => {
         return {
           value: f.value,
           field_id: f.field_id,
-          asset_id,
-          asset_sub_id,
-          user_id,
+          asset_id : newAsset.id,
         };
       });
 
       await this.prismaClient.userAssetsDetails.createMany({
-        data: userAssetsFieldsArr,
-      });
+        data : userAssetsFieldsArr
+      })
 
       return {
         success: true,
@@ -425,6 +416,59 @@ export class AssetsService {
     }
   }
 
+  async updateUserAssetDetails(    
+    { asset_id, fieldData }: UpdateAssetDto,
+    user_id: number
+    ){
+      try {
+        const userManualAsset = await this.prismaClient.userManualAssets.findUnique({
+          where : {
+            id : asset_id,
+            user_id
+          },
+          select : {
+            asset_fields : true,
+            id : true
+          }
+        })
+  
+        if (!userManualAsset) {
+          throw new HttpException("Asset not found with id : " + asset_id, HttpStatus.NOT_FOUND);
+        }
+  
+        if (fieldData.length !== userManualAsset.asset_fields.length) {
+          throw new HttpException("Some assets fields are missing", HttpStatus.BAD_REQUEST);
+        }
+  
+        let updatedFields = userManualAsset.asset_fields.map(async (field) => {
+          return await this.prismaClient.userAssetsDetails.update({
+            data : {
+              ...field,
+              value : fieldData.find((f) => f.field_id === field.field_id).value
+            },
+            where : {
+              id : field.id
+            }
+          })
+        })      
+        return {
+          success: true,
+          statusCode: HttpStatus.OK,
+          message: 'Asset updated successfully',
+          data: {userManualAsset, updatedFields},
+        };
+      } catch (error) {
+        if (error instanceof HttpException) {
+          throw error;
+        }
+        throw new HttpException(
+          error.toString(),
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+     
+
+    }
 
   async getPlaidAssets(user_id : number){
     try {
@@ -462,6 +506,51 @@ export class AssetsService {
         data: plaidAssets,
       };
       
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error.toString(),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async deleteManualAsset(user_id : number, asset_id : number){
+    try {
+      const userAsset = await this.prismaClient.userManualAssets.findUnique({
+        where : {
+          id : asset_id,
+          user_id
+        }
+      })
+
+      if (!userAsset) {
+        throw new HttpException("Invalid Asset ID", HttpStatus.BAD_REQUEST);
+      }
+
+      // First delete all user asset fields (child)
+      await this.prismaClient.userAssetsDetails.deleteMany({
+        where : {
+          asset_id
+        }
+      })
+
+      // Delete parent asset (Parent)
+      await this.prismaClient.userManualAssets.delete({
+        where : {
+          id : asset_id,
+          user_id
+        }
+      })
+
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: 'Asset deleted successfully!',
+        data: {},
+      };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

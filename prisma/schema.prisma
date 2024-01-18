@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,47 +8,49 @@ datasource db {
 }
 
 enum CollaborationStatus {
-  PENDING 
-  ACCEPTED   
-  REJECTED   
+  PENDING
+  ACCEPTED
+  REJECTED
 }
 
 model Collaboration {
-  id              Int      @id @default(autoincrement())
+  id              Int                 @id @default(autoincrement())
   user_id         Int
   collaborator_id Int
-  budget_id       Int      
+  budget_id       Int
   status          CollaborationStatus @default(PENDING)
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  created_at      DateTime            @default(now())
+  updated_at      DateTime            @updatedAt
 
   // Add the relation scalar field here
-  budget          Budget   @relation(fields: [budget_id], references: [id]) // This line creates the many to one relation
-  collaborator    User     @relation("CollaboratorCollaborations", fields: [collaborator_id], references: [id])
-  user            User     @relation("UserCollaborations", fields: [user_id], references: [id])
-
+  budget       Budget @relation(fields: [budget_id], references: [id]) // This line creates the many to one relation
+  collaborator User   @relation("CollaboratorCollaborations", fields: [collaborator_id], references: [id])
+  user         User   @relation("UserCollaborations", fields: [user_id], references: [id])
 }
-enum Duration  {
-    Monthly 
-    Annually
-  }
+
+enum Duration {
+  Monthly
+  Annually
+}
+
 model Budget {
-  id                  Int             @id @default(autoincrement())
+  id                  Int              @id @default(autoincrement())
   user_id             Int
   name                String
   amount              Float
   budgets_category_id Int
   start_date          DateTime
-  created_at          DateTime        @default(now())
-  updated_at          DateTime        @default(now())
+  created_at          DateTime         @default(now())
+  updated_at          DateTime         @default(now())
   duration            Duration
   collaborations      Collaboration[] // This line indicates that a Budget can have many Collaborations
   BudgetCategory      BudgetCategories @relation(fields: [budgets_category_id], references: [id])
-  User                User            @relation(fields: [user_id], references: [id])
+  User                User             @relation(fields: [user_id], references: [id])
+  // ... other fields and relations
 
   @@unique([user_id, budgets_category_id])
-  // ... other fields and relations
 }
+
 // model Budget {
 //   id             Int      @id @default(autoincrement())
 //   duration       String   // can be 'Monthly' or 'Annually'
@@ -154,8 +155,8 @@ model User {
   PlaidAssetItem                PlaidAssetItem[]
   userSubscription              UserSubscription?
   userPayments                  Payment[]
-  userAssetsDetails             UserAssetsDetails[]
   manualInvestments             ManualInvestments[]
+  userManualAssets              UserManualAssets[]
 }
 
 model Goal {
@@ -387,7 +388,7 @@ model BudgetCategories {
   category_ids  String[]
   created_at    DateTime @default(now())
   updated_at    DateTime @default(now())
-   Budgets       Budget[]
+  Budgets       Budget[]
 }
 
 model PlaidAssetItem {
@@ -426,6 +427,20 @@ model AssetAccount {
   plaid_asset_item         PlaidAssetItem           @relation(fields: [plaid_asset_item_id], references: [id])
   historicalBalances       AssetHistoricalBalance[]
   transactions             AssetTransaction[]
+}
+
+model UserManualAssets {
+  id               Int      @id @default(autoincrement())
+  user_id          Int
+  asset_type_id    Int
+  asset_subtype_id Int
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  AssetType    AssetType           @relation(fields: [asset_type_id], references: [id])
+  AssetSubType AssetSubType        @relation(fields: [asset_subtype_id], references: [id])
+  User         User                @relation(fields: [user_id], references: [id])
+  asset_fields UserAssetsDetails[]
 }
 
 model AssetHistoricalBalance {
@@ -515,9 +530,10 @@ model AssetType {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  assetSubType      AssetSubType[]
-  UserAssetsDetails UserAssetsDetails[]
-  assetFields       AssetFields[]
+  assetSubType     AssetSubType[]
+  // UserAssetsDetails UserAssetsDetails[]
+  assetFields      AssetFields[]
+  userManualAssets UserManualAssets[]
 }
 
 model AssetSubType {
@@ -530,8 +546,9 @@ model AssetSubType {
 
   asset AssetType @relation(fields: [asset_id], references: [id])
 
-  assetFields       AssetFields[]
-  UserAssetsDetails UserAssetsDetails[]
+  assetFields      AssetFields[]
+  // UserAssetsDetails UserAssetsDetails[]
+  userManualAssets UserManualAssets[]
 }
 
 model AssetFields {
@@ -552,19 +569,17 @@ model AssetFields {
 }
 
 model UserAssetsDetails {
-  id           Int      @id @default(autoincrement())
-  user_id      Int
-  asset_id     Int
-  asset_sub_id Int
-  field_id     Int
-  value        String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  asset_id  Int
+  // asset_type_id Int
+  // asset_sub_id  Int
+  field_id  Int
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  asset          AssetType    @relation(fields: [asset_id], references: [id])
-  asset_field    AssetFields  @relation(fields: [field_id], references: [id])
-  asset_sub_type AssetSubType @relation(fields: [asset_sub_id], references: [id])
-  user           User         @relation(fields: [user_id], references: [id])
+  // asset_type     AssetType        @relation(fields: [asset_type_id], references: [id])
+  // asset_sub_type AssetSubType     @relation(fields: [asset_sub_id], references: [id])
+  asset_field AssetFields      @relation(fields: [field_id], references: [id])
+  asset       UserManualAssets @relation(fields: [asset_id], references: [id])
 }
-
-

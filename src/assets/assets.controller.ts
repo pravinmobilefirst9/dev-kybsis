@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, HttpException, HttpStatus, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, HttpException, HttpStatus, ParseIntPipe, Put } from '@nestjs/common';
 import { AssetsService } from './assets.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
@@ -82,12 +82,29 @@ export class AssetsController {
     return await this.assetsService.addUserAssetsDetails(data, user_id)
   }
 
+  @Put("update_asset")
+  @UseGuards(AuthGuard)
+  async updateAsset(
+    @Req() request: any,
+    @Body() data: UpdateAssetDto
+  ) {
+    const { user_id } = request.auth;
+    return await this.assetsService.updateUserAssetDetails(data, user_id)
+  }
+
   @Post("get_plaid_assets")
   @UseGuards(AuthGuard)
   async getPlaidAssets( @Req() request: any,
   ){
     const { user_id } = request.auth;
     return await this.assetsService.getPlaidAssets(user_id)
+  }
+
+  @Delete("delete_asset/:asset_id")
+  @UseGuards(AuthGuard)
+  async deleteUserAsset(@Req() request : any, @Param('asset_id', ParseIntPipe) asset_id : number ){
+    const { user_id } = request.auth;
+    return await this.assetsService.deleteManualAsset(user_id, asset_id)
   }
 
   @Post()
