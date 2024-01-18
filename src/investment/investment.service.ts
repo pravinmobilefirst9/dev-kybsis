@@ -509,7 +509,7 @@ export class InvestmentService {
     try {
       const plaidData = await this.fetchPlaidInvestmentHomePageData(user_id)
       const manualInvestmentData = await this.fetchInvestmentManualData(user_id)
-
+      
 
       let resultObj = {
         total_investment : plaidData.data.total_investment + manualInvestmentData.data.pie_chart_data.total_investment,
@@ -560,8 +560,8 @@ export class InvestmentService {
       })
       
       let totalValue = total_investment + totalProfit - totalLoss;
-      let profitPercentage = Math.ceil((totalProfit / totalValue) * 100);
-      let lossPercentage = Math.ceil((totalLoss / totalValue) * 100);
+      let profitPercentage = Math.ceil((totalProfit / totalValue) * 100) || 0;
+      let lossPercentage = Math.ceil((totalLoss / totalValue) * 100) || 0;
       
       const pieChartData = {
         total_investment,
