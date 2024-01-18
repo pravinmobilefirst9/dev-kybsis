@@ -67,7 +67,7 @@ export class BudgetService {
         throw new HttpException("Start date should not be past date", HttpStatus.BAD_REQUEST);
       }
 
-      // Create a new budget record
+      // Create or update a new budget record
       let userBudget: Budget = null;
       let dataObj = {
         name: createBudgetDto.name,
@@ -85,6 +85,10 @@ export class BudgetService {
         });
       }
       else {
+        const budgetExists = await this.prisma.budget.findUnique({where : {id  :budgetId}})
+        if (!budgetExists) {
+          throw new HttpException("Invalid budget Id", HttpStatus.NOT_FOUND)
+        }
         userBudget = await this.prisma.budget.update({
           data: dataObj,
           where: { id: budgetId }
@@ -249,7 +253,8 @@ export class BudgetService {
               category_name: true,
               id: true
             }
-          }
+          },
+          collaborations : true
         },
         where: { user_id: userId }
       });
@@ -271,10 +276,12 @@ export class BudgetService {
         let remaining = limit - spent
 
         resultTransactions.push({
+          budget_id : budget.id,
           budget_name: budget.name,
           limit,
           spent,
-          remaining
+          remaining,
+          collaborators : budget.collaborations
         })
       })
       return {
