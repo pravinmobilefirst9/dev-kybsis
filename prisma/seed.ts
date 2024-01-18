@@ -160,7 +160,7 @@ const assetsData  = [
   },
   {
     // 2
-    name: "jwellary",
+    name: "Jewellery",
     description: "Precious ornaments and accessories",
     assetSubType: [
       // 3

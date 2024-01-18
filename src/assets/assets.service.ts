@@ -206,6 +206,16 @@ export class AssetsService {
           id : true,
           asset_subtype_id : true,
           asset_type_id : true,
+          AssetType : {
+            select : {
+              name : true,
+            }
+          },
+          AssetSubType: {
+            select : {
+              name : true
+            }
+          },
           asset_fields : {
             select : {
               value : true,

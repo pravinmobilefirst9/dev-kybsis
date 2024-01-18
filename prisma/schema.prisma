@@ -46,24 +46,9 @@ model Budget {
   collaborations      Collaboration[] // This line indicates that a Budget can have many Collaborations
   BudgetCategory      BudgetCategories @relation(fields: [budgets_category_id], references: [id])
   User                User             @relation(fields: [user_id], references: [id])
-  // ... other fields and relations
 
   @@unique([user_id, budgets_category_id])
 }
-
-// model Budget {
-//   id             Int      @id @default(autoincrement())
-//   duration       String   // can be 'Monthly' or 'Annually'
-//   name           String   // corresponds to 'Budget Name'
-//   categoryId     Int      // foreign key to a Category model
-//   accountId      Int      // foreign key to an Account model
-//   amount         Float    // corresponds to 'Set Amount'
-//   startDate      DateTime // corresponds to 'Start Date'
-//   endDate        DateTime // corresponds to 'End Date'
-//   collaboratorId Int?     // optional, foreign key to a User model
-//   createdAt      DateTime @default(now())
-//   updatedAt      DateTime @updatedAt
-// }
 
 model GoalCategory {
   id         Int      @id @default(autoincrement())
