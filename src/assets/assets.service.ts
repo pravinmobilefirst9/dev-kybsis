@@ -220,7 +220,6 @@ export class AssetsService {
             select : {
               value : true,
               field_id : true,
-              id : true,
               asset_field: {
                 select : {
                   label : true,
@@ -334,7 +333,12 @@ export class AssetsService {
             id : true,
             asset_type_id : true,
             asset_subtype_id : true,
-            asset_fields : true
+            asset_fields : {
+              select : {
+                field_id : true,
+                value : true
+              }
+            }
           }
         })
 
@@ -346,12 +350,11 @@ export class AssetsService {
       // Find Assets fields by asset_type_id and asset_subtype_id
       const formData = await this.prismaClient.assetFields.findMany({
         where: {
-          asset_sub_id: asset_subtype_id,
-          asset_id : asset_type_id
+          asset_sub_id: userManualAsset ? userManualAsset.asset_subtype_id : asset_subtype_id,
+          asset_type_id : userManualAsset ? userManualAsset.asset_type_id : asset_type_id
         },
         select: {
           label: true,
-          // name: true,
           options: true,
           type: true,
           id: true,

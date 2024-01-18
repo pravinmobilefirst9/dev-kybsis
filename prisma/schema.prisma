@@ -537,19 +537,19 @@ model AssetSubType {
 }
 
 model AssetFields {
-  id           Int      @id @default(autoincrement())
-  asset_id     Int
-  asset_sub_id Int
-  name         String
-  label        String
-  type         String
-  options      String[]
-  order_id     Int
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  asset_type_id Int
+  asset_sub_id  Int
+  name          String
+  label         String
+  type          String
+  options       String[]
+  order_id      Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   asset_sub_type    AssetSubType        @relation(fields: [asset_sub_id], references: [id])
-  asset_type        AssetType           @relation(fields: [asset_id], references: [id])
+  asset_type        AssetType           @relation(fields: [asset_type_id], references: [id])
   UserAssetsDetails UserAssetsDetails[]
 }
 

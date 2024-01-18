@@ -13,6 +13,10 @@ export enum Duration {
 }
 
 export class CreateBudgetDto {
+  @IsOptional()
+  @IsNumber({}, { message: 'budget Id must be a number.' })
+  readonly budgetId: number;
+
   @IsEnum(Duration, { message: 'Invalid duration. Must be Monthly or Annually.' })
   readonly duration: Duration;
 

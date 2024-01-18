@@ -9,13 +9,13 @@ import { RegisterUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { PrismaService } from 'src/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { User } from '@prisma/client';
 import * as nodeMailer from 'nodemailer';
 import { LoginUserDto } from './dto/login-user.dto';
 import { ForgetPassword } from './dto/forget-password.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ProfileAddDto } from './dto/profile-add.dto';
 import { UpdatePasswordDTO } from './dto/update-password.dto';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -93,7 +93,7 @@ export class UsersService {
     }
   }
 
-  async sendEmail(user: User, subject: string, message: string, otp: number) {
+  async sendEmail(user: any, subject: string, message: string, otp: number) {
     const transporter = nodeMailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT) || 587,
@@ -106,7 +106,7 @@ export class UsersService {
 
     const emailOptions = {
       from: process.env.FROM_EMAIL,
-      to: user.email,
+      to: user?.email ? user?.email : user,
       subject: subject,
       text: message,
     };

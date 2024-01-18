@@ -349,7 +349,7 @@ async function main() {
     const fieldArr = assetFields.map((f) => {
       return {
         ...f,
-        asset_id : 1,
+        asset_type_id : 1,
         asset_sub_id : index + 1
       }
     })
@@ -364,7 +364,7 @@ async function main() {
     const fieldArr = assetFieldsJwellary.map((f) => {
       return {
         ...f,
-        asset_id : 2,
+        asset_type_id : 2,
         asset_sub_id : index + 1
       }
     })
@@ -379,7 +379,7 @@ async function main() {
     const fieldArr = assetFieldsArt.map((f) => {
       return {
         ...f,
-        asset_id : 3,
+        asset_type_id : 3,
         asset_sub_id : index + 1
       }
     })
@@ -393,7 +393,7 @@ async function main() {
     const fieldArr = assetFieldsRealEstate.map((f) => {
       return {
         ...f,
-        asset_id : 4,
+        asset_type_id : 4,
         asset_sub_id : index + 1
       }
     })
@@ -409,7 +409,7 @@ async function main() {
         const cashFieldArr = cashAssetsFieldsPhysical.map((f) => {
           return {
             ...f,
-            asset_id : 5,
+            asset_type_id : 5,
             asset_sub_id : index + 1
           }
         })
@@ -423,7 +423,7 @@ async function main() {
         const bankFieldArr = cashAssetFieldsBankDeposit.map((f) => {
           return {
             ...f,
-            asset_id : 5,
+            asset_type_id : 5,
             asset_sub_id : index + 1
           }
         })
