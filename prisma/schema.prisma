@@ -46,8 +46,6 @@ model Budget {
   collaborations      Collaboration[] // This line indicates that a Budget can have many Collaborations
   BudgetCategory      BudgetCategories @relation(fields: [budgets_category_id], references: [id])
   User                User             @relation(fields: [user_id], references: [id])
-
-  @@unique([user_id, budgets_category_id])
 }
 
 model GoalCategory {

@@ -411,11 +411,6 @@ export class InvestmentService {
       totalInvestment = parseFloat(totalInvestment.toFixed(2));
       profitPercentage = Math.ceil(profitPercentage)
       lossPercentage = Math.ceil(lossPercentage)
-      // const pieChartData = [
-      //   { "label": "Total Investment", "value": totalInvestment },
-      //   { "label": "Profit Percentage", "value": profitPercentage },
-      //   { "label": "Loss Percentage", "value": lossPercentage }
-      // ]
 
       const pieChartData = {
         total_investment : totalInvestment,
