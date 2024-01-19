@@ -96,7 +96,6 @@ export class BudgetService {
       }
 
       // Add collaborators
-      if (collaborators.length > 0) {
         const user = await this.prisma.user.findUnique({
           where: {
             id: userId
@@ -113,6 +112,7 @@ export class BudgetService {
             id: true
           }
         })
+        
         // Filter all collaborators which are not included into current collaborators list to remove if updating
         const collaboratorsToRemove = alreadyExistedCollaborators.filter((c) => collaborators.includes(c.user.email) === false);
         // Delete all collaborators which are not included in collaborators array if updating
@@ -161,7 +161,7 @@ export class BudgetService {
             }    
           }
         })
-      }
+      
 
       return {
         success: true,
@@ -180,45 +180,6 @@ export class BudgetService {
     }
   }
 
-  async updateUserBudgetDetails(updateBudgetDto: UpdateBudgetDto, userId: number) {
-    const { id, name, amount, categoryId, startDate, duration, collaborators } = updateBudgetDto;
-
-    // Check if the budget exists and belongs to the user
-    const existingBudget = await this.prisma.budget.findFirst({
-      where: { id, user_id: userId },
-    });
-    if (!existingBudget) {
-      throw new Error(`Budget with ID '${id}' not found or unauthorized access.`);
-    }
-
-    try {
-      // Update the budget record
-      const updatedBudget = await this.prisma.budget.update({
-        where: { id },
-        data: {
-          name: name || existingBudget.name,
-          amount: amount || existingBudget.amount,
-          budgets_category_id: categoryId || existingBudget.budgets_category_id,
-          start_date: startDate || existingBudget.start_date,
-        },
-      });
-
-      return {
-        success: true,
-        statusCode: HttpStatus.CREATED,
-        message: 'Budget updated successfully',
-        data: updatedBudget,
-      };
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new HttpException(
-        error.toString(),
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
 
   async fetchUserBudgets(userId: number) {
     try {

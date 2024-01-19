@@ -228,6 +228,9 @@ export class AssetsService {
               }
             }
           },
+        },
+        where : {
+          user_id : userId
         }
       })
 

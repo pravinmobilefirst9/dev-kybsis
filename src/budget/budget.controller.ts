@@ -18,17 +18,7 @@ export class BudgetController {
     return await this.budgetService.addUserBudgetDetails(createBudgetDto, user_id);
   }
 
-  @Patch('update-budget')
-  @UseGuards(AuthGuard)
-  async updateBudget(
-    @Req() request: any,
-    @Body() updateBudgetDto: UpdateBudgetDto,
-  ) {
-    const { user_id } = request.auth;
-    return await this.budgetService.updateUserBudgetDetails(updateBudgetDto, user_id);
-  }
-
-  @Get("fetch_user_budgets")
+  @Get("fetch_my_budgets")
   @UseGuards(AuthGuard)
   async fetchAllUserBudgetWithDetails(@Req() req : any){
     const { user_id } = req.auth; 
