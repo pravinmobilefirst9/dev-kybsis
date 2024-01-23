@@ -11173,3 +11173,7 @@ console.log({clothCategories});
 const filterFoodTransactions = transactions.filter((t) => clothCategories.includes(t.category_id) === true)
 
 console.log({filterFoodTransactions});
+
+let arr = Array.from({ length: 11 }, (_, index) => (2013 + index).toString());
+
+console.log({arr});

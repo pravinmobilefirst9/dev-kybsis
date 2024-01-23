@@ -240,11 +240,14 @@ const assetsData  = [
   
 ]
 
+let years = Array.from({ length: 11 }, (_, index) => (2013 + index).toString());
+
+
 const assetFields = [
   // For car and its subtype it is same
-  {name: "make", type: "date", label: "Make",order_id : 1},
+  {name: "make", type: "text", label: "Make",order_id : 1},
   {name: "model", type: "text", label: "Model",order_id : 2},
-  {name: "Year", type: "options", label: "Year",order_id : 3, options : ["2020","2022", "2023"]},
+  {name: "Year", type: "options", label: "Year",order_id : 3, options : years},
   {name: "value", type: "number", label : "Value", order_id : 5},
   {name: "location", type: "text", label : "Location",order_id : 6},
   {name: "description", type: "textarea", label : "Description", order_id : 7},
@@ -287,16 +290,14 @@ const cashAssetFieldsBankDeposit = [
 ]
 
 const investmentCategories = [
-  {"name": "Stocks"},
-  {"name": "Bonds"},
-  {"name": "Real Estate"},
-  {"name": "Mutual Funds"},
-  {"name": "Exchange-Traded Funds (ETFs)"},
-  {"name": "Cryptocurrencies"},
-  {"name": "Commodities"},
-  {"name": "Options"},
-  {"name": "Retirement Accounts"},
-  {"name": "Savings Accounts"}
+  {"name": "Mutual Fund"},
+  {"name": "Equity"},
+  {"name": "ETFs(Exchange-Traded Funds)"},
+  {"name": "Cash"},
+  {"name": "Private Equity"},
+  {"name": "Hedge Funds"},
+  {"name": "Annuities"},
+  {"name": "Whole Life Insurance"}
 ]
 
 const tableNames = ['Subscriptions', 'AssetFields', 'AssetSubType', 'AssetType', 'AssetFields', 'InvestmentCategories','BudgetCategories'];

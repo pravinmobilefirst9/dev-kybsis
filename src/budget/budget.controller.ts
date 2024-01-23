@@ -4,6 +4,7 @@ import { CreateBudgetDto } from './dto/create-budget.dto';
 import { UpdateBudgetDto } from './dto/update-budget.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { InvitationStatusUpdateDTO } from './dto/set-invitation-status.dto';
+import { CollaboratrTransactions } from './dto/collaborator-transactions.dto';
 
 
 @Controller('budget')
@@ -24,6 +25,13 @@ export class BudgetController {
   async fetchUserBudgetWithDetails(@Req() req : any){
     const { user_id } = req.auth; 
     return await this.budgetService.fetchUserBudgets(user_id); 
+  }
+
+  @Get("fetch_budget_details/:budgetId")
+  @UseGuards(AuthGuard)
+  async fetchUserBudgetDetails(@Req() req : any, @Param("budgetId", ParseIntPipe) budgetId : number){
+    const { user_id } = req.auth; 
+    return await this.budgetService.fetchBudgetDetails(user_id, budgetId); 
   }
 
   @Get("fetch_collaborative_budgets")
@@ -74,6 +82,14 @@ export class BudgetController {
   async updateInvitationStatusOfUser(@Req() req : any, @Body() payload : InvitationStatusUpdateDTO){
     const { user_id } = req.auth; 
     return await this.budgetService.updateBudgetCollaborationInvitationStatus(user_id, payload);
+  }
+
+  @Post("fetch_collaborator_transactions")
+  @UseGuards(AuthGuard)
+  async fetchTransactionsOfCollaborators(@Req() req : any, @Body() payload : CollaboratrTransactions){
+    const { user_id } = req.auth; 
+    return await this.budgetService.
+    fetchCollaboratorTransactions(user_id, payload);
   }
 
   @Delete("delete_collaborator/:collaborationId")
