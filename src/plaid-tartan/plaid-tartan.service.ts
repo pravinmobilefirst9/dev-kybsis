@@ -105,7 +105,7 @@ export class PlaidTartanService {
             account_name: account.name,
             account_id: account.account_id,
             institution_name: 'Bank of America',
-            official_name: account.official_name || 'Bank of America',
+            official_name: account.official_name || "",
             mask: account.mask,
             type: account.type,
             subtype: account.subtype,

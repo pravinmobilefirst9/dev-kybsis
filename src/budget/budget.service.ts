@@ -48,6 +48,34 @@ export class BudgetService {
     return endDate;
   }
 
+
+  async fetchBudgetCategories(){
+    try {
+      const budgetCategories = await this.prisma.budgetCategories.findMany({
+        select : {
+          id : true,
+          category_name : true,
+        }
+      })
+
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: `Budget categories fetched successfully`,
+        data: budgetCategories,
+      };
+      
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error.toString(),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   async addUserBudgetDetails(createBudgetDto: CreateBudgetDto, userId: number) {
     try {
       const { collaborators, budgetId } = createBudgetDto;
@@ -156,7 +184,7 @@ export class BudgetService {
               data: {
                 budget_id: userBudget.id,
                 collaborator_id: existedUser.id,
-                status: 'PENDING',
+                status: 'ACCEPTED',
                 user_id: userId
               }
             })
@@ -286,7 +314,9 @@ export class BudgetService {
         }, 0);
 
 
-        const collaborators = budget.collaborations.filter((clb) => clb.status === "ACCEPTED").map((collaborator) => {
+        const collaborators = budget.collaborations
+        // .filter((clb) => clb.status === "ACCEPTED")
+        .map((collaborator) => {
           return {
             status: collaborator.status,
             collaborator_id: collaborator.collaborator_id,
@@ -297,7 +327,6 @@ export class BudgetService {
           }
         })
 
-        // Filter transactions based on current budget
         let limit = budget.amount;
         let spent = userContri + collaboratorContri
         let remaining = limit - spent
@@ -308,6 +337,7 @@ export class BudgetService {
           limit,
           spent,
           remaining,
+          duration : budget.duration,
           collaborators
         })
       })

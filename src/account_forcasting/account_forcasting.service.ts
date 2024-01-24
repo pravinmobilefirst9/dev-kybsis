@@ -165,12 +165,83 @@ async findAllAccountForcasting(user_id : number){
   }
 }
 
+async getForcastingById(user_id : number, id : number){
+  try {
+    const forcasting = await this.prisma.forecast.findUnique({
+      where : { 
+        id,
+        user_id
+      },
+      select : {
+        id : true,
+        compound : true,
+        contributeAt : true,
+        endBalance : true,
+        returnRate : true,
+        startingAmount : true,
+        startingBalance : true,
+        timePeriod : true,
+        totalInterest : true,
+        totalContribution : true,
+      }
+    })
 
+    if (!forcasting) {
+      throw new HttpException(`Account forcasting not found for id : ${id} with user id : ${user_id}`,
+      HttpStatus.NOT_FOUND
+      )
+    }
 
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: `Account forcasting fetched successfully`,
+      data:  forcasting,
+    };
+  } catch (error) {
+    if (error instanceof HttpException) {
+      throw error
+    }
+    throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+  }
+}
 
+async deleteAccountForcasting(user_id : number, id : number){
+  try {
+    const forcasting = await this.prisma.forecast.findUnique({
+      where : {
+        id,
+        user_id
+      }
+    })
 
+    if (!forcasting) {
+      throw new HttpException(`Account forcasting not found for id : ${id} with user id : ${user_id}`,
+      HttpStatus.NOT_FOUND
+      )
+    }
 
+    await this.prisma.forecast.delete({
+      where : {
+        id,
+        user_id
+      }
+    })
 
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: `Account forcasting deleted successfully`,
+      data: {},
+    };
+
+  } catch (error) {
+    if (error instanceof HttpException) {
+      throw error
+    }
+    throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+  }
+}
 
 
   create(createAccountForcastingDto: CreateAccountForcastingDto) {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, ParseIntPipe } from '@nestjs/common';
 import { AccountForcastingService } from './account_forcasting.service';
 import { CreateAccountForcastingDto } from './dto/create-account_forcasting.dto';
 import { UpdateAccountForcastingDto } from './dto/update-account_forcasting.dto';
@@ -10,35 +10,46 @@ export class AccountForcastingController {
 
   @Post("create_forcast")
   @UseGuards(AuthGuard)
-  create(
+  async create(
     @Body() createAccountForcastingDto: CreateAccountForcastingDto,
     @Req() request: any,
     ) {
     const {user_id} = request.auth;
-    return this.accountForcastingService.calculateForecastDetails(user_id, createAccountForcastingDto);
+    return await this.accountForcastingService.calculateForecastDetails(user_id, createAccountForcastingDto);
   }
 
   @Get("fetch_all_forcasting")
   @UseGuards(AuthGuard)
-  findAllForcasting(
+  async findAllForcasting(
     @Req() request: any,
   ) {
     const {user_id} = request.auth;
-    return this.accountForcastingService.findAllAccountForcasting(user_id);
+    return await this.accountForcastingService.findAllAccountForcasting(user_id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.accountForcastingService.findOne(+id);
+  @Get('fetch_all_forcasting/:id')
+  @UseGuards(AuthGuard)
+  async findOneAccountForcasting(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: any,    
+    ) {
+    const {user_id} = request.auth;
+    return await this.accountForcastingService.getForcastingById(user_id, +id);
   }
+  
+  @Delete('delete_forcasting/:id')
+  async removeAccountForcasting(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() request: any,    
+    ) {
+    const {user_id} = request.auth;
+    return await this.accountForcastingService.deleteAccountForcasting(user_id, +id);
+  }
+
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateAccountForcastingDto: UpdateAccountForcastingDto) {
     return this.accountForcastingService.update(+id, updateAccountForcastingDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.accountForcastingService.remove(+id);
-  }
 }

@@ -41,6 +41,12 @@ export class BudgetController {
     return await this.budgetService.fetchCollaborativeBudget(user_id); 
   }
 
+  @Get("fetch_budget_categories")
+  @UseGuards(AuthGuard)
+  async fetchBudgetCategories(){
+    return await this.budgetService.fetchBudgetCategories(); 
+  }
+
 
   @Post('budget_details')
   @UseGuards(AuthGuard) 
