@@ -13,9 +13,10 @@ import { LiabilitiesModule } from './liabilities/liabilities.module';
 import { PaymentModule } from './payment/payment.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { BudgetModule } from './budget/budget.module';
+import { AccountForcastingModule } from './account_forcasting/account_forcasting.module';
 
 @Module({
-  imports: [UsersModule, PlaidTartanModule, TransactionModule, InvestmentModule, TransactionCategoriesModule, AssetsModule, LiabilitiesModule, PaymentModule, SubscriptionModule, BudgetModule],
+  imports: [UsersModule, PlaidTartanModule, TransactionModule, InvestmentModule, TransactionCategoriesModule, AssetsModule, LiabilitiesModule, PaymentModule, SubscriptionModule, BudgetModule, AccountForcastingModule],
   controllers: [AppController],
   providers: [AppService, PrismaService, AuthGuard,],
 })

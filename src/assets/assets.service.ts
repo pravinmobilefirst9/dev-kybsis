@@ -190,7 +190,7 @@ export class AssetsService {
         statusCode: HttpStatus.OK,
         message: "Assets data imported successfully",
         data: {}
-      };;
+      };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error

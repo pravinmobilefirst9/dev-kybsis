@@ -140,6 +140,7 @@ model User {
   userPayments                  Payment[]
   manualInvestments             ManualInvestments[]
   userManualAssets              UserManualAssets[]
+  accountForcasting             Forecast[]
 }
 
 model Goal {
@@ -565,4 +566,44 @@ model UserAssetsDetails {
   // asset_sub_type AssetSubType     @relation(fields: [asset_sub_id], references: [id])
   asset_field AssetFields      @relation(fields: [field_id], references: [id])
   asset       UserManualAssets @relation(fields: [asset_id], references: [id])
+}
+
+enum CompoundFrequency {
+  ANNUALLY
+  SEMIANNUALLY
+  QUARTERLY
+  MONTHLY
+  SEMIMONTHLY
+  BIWEEKLY
+  WEEKLY
+  DAILY
+  CONTINUOUSLY
+}
+
+enum Timing {
+  BEGINNING
+  END_OF_EACH_MONTH
+  END_OF_EACH_YEAR
+}
+
+model Forecast {
+  id                Int    @id @default(autoincrement())
+  startingAmount    Float
+  timePeriod        Int
+  returnRate        Float
+  compound          CompoundFrequency
+  contributeAt      Timing
+  endBalance        Float
+  startingBalance   Float
+  totalContribution Float
+  totalInterest     Float
+  user_id Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+
+// Relations
+  user         User          @relation(fields: [user_id], references: [id])
+
+
 }
