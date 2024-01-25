@@ -381,7 +381,8 @@ export class BudgetService {
       }
       const budget = await this.prisma.budget.findUnique({
         where: {
-          id: budgetId
+          id: budgetId,
+          user_id
         },
         select: {
           id: true,
@@ -440,19 +441,19 @@ export class BudgetService {
       let allUserTransactions: any[] = budget.User.account.map((acc) => {
         return { account: { name: acc.account_name, id: acc.id }, transactions: acc.Transaction }
       }) || []
-      allUserTransactions = allUserTransactions.reduce((acc, account) => {
+      allUserTransactions = allUserTransactions && allUserTransactions.length > 0 ? allUserTransactions.reduce((acc, account) => {
         return [...acc, ...account.transactions];
-      }, []);
+      }, []) : [];
 
       // Filter the transactions based on category ids
-      allUserTransactions = allUserTransactions.filter((transaction) =>
+      allUserTransactions =  allUserTransactions.filter((transaction) =>
         budget.BudgetCategory.category_ids.includes(transaction.category_id) === true &&
         transaction.amount > 0
       ) || [];
       // Sum of all transactions
-      userContribution.amount = allUserTransactions.reduce(function (sum, transaction) {
+      userContribution.amount = allUserTransactions && allUserTransactions.length > 0 ? allUserTransactions.reduce(function (sum, transaction) {
         return sum + transaction.amount;
-      }, 0);
+      }, 0) : 0;
 
 
       // 2) Calculate collaborators contributions
@@ -460,13 +461,13 @@ export class BudgetService {
         .filter((clb) => clb.status === "ACCEPTED") || [];
 
       // Fetch accounts first
-      allCollaboratorsTransactions = allCollaboratorsTransactions.reduce((acc, collaborators) => {
+      allCollaboratorsTransactions = allCollaboratorsTransactions && allCollaboratorsTransactions.length > 0 ? allCollaboratorsTransactions.reduce((acc, collaborators) => {
         return [...acc, collaborators.collaborator.account]
-      }, []) || [[]]
+      }, []) : [[]]
       // Destructre and combine all transactions of all accounts irrespective of bank
-      allCollaboratorsTransactions = allCollaboratorsTransactions[0].reduce((trs, account) => {
+      allCollaboratorsTransactions = allCollaboratorsTransactions && allCollaboratorsTransactions.length > 0 ? allCollaboratorsTransactions[0].reduce((trs, account) => {
         return [...trs, ...account.Transaction]
-      }, [])
+      }, []) : []
 
       // Filter the transactions based on category ids
       allCollaboratorsTransactions = allCollaboratorsTransactions.filter((transaction) =>
@@ -474,19 +475,19 @@ export class BudgetService {
         transaction.amount > 0
       ) || [];
       // Sum of all transactions
-      collaboratorsContribution.amount = allCollaboratorsTransactions.reduce(function (sum, transaction) {
+      collaboratorsContribution.amount = allCollaboratorsTransactions && allCollaboratorsTransactions.length > 0 ? allCollaboratorsTransactions.reduce(function (sum, transaction) {
         return sum + transaction.amount;
-      }, 0);
+      }, 0) : 0;
 
       // Calculate combined spent amount
 
-      let userContri = allUserTransactions.reduce(function (sum, transaction) {
+      let userContri = allUserTransactions && allUserTransactions.length > 0 ? allUserTransactions.reduce(function (sum, transaction) {
         return sum + transaction.amount;
-      }, 0);
+      }, 0) : 0;
 
-      let contrubutersContri = allCollaboratorsTransactions.reduce(function (sum, transaction) {
+      let contrubutersContri = allCollaboratorsTransactions && allCollaboratorsTransactions.length > 0 ? allCollaboratorsTransactions.reduce(function (sum, transaction) {
         return sum + transaction.amount;
-      }, 0);
+      }, 0) : 0;
 
       resultObj.limit = budget.amount;
       resultObj.spent = contrubutersContri + userContri;
