@@ -550,6 +550,7 @@ export class BudgetService {
           },
           collaborations: {
             select: {
+              id : true,
               status: true,
               collaborator_id: true,
               collaborator: {
@@ -633,13 +634,16 @@ export class BudgetService {
           }
         })
 
+        const yourCollaboration = budget.collaborations.find((clb) => clb.collaborator_id === user_id)
+
         resultArr.push({
           budget_id: budget.id,
           budget_name: budget.name,
           limit,
           spent,
           remaining,
-          collaborators
+          collaborators,
+          yourCollaboration
         })
       })
       return {
