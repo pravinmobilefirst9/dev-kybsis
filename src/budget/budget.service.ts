@@ -439,7 +439,7 @@ export class BudgetService {
       // 1) Calculate all admin transactions
       let allUserTransactions: any[] = budget.User.account.map((acc) => {
         return { account: { name: acc.account_name, id: acc.id }, transactions: acc.Transaction }
-      })
+      }) || []
       allUserTransactions = allUserTransactions.reduce((acc, account) => {
         return [...acc, ...account.transactions];
       }, []);
@@ -448,7 +448,7 @@ export class BudgetService {
       allUserTransactions = allUserTransactions.filter((transaction) =>
         budget.BudgetCategory.category_ids.includes(transaction.category_id) === true &&
         transaction.amount > 0
-      );
+      ) || [];
       // Sum of all transactions
       userContribution.amount = allUserTransactions.reduce(function (sum, transaction) {
         return sum + transaction.amount;
@@ -456,12 +456,13 @@ export class BudgetService {
 
 
       // 2) Calculate collaborators contributions
-      let allCollaboratorsTransactions: any[] = budget.collaborations.filter((clb) => clb.status === "ACCEPTED")
+      let allCollaboratorsTransactions: any[] = budget.collaborations
+        .filter((clb) => clb.status === "ACCEPTED") || [];
 
       // Fetch accounts first
       allCollaboratorsTransactions = allCollaboratorsTransactions.reduce((acc, collaborators) => {
         return [...acc, collaborators.collaborator.account]
-      }, [])
+      }, []) || [[]]
       // Destructre and combine all transactions of all accounts irrespective of bank
       allCollaboratorsTransactions = allCollaboratorsTransactions[0].reduce((trs, account) => {
         return [...trs, ...account.Transaction]
@@ -471,7 +472,7 @@ export class BudgetService {
       allCollaboratorsTransactions = allCollaboratorsTransactions.filter((transaction) =>
         budget.BudgetCategory.category_ids.includes(transaction.category_id) === true &&
         transaction.amount > 0
-      );
+      ) || [];
       // Sum of all transactions
       collaboratorsContribution.amount = allCollaboratorsTransactions.reduce(function (sum, transaction) {
         return sum + transaction.amount;
