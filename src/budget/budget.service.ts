@@ -266,7 +266,12 @@ export class BudgetService {
       let resultTransactions = [];
 
       if (userBudgets.length === 0) {
-        throw new HttpException("Budgets not found!", HttpStatus.NOT_FOUND)
+        return { 
+          success: true,
+          statusCode: HttpStatus.OK,
+          message: 'Budgets not found',
+          data: [],
+        }
       }
       // Loop through all budgets and filter out the transactions as per category ids for that budgets
       userBudgets.forEach(async (budget) => {
