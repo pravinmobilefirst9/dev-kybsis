@@ -38,6 +38,7 @@ export class AccountForcastingController {
   }
   
   @Delete('delete_forcasting/:id')
+  @UseGuards(AuthGuard)
   async removeAccountForcasting(
     @Param('id', ParseIntPipe) id: number,
     @Req() request: any,    

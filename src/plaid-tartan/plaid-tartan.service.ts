@@ -3,7 +3,6 @@ import { CreatePlaidTartanDto } from './dto/create-plaid-tartan.dto';
 import { UpdatePlaidTartanDto } from './dto/update-plaid-tartan.dto';
 import { PrismaService } from 'src/prisma.service';
 import { TransactionService } from 'src/transaction/transaction.service';
-import { Transaction } from '@prisma/client';
 
 @Injectable()
 export class PlaidTartanService {
