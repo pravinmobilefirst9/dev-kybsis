@@ -86,6 +86,12 @@ export class BudgetService {
         }
       })
 
+      const admin = await this.prisma.user.findUnique({where :{id : userId}, select : {email : true}});
+
+      if (collaborators.includes(admin.email)) {
+        throw new HttpException('User creating budget cannot add yourself as a collaborator', HttpStatus.NOT_ACCEPTABLE);
+      }
+
       if (!isCategoryExists) {
         throw new HttpException("Invalid Category", HttpStatus.BAD_REQUEST);
       }

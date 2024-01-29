@@ -98,6 +98,7 @@ model PlaidItem {
 
   AssetPlaidItem     PlaidAssetItem?
   investmentAccounts InvestmentAccounts[]
+  TransactionsAccounts Account[]
 }
 
 model PlaidInstitutionImportHistory {
@@ -179,7 +180,7 @@ model Transaction {
   pending              Boolean
   created_at           DateTime @default(now())
   updated_at           DateTime @default(now())
-  Account              Account  @relation(fields: [account_id], references: [id])
+  Account              Account  @relation(fields: [account_id], references: [id], onDelete: Cascade)
 
   @@unique([plaid_transaction_id, account_id, date])
 }
@@ -189,6 +190,7 @@ model Account {
   user_id             Int
   account_name        String
   account_id          String
+  plaid_item_id       Int
   institution_name    String
   official_name       String
   mask                String
@@ -199,6 +201,7 @@ model Account {
   created_at          DateTime
   updated_at          DateTime
   User                User          @relation(fields: [user_id], references: [id])
+  PlaidItem           PlaidItem     @relation(fields: [plaid_item_id], references: [id])
   Balance             Balance[]
   Transaction         Transaction[]
 }
@@ -212,7 +215,7 @@ model Balance {
   date              DateTime
   created_at        DateTime @default(now())
   updated_at        DateTime @default(now())
-  Account           Account  @relation(fields: [account_tbl_id], references: [id])
+  Account           Account  @relation(fields: [account_tbl_id], references: [id], onDelete: Cascade)
 }
 
 enum UserRole {
