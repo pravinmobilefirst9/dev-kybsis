@@ -241,6 +241,7 @@ export class BudgetService {
           },
           collaborations: {
             select: {
+              id : true,
               status: true,
               collaborator_id: true,
               collaborator: {
@@ -323,6 +324,7 @@ export class BudgetService {
         // .filter((clb) => clb.status === "ACCEPTED")
         .map((collaborator) => {
           return {
+            collaboration_id : collaborator.id,
             status: collaborator.status,
             collaborator_id: collaborator.collaborator_id,
             collaborator: {
@@ -343,7 +345,9 @@ export class BudgetService {
           spent,
           remaining,
           duration : budget.duration,
-          collaborators
+          budget_category : {category_id : budget.BudgetCategory.id, category_name : budget.BudgetCategory.category_name},
+          collaborators,
+          created_at : budget.created_at
         })
       })
       return {
