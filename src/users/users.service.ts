@@ -106,7 +106,7 @@ export class UsersService {
 
     const emailOptions = {
       from: process.env.FROM_EMAIL,
-      to: user?.email ? user?.email : user,
+      to: user.email !== undefined && user.email !== null ? user.email : user,
       subject: subject,
       text: message,
     };

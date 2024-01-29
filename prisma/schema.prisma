@@ -96,8 +96,8 @@ model PlaidItem {
   plaid         PlaidInstitutionImportHistory[]
   user          User                            @relation(fields: [user_id], references: [id])
 
-  AssetPlaidItem     PlaidAssetItem?
-  investmentAccounts InvestmentAccounts[]
+  AssetPlaidItem       PlaidAssetItem?
+  investmentAccounts   InvestmentAccounts[]
   TransactionsAccounts Account[]
 }
 
@@ -142,6 +142,7 @@ model User {
   manualInvestments             ManualInvestments[]
   userManualAssets              UserManualAssets[]
   accountForcasting             Forecast[]
+  userWidgets                   userWidgets[]
 }
 
 model Goal {
@@ -590,7 +591,7 @@ enum Timing {
 }
 
 model Forecast {
-  id                Int    @id @default(autoincrement())
+  id                Int               @id @default(autoincrement())
   startingAmount    Float
   timePeriod        Int
   returnRate        Float
@@ -600,13 +601,34 @@ model Forecast {
   startingBalance   Float
   totalContribution Float
   totalInterest     Float
-  user_id Int
+  user_id           Int
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id])
+}
+
+model Widgets {
+  id        Int      @id @default(autoincrement())
+  name      String
+  default   Boolean
+  role      UserRole
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  userWidgets userWidgets[]
+}
 
-// Relations
-  user         User          @relation(fields: [user_id], references: [id])
+model userWidgets {
+  id        Int      @id @default(autoincrement())
+  widget_id Int
+  user_id   Int
+  value     Int
+  active    Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-
+  User   User    @relation(fields: [user_id], references: [id])
+  Widget Widgets @relation(fields: [widget_id], references: [id])
 }

@@ -300,6 +300,13 @@ const investmentCategories = [
   {"name": "Whole Life Insurance"}
 ]
 
+const widgets = [
+  {name : "Income", default : true, role : "BASIC"},
+  {name : "Expense", default : true, role : "BASIC"},
+  {name : "Investment", default : true, role : "PREMIUM"},
+  {name : "Budget", default : true, role : "PREMIUM"}
+]
+
 const tableNames = ['Subscriptions', 'AssetFields', 'AssetSubType', 'AssetType', 'AssetFields', 'InvestmentCategories','BudgetCategories'];
 
 
@@ -448,6 +455,16 @@ async function main() {
   await prisma.budgetCategories.createMany({
     data : categories
   })
+
+
+  await prisma.widgets.createMany({
+    data : widgets.map((w) => ({
+      default : w.default,
+      name : w.name,
+      role : w.role === "BASIC" ? "BASIC" : "PREMIUM"
+    }))
+  })
+
 
 }
 
