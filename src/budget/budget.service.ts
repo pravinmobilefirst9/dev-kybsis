@@ -145,7 +145,8 @@ export class BudgetService {
         },
         select: {
           user: true,
-          id: true
+          id: true,
+          collaborator_id : true
         }
       })
 
@@ -190,14 +191,13 @@ export class BudgetService {
               data: {
                 budget_id: userBudget.id,
                 collaborator_id: existedUser.id,
-                status: 'ACCEPTED',
+                status: 'PENDING',
                 user_id: userId
               }
             })
           }
         }
       })
-
 
       return {
         success: true,
@@ -215,7 +215,6 @@ export class BudgetService {
       );
     }
   }
-
 
   async fetchUserBudgets(userId: number) {
     try {
