@@ -390,14 +390,14 @@ export class BudgetService {
       }
       const budget = await this.prisma.budget.findUnique({
         where: {
-          id: budgetId,
-          user_id
+          id: budgetId
         },
         select: {
           id: true,
           name: true,
           duration: true,
           amount: true,
+          user_id : true,
           User: {
             select: {
               account: {
@@ -444,7 +444,15 @@ export class BudgetService {
         throw new HttpException("Budget not found", HttpStatus.NOT_FOUND)
       }
 
-      // Calculate contributions
+      // Check user wants to access budget details is should be either admin or collaborator
+      if (budget.user_id !== user_id) {
+        const collaborator = budget.collaborations.find((clb) => clb.collaborator_id === user_id)
+        if (!collaborator || (collaborator && collaborator.status !== "ACCEPTED")) {
+          throw new HttpException(`You are eligible to access the budget with id : ${budgetId}`,
+            HttpStatus.UNAUTHORIZED
+          )
+        }
+      }
 
       // 1) Calculate all admin transactions
       let allUserTransactions: any[] = budget.User.account.map((acc) => {
@@ -490,22 +498,23 @@ export class BudgetService {
 
       // Calculate combined spent amount
 
-      let userContri = allUserTransactions && allUserTransactions.length > 0 ? allUserTransactions.reduce(function (sum, transaction) {
+      let userContri : number = allUserTransactions && allUserTransactions.length > 0 ? allUserTransactions.reduce(function (sum, transaction) {
         return sum + transaction.amount;
       }, 0) : 0;
 
-      let contrubutersContri = allCollaboratorsTransactions && allCollaboratorsTransactions.length > 0 ? allCollaboratorsTransactions.reduce(function (sum, transaction) {
+      let contrubutersContri : number = allCollaboratorsTransactions && allCollaboratorsTransactions.length > 0 ? allCollaboratorsTransactions.reduce(function (sum, transaction) {
         return sum + transaction.amount;
       }, 0) : 0;
 
-      resultObj.limit = budget.amount;
-      resultObj.spent = contrubutersContri + userContri;
-      resultObj.remaining = resultObj.limit - resultObj.spent;
+      resultObj.limit = parseFloat(budget.amount.toFixed(2));
+      resultObj.spent = parseFloat((contrubutersContri + userContri).toFixed(2));
+      resultObj.remaining = parseFloat((resultObj.limit - resultObj.spent).toFixed(2));
 
       // Calculate percentages for user and collaboration contributions
-      userContribution.percentage = (userContribution.amount / resultObj.spent) * 100;
-      collaboratorsContribution.percentage = (collaboratorsContribution.amount / resultObj.spent) * 100;
-
+      userContribution.percentage = Math.ceil((userContribution.amount / resultObj.spent) * 100);
+      userContribution.amount = parseFloat(userContribution.amount.toFixed(2))
+      collaboratorsContribution.percentage = Math.ceil((collaboratorsContribution.amount / resultObj.spent) * 100);
+      collaboratorsContribution.amount = parseFloat(collaboratorsContribution.amount.toFixed(2))
       return {
         success: true,
         statusCode: HttpStatus.OK,
@@ -659,7 +668,14 @@ export class BudgetService {
           spent,
           remaining,
           collaborators,
-          yourCollaboration
+          yourCollaboration :{
+            id : yourCollaboration.id,
+            status : yourCollaboration.status,
+            collaborator_id: yourCollaboration.collaborator_id,
+            collaborator : {
+              email : yourCollaboration.collaborator.email
+            }
+          }
         })
       })
       return {
@@ -667,36 +683,6 @@ export class BudgetService {
         statusCode: HttpStatus.OK,
         message: 'Collaborative budgets fetched successfully',
         data: resultArr,
-      };
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new HttpException(
-        error.toString(),
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  async getBudgetDetails(userId: number) {
-    try {
-
-      const budgets = await this.prisma.budget.findMany({
-        where: { user_id: userId },
-        include: {
-          BudgetCategory: {
-            select: {
-              category_name: true,
-            },
-          }
-        },
-      });
-      return {
-        success: true,
-        statusCode: HttpStatus.OK,
-        message: 'Budget Details fetched successfully',
-        data: budgets,
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -1048,22 +1034,21 @@ export class BudgetService {
 
   async fetchCollaboratorTransactions(user_id  : number, {budgetId, collaboratorId} : CollaboratrTransactions){
   try {
-    const budget = await this.prisma.budget.findUnique({
-      where :{id  : budgetId},
+    const collaboration = await this.prisma.collaboration.findFirst({
+      where : {
+        budget_id : budgetId,
+        collaborator_id : collaboratorId
+      },
       select : {
         id : true,
-        BudgetCategory : {
+        collaborator_id : true,
+        budget_id : true,
+        status : true,
+        budget : {
           select : {
-            category_ids : true,
-          }
-        },
-        collaborations : {
-          select : {
-            status : true,
-            collaborator_id : true,
-            collaborator : {
+            BudgetCategory : {
               select : {
-                id : true,
+                category_ids : true
               }
             }
           }
@@ -1071,19 +1056,18 @@ export class BudgetService {
       }
     })
 
-    const collaborator = budget.collaborations.find((clb) => clb.collaborator_id === collaboratorId)
 
-    if (!collaborator) {
+    if (!collaboration) {
       throw new HttpException("Collaborator not found for this budget", HttpStatus.NOT_FOUND);
     }
 
-    if (collaborator.status !== "ACCEPTED") {
+    if (collaboration.status !== "ACCEPTED") {
       throw new HttpException("Collaborator is not added to the budget", HttpStatus.NOT_FOUND);
     }
 
     let collaboratorsTransactions : any[] = await this.prisma.account.findMany({
       where : {
-        user_id : collaborator.collaborator.id
+        user_id : collaboration.collaborator_id
       },
       select : {
         Transaction : true
@@ -1097,7 +1081,7 @@ export class BudgetService {
 
     // Filter out all the transactions
     collaboratorsTransactions = collaboratorsTransactions.filter((transaction) =>
-    budget.BudgetCategory.category_ids.includes(transaction.category_id) === true &&
+    collaboration.budget.BudgetCategory.category_ids.includes(transaction.category_id) === true &&
     transaction.amount > 0
   );   
   
@@ -1117,6 +1101,78 @@ export class BudgetService {
       HttpStatus.INTERNAL_SERVER_ERROR,
     );
   }
+}
+
+async fetchMyTransactions(user_id : number, budgetId : number){
+  try {
+    if (!budgetId) {
+      throw new HttpException("Budget id not found", HttpStatus.BAD_REQUEST)
     }
+    const budget = await this.prisma.budget.findUnique({
+      where : {
+        id : budgetId,
+      },
+      select : {
+        id : true,
+        user_id : true,
+        BudgetCategory : {
+          select : {
+            category_ids : true
+          }
+        },
+        collaborations : true
+      }
+    })
+
+    if (!budget) {
+      throw new HttpException(`Budget not found associated with user id : ${user_id}`, HttpStatus.NOT_FOUND);
+    }
+    // Check user wants to access budget details is should be either admin or collaborator
+    if (budget.user_id !== user_id) {
+      const collaborator = budget.collaborations.find((clb) => clb.collaborator_id === user_id)
+      if (!collaborator || (collaborator && collaborator.status !== "ACCEPTED")) {
+        throw new HttpException(`You are eligible to access the budget with id : ${budgetId}`,
+          HttpStatus.UNAUTHORIZED
+        )
+      }
+    }
+    const accountsOfCurrentUser = await this.prisma.account.findMany({
+      where : {
+        user_id
+      },
+      select : {
+        id : true,
+        Transaction : true
+      }
+    })
+
+    // Combine all the transactions
+    let transactions = accountsOfCurrentUser.reduce((transactions, trs) => {
+      return [...transactions, ...trs.Transaction]
+    }, [])
+
+    // Filter out all the transactions
+    transactions = transactions.filter((transaction) =>
+    budget.BudgetCategory.category_ids.includes(transaction.category_id) === true &&
+    transaction.amount > 0
+  );   
+
+  return {
+    success: true,
+    statusCode: HttpStatus.OK,
+    message: `Transactions fetched successfully!`,
+    data: transactions,
+  }
+  } catch (error) {
+    if (error instanceof HttpException) {
+      throw error;
+    }
+    throw new HttpException(
+      error.toString(),
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  }
+}
+
 }
 

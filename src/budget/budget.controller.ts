@@ -46,14 +46,6 @@ export class BudgetController {
     return await this.budgetService.fetchBudgetCategories(); 
   }
 
-
-  @Post('budget_details')
-  @UseGuards(AuthGuard) 
-  async getBudgetDetail(@Req() req: any) {
-      const { user_id } = req.auth; 
-      return await this.budgetService.getBudgetDetails(user_id);
-  }
-
   @Post('budget_category')
   @UseGuards(AuthGuard) 
   async getBudgetCategories(@Req() req: any) {
@@ -95,6 +87,14 @@ export class BudgetController {
     const { user_id } = req.auth; 
     return await this.budgetService.
     fetchCollaboratorTransactions(user_id, payload);
+  }
+
+  @Post("fetch_my_transactions/:budgetId")
+  @UseGuards(AuthGuard)
+  async fetchMyTransactionsForBudget(@Req() req : any, @Param('budgetId', ParseIntPipe) budgetId : number){
+    const { user_id } = req.auth;
+    return await this.budgetService.
+    fetchMyTransactions(user_id, budgetId);
   }
 
   @Delete("delete_collaborator/:collaborationId")
