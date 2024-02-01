@@ -739,7 +739,6 @@ export class BudgetService {
         where: {
           budget_id: budgetId,
           status: "ACCEPTED",
-          user_id
         },
         select: {
           id: true,
