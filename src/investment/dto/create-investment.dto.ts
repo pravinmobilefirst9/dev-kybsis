@@ -14,12 +14,10 @@ export class CreateManualInvestmentDto {
     currency: string;
   
     @IsNotEmpty({ message: 'Price cannot be empty' })
-    @IsInt({ message: 'Price must be an integer' })
     @Min(0, { message: 'Price must be greater than or equal to 0' })
     purchasePrice: number;
     
     @IsNotEmpty({ message: 'current price cannot be empty' })
-    @IsInt({ message: 'current price must be an integer' })
     @Min(0, { message: 'current price must be greater than or equal to 0' })
     currentPrice: number;
   
