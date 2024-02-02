@@ -109,7 +109,7 @@ export class BudgetService {
         name: createBudgetDto.name,
         amount: createBudgetDto.amount,
         budgets_category_id: createBudgetDto.categoryId,
-        start_date: createBudgetDto.startDate,
+        start_date: createBudgetDto.startDate.toDateString(),
         duration: createBudgetDto.duration,
       }
       if (!budgetId) {
