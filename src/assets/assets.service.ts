@@ -252,7 +252,7 @@ export class AssetsService {
   }
   async getAssetsLists() {
     try {
-      const assetList =  await this.prismaClient.assetType.findMany({
+      let assetList : any =  await this.prismaClient.assetType.findMany({
         select: {
           name: true,
           description: true,
@@ -272,6 +272,21 @@ export class AssetsService {
         },
         
       });
+
+      assetList = assetList.map((asset) => {
+        if (asset.hasSubType === false) {
+          return {
+            ...asset,
+            assetSubType : asset.assetSubType[0]
+          }
+        }
+        else{
+          return {
+            ...asset,
+            assetSubType : null
+          }
+        }
+      })
 
       return {
         success: true,
