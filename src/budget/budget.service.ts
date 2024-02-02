@@ -358,7 +358,8 @@ export class BudgetService {
           duration: budget.duration,
           budget_category: { category_id: budget.BudgetCategory.id, category_name: budget.BudgetCategory.category_name },
           collaborators,
-          created_at: budget.created_at
+          created_at: budget.created_at,
+          start_date : budget.start_date
         })
       })
       return {
