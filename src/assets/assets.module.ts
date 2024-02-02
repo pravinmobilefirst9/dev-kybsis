@@ -7,5 +7,6 @@ import { TransactionService } from 'src/transaction/transaction.service';
 @Module({
   controllers: [AssetsController],
   providers: [AssetsService, PrismaService, TransactionService],
+  exports : [AssetsService]
 })
 export class AssetsModule {}

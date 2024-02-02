@@ -257,7 +257,20 @@ export class AssetsService {
           name: true,
           description: true,
           id: true,
+          hasSubType : true,
+          assetSubType : {
+            select : {
+              id : true,
+              name : true
+            },
+            where : {
+              asset : {
+                hasSubType : false
+              }
+            },
+          }
         },
+        
       });
 
       return {
@@ -361,6 +374,7 @@ export class AssetsService {
           options: true,
           type: true,
           id: true,
+          name : true
         },
       });
 

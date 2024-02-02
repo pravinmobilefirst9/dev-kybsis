@@ -321,9 +321,9 @@ model ManualInvestments {
   name           String
   code           String
   currency       String
-  purchase_price Int
-  current_price  Int
-  quantity       Int
+  purchase_price Float
+  current_price  Float
+  quantity       Float
   user_id        Int
   category_id    Int
   created_at     DateTime @default(now())
@@ -515,6 +515,7 @@ model AssetType {
   id          Int      @id @default(autoincrement())
   name        String
   description String?
+  hasSubType  Boolean @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -631,4 +632,6 @@ model userWidgets {
 
   User   User    @relation(fields: [user_id], references: [id])
   Widget Widgets @relation(fields: [widget_id], references: [id])
+
+  @@unique([user_id, widget_id])
 }

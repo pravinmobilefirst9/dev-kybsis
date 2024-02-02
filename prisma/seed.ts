@@ -141,60 +141,42 @@ const assetsData  = [
     // 1
     name: "Car",
     description: "Vehicles for personal use",
+    hasSubType : false,
     assetSubType: [
       // 1
       {
-        name: "Auto", 
-        description: "Four-door car with a closed roof",
+        name: "Default", 
+        description: "All",
         assetFields : [
         ]
       },
-      // 2
-      {
-        name: "Manual", 
-        description: "Four-door car with a closed roof",
-        assetFields : [ 
-        ]
-      }
     ]
   },
   {
     // 2
     name: "Jewellery",
     description: "Precious ornaments and accessories",
+    hasSubType : false,
     assetSubType: [
-      // 3
+      // 2
       {
-        name: "Necklace",
-        description: "Ornamental chain worn around the neck",
+        name: "Default",
+        description: "All",
         assetFields : [
         ]
       },
-      // 4
-      {
-      name: "Ring",
-      description: "Circular band worn on the finger",
-        assetFields : [
-          
-        ]
-      }
     ]
   },
   {
     // 3
     name: "Art",
     description: "Creative and expressive works of art",
+    hasSubType : false,
     assetSubType: [
-      // 5
+      // 3
       {
-        name: "Painting",
-        description: "Visual art created using pigments on a surface",
-        assetFields : []
-      },
-      // 6
-      {
-        name: "Sculpture",
-        description: "Three-dimensional artistic piece",
+        name: "Default",
+        description: "All",
         assetFields : []
       },
     ]
@@ -204,13 +186,13 @@ const assetsData  = [
     "name": "Real Estate",
     "description": "Properties for personal or commercial use",
     "assetSubType": [
-      // 7
+      // 4
     {
       "name": "Residential",
       "description": "Properties for personal living",
       assetFields : []
     },
-    // 8
+    // 5
     {
       "name": "Commercial",
       "description": "Properties for business purposes",
@@ -223,13 +205,13 @@ const assetsData  = [
     "name": "Cash",
     "description": "Liquid assets in the form of cash",
     "assetSubType": [
-      // 9
+      // 6
       {
         "name": "Physical Cash",
         "description": "Actual physical currency notes and coins",
         "assetFields": []
       },
-      // 10
+      // 7
       {
         "name": "Bank Deposits",
         "description": "Cash held in bank accounts",
@@ -255,11 +237,10 @@ const assetFields = [
 const assetFieldsRealEstate = [
   // For car and its subtype it is same
   {name: "address", type: "text", label: "Address",order_id : 1},
-  {name: "value", type: "text", label: "Value",order_id : 2},
-  {name: "type", type: "options", label: "Type of Property",order_id : 3, options : ["Apartment","Townhouse", "Condominium", "Single-Family Home"]},
-  {name: "value", type: "number", label : "Value", order_id : 4},
-  {name: "year", type: "date", label : "Date of purchase",order_id : 5},
-  {name: "details", type: "textarea", label : "Additional Details", order_id : 6},
+  {name: "type", type: "options", label: "Type of Property",order_id : 2, options : ["Apartment","Townhouse", "Condominium", "Single-Family Home"]},
+  {name: "value", type: "number", label : "Value", order_id : 3},
+  {name: "year", type: "date", label : "Date of purchase",order_id : 4},
+  {name: "details", type: "textarea", label : "Additional Details", order_id : 5},
 ]
 
 const assetFieldsJwellary = [
@@ -279,14 +260,16 @@ const assetFieldsArt = [
 ]
 
 const cashAssetsFieldsPhysical = [
-  {name: "amount", type: "number", label: "Amount",order_id : 1},
+  {name: "value", type: "number", label: "Amount",order_id : 1},
   {name: "details", type: "textarea", label : "Additional Details", order_id : 2},
 
 ]
 const cashAssetFieldsBankDeposit = [
     {name: "bank_name", type: "text", label: "Bank Name",order_id : 1},
     {name: "account_number", type: "text", label: "Account Number",order_id : 2},
-    {name: "amount", type: "number", label: "Amount",order_id : 3}
+    {name: "value", type: "number", label: "Amount",order_id : 3},
+    {name: "description", type: "textarea", label : "Description", order_id : 4},
+
 ]
 
 const investmentCategories = [
@@ -303,11 +286,16 @@ const investmentCategories = [
 const widgets = [
   {name : "Income", default : true, role : "BASIC"},
   {name : "Expense", default : true, role : "BASIC"},
-  {name : "Investment", default : true, role : "PREMIUM"},
-  {name : "Budget", default : true, role : "PREMIUM"}
+  {name : "Plaid Investment", default : false, role : "PREMIUM"},
+  {name : "Manual Investment", default : false, role : "PREMIUM"},
+  {name : "Total Investment", default : false, role : "PREMIUM"},
+  {name : "Budget", default : false, role : "PREMIUM"},
+  {name : "Houshold", default : false, role : "PREMIUM"},
+  {name : "Plaid Assets", default : false, role : "PREMIUM"},
+  {name : "Manual Assets", default : false, role : "PREMIUM"},
 ]
 
-const tableNames = ['Subscriptions', 'AssetFields', 'AssetSubType', 'AssetType', 'AssetFields', 'InvestmentCategories','BudgetCategories'];
+const tableNames = ['Subscriptions', 'AssetFields', 'AssetSubType', 'AssetType', 'AssetFields', 'InvestmentCategories','BudgetCategories', 'Widgets'];
 
 
 async function main() {
@@ -334,14 +322,15 @@ async function main() {
 
   // Add asset types and assets subtypes
   for (const asset of assetsData) {
-    const {name, description, assetSubType} = asset;
+    const {name, description, assetSubType, hasSubType} = asset;
     await prisma.assetType.create({
       data : {
         name,
         description,
+        hasSubType,
         assetSubType : {
           create : assetSubType.map((subtype) => {
-            const { assetFields,  description, name} = subtype;
+            const { description, name} = subtype;
             return {
               name,
               description
@@ -352,102 +341,119 @@ async function main() {
     })
   }
   
-  // Add Assets data for Car
-  for (let index = 0; index < 2; index++) {
-    const fieldArr = assetFields.map((f) => {
-      return {
-        ...f,
-        asset_type_id : 1,
-        asset_sub_id : index + 1
+  const assetSubTypes = await prisma.assetSubType.findMany({
+    select : {
+      id : true,
+      name : true,
+      asset : {
+        select : {
+          id : true,
+          name : true
+        }
       }
-    })
+    }
+  })
 
-    await prisma.assetFields.createMany({
-      data : fieldArr
-    })
-  }
-
-  // For jwellary
-  for (let index = 2; index < 4; index++) {
-    const fieldArr = assetFieldsJwellary.map((f) => {
-      return {
-        ...f,
-        asset_type_id : 2,
-        asset_sub_id : index + 1
-      }
-    })
-
-    await prisma.assetFields.createMany({
-      data : fieldArr
-    })
-  }
-
-  // For Art
-  for (let index = 4; index < 6; index++) {
-    const fieldArr = assetFieldsArt.map((f) => {
-      return {
-        ...f,
-        asset_type_id : 3,
-        asset_sub_id : index + 1
-      }
-    })
-
-    await prisma.assetFields.createMany({
-      data : fieldArr
-    })
-  }
-  // For Real Estate
-  for (let index = 6; index < 8; index++) {
-    const fieldArr = assetFieldsRealEstate.map((f) => {
-      return {
-        ...f,
-        asset_type_id : 4,
-        asset_sub_id : index + 1
-      }
-    })
-
-    await prisma.assetFields.createMany({
-      data : fieldArr
-    })
-  }
-  // For Cash 
-  for (let index = 8; index < 10; index++) {
-    switch (index) {
-      case 8:
-        const cashFieldArr = cashAssetsFieldsPhysical.map((f) => {
+  assetSubTypes.forEach(async (subType) => {
+    let fieldArr = []
+    switch (subType.asset.name) {
+      case "Car":
+        fieldArr = assetFields.map((f) => {
           return {
             ...f,
-            asset_type_id : 5,
-            asset_sub_id : index + 1
+            asset_type_id : subType.asset.id,
+            asset_sub_id : subType.id
           }
         })
     
         await prisma.assetFields.createMany({
-          data : cashFieldArr
+          data : fieldArr
         })
         break;
-      
-      case 9:
-        const bankFieldArr = cashAssetFieldsBankDeposit.map((f) => {
+
+      case "Jewellery":
+        fieldArr = assetFieldsJwellary.map((f) => {
           return {
             ...f,
-            asset_type_id : 5,
-            asset_sub_id : index + 1
+            asset_type_id : subType.asset.id,
+            asset_sub_id : subType.id
           }
         })
     
         await prisma.assetFields.createMany({
-          data : bankFieldArr
+          data : fieldArr
         })
-        break;
+      break;
+
+      case "Art":
+        fieldArr = assetFieldsArt.map((f) => {
+          return {
+            ...f,
+            asset_type_id : subType.asset.id,
+            asset_sub_id : subType.id
+          }
+        })
+    
+        await prisma.assetFields.createMany({
+          data : fieldArr
+        })
+      break;
+
+      case "Real Estate":
+        fieldArr = assetFieldsRealEstate.map((f) => {
+          return {
+            ...f,
+            asset_type_id : subType.asset.id,
+            asset_sub_id : subType.id
+          }
+        })
+    
+        await prisma.assetFields.createMany({
+          data : fieldArr
+        })
+      break;
+
+      case "Cash":
+        switch (subType.name) {
+          case "Physical Cash":
+            fieldArr = cashAssetsFieldsPhysical.map((f) => {
+              return {
+                ...f,
+                asset_type_id : subType.asset.id,
+                asset_sub_id : subType.id
+              }
+            })
+        
+            await prisma.assetFields.createMany({
+              data : fieldArr
+            })
+            break;
+          
+          case "Bank Deposits":
+            fieldArr = cashAssetFieldsBankDeposit.map((f) => {
+              return {
+                ...f,
+                asset_type_id : subType.asset.id,
+                asset_sub_id : subType.id
+              }
+            })
+        
+            await prisma.assetFields.createMany({
+              data : fieldArr
+            })
+          break;
+        
+          default:
+            break;
+        }
+        
+      break;
+    
       default:
         break;
     }
-    
-  }
+  })
 
-
-  // await prisma.investmentCategories.deleteMany({})
   await prisma.investmentCategories.createMany({
     data : investmentCategories
   })
