@@ -132,9 +132,7 @@ export class AccountForcastingService {
   }
 
 async findAllAccountForcasting(user_id : number){
-  try {
-    console.log({user_id});
-    
+  try {   
     const accountForcasting = await this.prisma.forecast.findMany({
       where : {
         user_id
@@ -144,7 +142,9 @@ async findAllAccountForcasting(user_id : number){
         startingAmount : true,
         compound : true,
         contributeAt : true,
-        returnRate : true
+        returnRate : true,
+        createdAt : true,
+        timePeriod : true,
       }
     })
 

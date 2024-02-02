@@ -217,13 +217,19 @@ export class AssetsService {
             }
           },
           asset_fields : {
+            orderBy : {
+              asset_field : {
+                order_id : "asc"
+              }
+            },
             select : {
               value : true,
               field_id : true,
               asset_field: {
                 select : {
                   label : true,
-                  id : true
+                  id : true,
+                  order_id : true
                 }
               }
             }
@@ -365,12 +371,21 @@ export class AssetsService {
             asset_type_id : true,
             asset_subtype_id : true,
             asset_fields : {
+              orderBy : {
+                asset_field : {order_id : "asc"}
+              },
               select : {
                 field_id : true,
-                value : true
+                value : true,
+                asset_field : {
+                  select : {
+                    order_id : true
+                  }
+                }
               }
             }
-          }
+          },
+
         })
 
         if (!userManualAsset) {
@@ -389,7 +404,8 @@ export class AssetsService {
           options: true,
           type: true,
           id: true,
-          name : true
+          name : true,
+          mandatory : true
         },
       });
 
@@ -476,13 +492,17 @@ export class AssetsService {
             id : true
           }
         })
-  
+        
         if (!userManualAsset) {
           throw new HttpException("Asset not found with id : " + asset_id, HttpStatus.NOT_FOUND);
         }
+
+        let userAssetFields = fieldData.map((f) => f.field_id).sort();
+        let originalFields = userManualAsset.asset_fields.map((f) => f.field_id).sort();
+        const areArraysEqual = JSON.stringify(userAssetFields) === JSON.stringify(originalFields);      
   
-        if (fieldData.length !== userManualAsset.asset_fields.length) {
-          throw new HttpException("Some assets fields are missing", HttpStatus.BAD_REQUEST);
+        if (fieldData.length !== userManualAsset.asset_fields.length || !areArraysEqual) {
+          throw new HttpException("Some assets fields are missing or bad field id", HttpStatus.BAD_REQUEST);
         }
   
         let updatedFields = userManualAsset.asset_fields.map(async (field) => {

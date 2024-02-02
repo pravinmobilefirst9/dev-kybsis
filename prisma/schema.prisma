@@ -549,6 +549,7 @@ model AssetFields {
   type          String
   options       String[]
   order_id      Int
+  mandatory     Boolean 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -560,8 +561,6 @@ model AssetFields {
 model UserAssetsDetails {
   id        Int      @id @default(autoincrement())
   asset_id  Int
-  // asset_type_id Int
-  // asset_sub_id  Int
   field_id  Int
   value     String
   createdAt DateTime @default(now())

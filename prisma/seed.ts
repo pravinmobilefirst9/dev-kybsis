@@ -103,7 +103,7 @@ let categories = [
     ]
   },
   {
-    category_name : "Entertainmet",
+    category_name : "Entertainment",
     category_ids : [
       '17001000', '17001001',
       '17001002', '17001003', '17001004',
@@ -197,6 +197,21 @@ const assetsData  = [
       "name": "Commercial",
       "description": "Properties for business purposes",
       assetFields : []
+    },
+    {
+      "name": "Rental",
+      "description": "Properties for business purposes",
+      assetFields : []
+    },
+    {
+      "name": "Investment",
+      "description": "Properties for business purposes",
+      assetFields : []
+    },
+    {
+      "name": "Fractional",
+      "description": "Properties for business purposes",
+      assetFields : []
     }
   ]
   },
@@ -226,60 +241,57 @@ let years = Array.from({ length: 11 }, (_, index) => (2013 + index).toString());
 
 
 const assetFields = [
-  // For car and its subtype it is same
-  {name: "make", type: "text", label: "Make",order_id : 1},
-  {name: "model", type: "text", label: "Model",order_id : 2},
-  {name: "Year", type: "options", label: "Year",order_id : 3, options : years},
-  {name: "value", type: "number", label : "Value", order_id : 5},
-  {name: "location", type: "text", label : "Location",order_id : 6},
-  {name: "description", type: "textarea", label : "Description", order_id : 7},
-]
-const assetFieldsRealEstate = [
-  // For car and its subtype it is same
-  {name: "address", type: "text", label: "Address",order_id : 1},
-  {name: "type", type: "options", label: "Type of Property",order_id : 2, options : ["Apartment","Townhouse", "Condominium", "Single-Family Home"]},
-  {name: "value", type: "number", label : "Value", order_id : 3},
-  {name: "year", type: "date", label : "Date of purchase",order_id : 4},
-  {name: "details", type: "textarea", label : "Additional Details", order_id : 5},
-]
+  { name: "make", type: "text", label: "Make", order_id: 1, mandatory: true },
+  { name: "model", type: "text", label: "Model", order_id: 2, mandatory: true },
+  { name: "Year", type: "options", label: "Year", order_id: 3, options: years, mandatory: true },
+  { name: "value", type: "number", label: "Value", order_id: 5, mandatory: true },
+  { name: "location", type: "text", label: "Location", order_id: 6, mandatory: true },
+  { name: "additional_details", type: "textarea", label: "Additional Details", order_id: 7, mandatory: false },
+];
 
-const assetFieldsJwellary = [
-  // For car and its subtype it is same
-  {name: "piece", type: "text", label: "Piece",order_id : 1},
-  {name: "value", type: "number", label: "Value/Price",order_id : 2},
-  {name: "location", type: "text", label : "Location", order_id : 3},
-  {name: "details", type: "textarea", label : "Additional Details", order_id : 4},
-]
+const assetFieldsRealEstate = [
+  { name: "address", type: "text", label: "Address", order_id: 1, mandatory: true },
+  { name: "type", type: "options", label: "Type of Property", order_id: 2, options: ["Apartment", "Townhouse", "Condominium", "Single-Family Home"], mandatory: true },
+  { name: "value", type: "number", label: "Value", order_id: 3, mandatory: true },
+  { name: "year", type: "date", label: "Date of purchase", order_id: 4, mandatory: true },
+  { name: "additional_details", type: "textarea", label: "Additional Details", order_id: 5, mandatory: false },
+];
+
+const assetFieldsJewelry = [
+  { name: "piece", type: "text", label: "Piece", order_id: 1, mandatory: true },
+  { name: "value", type: "number", label: "Value/Price", order_id: 2, mandatory: true },
+  { name: "location", type: "text", label: "Location", order_id: 3, mandatory: true },
+  { name: "additional_details", type: "textarea", label: "Additional Details", order_id: 4, mandatory: false },
+];
 
 const assetFieldsArt = [
-  // For car and its subtype it is same
-  {name: "piece", type: "text", label: "Piece",order_id : 1},
-  {name: "value", type: "number", label: "Value/Price",order_id : 2},
-  {name: "location", type: "text", label : "Location", order_id : 3},
-  {name: "details", type: "textarea", label : "Additional Details", order_id : 4},
-]
+  { name: "piece", type: "text", label: "Piece", order_id: 1, mandatory: true },
+  { name: "value", type: "number", label: "Value/Price", order_id: 2, mandatory: true },
+  { name: "location", type: "text", label: "Location", order_id: 3, mandatory: true },
+  { name: "additional_details", type: "textarea", label: "Additional Details", order_id: 4, mandatory: false },
+];
 
 const cashAssetsFieldsPhysical = [
-  {name: "value", type: "number", label: "Amount",order_id : 1},
-  {name: "details", type: "textarea", label : "Additional Details", order_id : 2},
+  { name: "value", type: "number", label: "Amount", order_id: 1, mandatory: true },
+  { name: "additional_details", type: "textarea", label: "Additional Details", order_id: 2, mandatory: false },
+];
 
-]
 const cashAssetFieldsBankDeposit = [
-    {name: "bank_name", type: "text", label: "Bank Name",order_id : 1},
-    {name: "account_number", type: "text", label: "Account Number",order_id : 2},
-    {name: "value", type: "number", label: "Amount",order_id : 3},
-    {name: "description", type: "textarea", label : "Description", order_id : 4},
+  { name: "bank_name", type: "text", label: "Bank Name", order_id: 1, mandatory: true },
+  { name: "account_number", type: "text", label: "Account Number", order_id: 2, mandatory: true },
+  { name: "value", type: "number", label: "Amount", order_id: 3, mandatory: true },
+  { name: "additional_details", type: "textarea", label: "Additional Details", order_id: 4, mandatory: false },
+];
 
-]
 
 const investmentCategories = [
   {"name": "Mutual Fund"},
   {"name": "Equity"},
-  {"name": "ETFs(Exchange-Traded Funds)"},
+  {"name": "ETFs (Exchange-Traded Funds)"},
   {"name": "Cash"},
   {"name": "Private Equity"},
-  {"name": "Hedge Funds"},
-  {"name": "Annuities"},
+  {"name": "Hedge Fund"},
+  {"name": "Annuity"},
   {"name": "Whole Life Insurance"}
 ]
 
@@ -372,7 +384,7 @@ async function main() {
         break;
 
       case "Jewellery":
-        fieldArr = assetFieldsJwellary.map((f) => {
+        fieldArr = assetFieldsJewelry.map((f) => {
           return {
             ...f,
             asset_type_id : subType.asset.id,
