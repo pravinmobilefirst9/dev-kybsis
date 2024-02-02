@@ -269,6 +269,7 @@ export class BudgetService {
               }
             },
           },
+          start_date : true,
           created_at: true
         },
         where: { user_id: userId }
