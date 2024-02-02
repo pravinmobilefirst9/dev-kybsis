@@ -49,12 +49,12 @@ export class BudgetService {
   }
 
 
-  async fetchBudgetCategories(){
+  async fetchBudgetCategories() {
     try {
       const budgetCategories = await this.prisma.budgetCategories.findMany({
-        select : {
-          id : true,
-          category_name : true,
+        select: {
+          id: true,
+          category_name: true,
         }
       })
 
@@ -64,7 +64,7 @@ export class BudgetService {
         message: `Budget categories fetched successfully`,
         data: budgetCategories,
       };
-      
+
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -86,7 +86,7 @@ export class BudgetService {
         }
       })
 
-      const admin = await this.prisma.user.findUnique({where :{id : userId}, select : {email : true}});
+      const admin = await this.prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
 
       if (collaborators.includes(admin.email)) {
         throw new HttpException('User creating budget cannot add yourself as a collaborator', HttpStatus.NOT_ACCEPTABLE);
@@ -98,7 +98,12 @@ export class BudgetService {
 
       // Check start date if it is older than today's date
       const today = new Date();
-      const userRequestedDate = new Date(createBudgetDto.startDate);
+
+      // Split the date string into day, month, and year components
+      const [day, month, year] = createBudgetDto.startDate.split("-");
+
+      // Create a new Date object using the components
+      const userRequestedDate = new Date(`${year}-${month}-${day}`);
       if (userRequestedDate < today) {
         throw new HttpException("Start date should not be past date", HttpStatus.BAD_REQUEST);
       }
@@ -146,7 +151,7 @@ export class BudgetService {
         select: {
           user: true,
           id: true,
-          collaborator_id : true
+          collaborator_id: true
         }
       })
 
@@ -246,7 +251,7 @@ export class BudgetService {
           },
           collaborations: {
             select: {
-              id : true,
+              id: true,
               status: true,
               collaborator_id: true,
               collaborator: {
@@ -272,7 +277,7 @@ export class BudgetService {
       let resultTransactions = [];
 
       if (userBudgets.length === 0) {
-        return { 
+        return {
           success: true,
           statusCode: HttpStatus.OK,
           message: 'Budgets not found',
@@ -326,18 +331,18 @@ export class BudgetService {
 
 
         const collaborators = budget.collaborations
-        // .filter((clb) => clb.status === "ACCEPTED")
-        .map((collaborator) => {
-          return {
-            collaboration_id : collaborator.id,
-            status: collaborator.status,
-            collaborator_id: collaborator.collaborator_id,
-            collaborator: {
-              email: collaborator.collaborator.email,
-              amount: collaboratorContri
+          // .filter((clb) => clb.status === "ACCEPTED")
+          .map((collaborator) => {
+            return {
+              collaboration_id: collaborator.id,
+              status: collaborator.status,
+              collaborator_id: collaborator.collaborator_id,
+              collaborator: {
+                email: collaborator.collaborator.email,
+                amount: collaboratorContri
+              }
             }
-          }
-        })
+          })
 
         let limit = budget.amount;
         let spent = userContri + collaboratorContri
@@ -349,10 +354,10 @@ export class BudgetService {
           limit,
           spent,
           remaining,
-          duration : budget.duration,
-          budget_category : {category_id : budget.BudgetCategory.id, category_name : budget.BudgetCategory.category_name},
+          duration: budget.duration,
+          budget_category: { category_id: budget.BudgetCategory.id, category_name: budget.BudgetCategory.category_name },
           collaborators,
-          created_at : budget.created_at
+          created_at: budget.created_at
         })
       })
       return {
@@ -397,7 +402,7 @@ export class BudgetService {
           name: true,
           duration: true,
           amount: true,
-          user_id : true,
+          user_id: true,
           User: {
             select: {
               account: {
@@ -463,7 +468,7 @@ export class BudgetService {
       }, []) : [];
 
       // Filter the transactions based on category ids
-      allUserTransactions =  allUserTransactions.filter((transaction) =>
+      allUserTransactions = allUserTransactions.filter((transaction) =>
         budget.BudgetCategory.category_ids.includes(transaction.category_id) === true &&
         transaction.amount > 0
       ) || [];
@@ -498,11 +503,11 @@ export class BudgetService {
 
       // Calculate combined spent amount
 
-      let userContri : number = allUserTransactions && allUserTransactions.length > 0 ? allUserTransactions.reduce(function (sum, transaction) {
+      let userContri: number = allUserTransactions && allUserTransactions.length > 0 ? allUserTransactions.reduce(function (sum, transaction) {
         return sum + transaction.amount;
       }, 0) : 0;
 
-      let contrubutersContri : number = allCollaboratorsTransactions && allCollaboratorsTransactions.length > 0 ? allCollaboratorsTransactions.reduce(function (sum, transaction) {
+      let contrubutersContri: number = allCollaboratorsTransactions && allCollaboratorsTransactions.length > 0 ? allCollaboratorsTransactions.reduce(function (sum, transaction) {
         return sum + transaction.amount;
       }, 0) : 0;
 
@@ -575,7 +580,7 @@ export class BudgetService {
           },
           collaborations: {
             select: {
-              id : true,
+              id: true,
               status: true,
               collaborator_id: true,
               collaborator: {
@@ -668,12 +673,12 @@ export class BudgetService {
           spent,
           remaining,
           collaborators,
-          yourCollaboration :{
-            id : yourCollaboration.id,
-            status : yourCollaboration.status,
+          yourCollaboration: {
+            id: yourCollaboration.id,
+            status: yourCollaboration.status,
             collaborator_id: yourCollaboration.collaborator_id,
-            collaborator : {
-              email : yourCollaboration.collaborator.email
+            collaborator: {
+              email: yourCollaboration.collaborator.email
             }
           }
         })
@@ -1031,147 +1036,147 @@ export class BudgetService {
     }
   }
 
-  async fetchCollaboratorTransactions(user_id  : number, {budgetId, collaboratorId} : CollaboratrTransactions){
-  try {
-    const collaboration = await this.prisma.collaboration.findFirst({
-      where : {
-        budget_id : budgetId,
-        collaborator_id : collaboratorId
-      },
-      select : {
-        id : true,
-        collaborator_id : true,
-        budget_id : true,
-        status : true,
-        budget : {
-          select : {
-            BudgetCategory : {
-              select : {
-                category_ids : true
+  async fetchCollaboratorTransactions(user_id: number, { budgetId, collaboratorId }: CollaboratrTransactions) {
+    try {
+      const collaboration = await this.prisma.collaboration.findFirst({
+        where: {
+          budget_id: budgetId,
+          collaborator_id: collaboratorId
+        },
+        select: {
+          id: true,
+          collaborator_id: true,
+          budget_id: true,
+          status: true,
+          budget: {
+            select: {
+              BudgetCategory: {
+                select: {
+                  category_ids: true
+                }
               }
             }
           }
         }
+      })
+
+
+      if (!collaboration) {
+        throw new HttpException("Collaborator not found for this budget", HttpStatus.NOT_FOUND);
       }
-    })
 
-
-    if (!collaboration) {
-      throw new HttpException("Collaborator not found for this budget", HttpStatus.NOT_FOUND);
-    }
-
-    if (collaboration.status !== "ACCEPTED") {
-      throw new HttpException("Collaborator is not added to the budget", HttpStatus.NOT_FOUND);
-    }
-
-    let collaboratorsTransactions : any[] = await this.prisma.account.findMany({
-      where : {
-        user_id : collaboration.collaborator_id
-      },
-      select : {
-        Transaction : true
+      if (collaboration.status !== "ACCEPTED") {
+        throw new HttpException("Collaborator is not added to the budget", HttpStatus.NOT_FOUND);
       }
-    }) 
 
-    // Combine all the transactions
-    collaboratorsTransactions = collaboratorsTransactions.reduce((transactions, trs) => {
-      return [...transactions, ...trs.Transaction]
-    }, [])
-
-    // Filter out all the transactions
-    collaboratorsTransactions = collaboratorsTransactions.filter((transaction) =>
-    collaboration.budget.BudgetCategory.category_ids.includes(transaction.category_id) === true &&
-    transaction.amount > 0
-  );   
-  
-  return {
-    success: true,
-    statusCode: HttpStatus.OK,
-    message: `Transactions fetched successfully!`,
-    data: collaboratorsTransactions,
-  }
-    
-  } catch (error) {
-    if (error instanceof HttpException) {
-      throw error;
-    }
-    throw new HttpException(
-      error.toString(),
-      HttpStatus.INTERNAL_SERVER_ERROR,
-    );
-  }
-}
-
-async fetchMyTransactions(user_id : number, budgetId : number){
-  try {
-    if (!budgetId) {
-      throw new HttpException("Budget id not found", HttpStatus.BAD_REQUEST)
-    }
-    const budget = await this.prisma.budget.findUnique({
-      where : {
-        id : budgetId,
-      },
-      select : {
-        id : true,
-        user_id : true,
-        BudgetCategory : {
-          select : {
-            category_ids : true
-          }
+      let collaboratorsTransactions: any[] = await this.prisma.account.findMany({
+        where: {
+          user_id: collaboration.collaborator_id
         },
-        collaborations : true
-      }
-    })
+        select: {
+          Transaction: true
+        }
+      })
 
-    if (!budget) {
-      throw new HttpException(`Budget not found associated with user id : ${user_id}`, HttpStatus.NOT_FOUND);
+      // Combine all the transactions
+      collaboratorsTransactions = collaboratorsTransactions.reduce((transactions, trs) => {
+        return [...transactions, ...trs.Transaction]
+      }, [])
+
+      // Filter out all the transactions
+      collaboratorsTransactions = collaboratorsTransactions.filter((transaction) =>
+        collaboration.budget.BudgetCategory.category_ids.includes(transaction.category_id) === true &&
+        transaction.amount > 0
+      );
+
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: `Transactions fetched successfully!`,
+        data: collaboratorsTransactions,
+      }
+
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error.toString(),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-    // Check user wants to access budget details is should be either admin or collaborator
-    if (budget.user_id !== user_id) {
-      const collaborator = budget.collaborations.find((clb) => clb.collaborator_id === user_id)
-      if (!collaborator || (collaborator && collaborator.status !== "ACCEPTED")) {
-        throw new HttpException(`You are eligible to access the budget with id : ${budgetId}`,
-          HttpStatus.UNAUTHORIZED
-        )
-      }
-    }
-    const accountsOfCurrentUser = await this.prisma.account.findMany({
-      where : {
-        user_id
-      },
-      select : {
-        id : true,
-        Transaction : true
-      }
-    })
-
-    // Combine all the transactions
-    let transactions = accountsOfCurrentUser.reduce((transactions, trs) => {
-      return [...transactions, ...trs.Transaction]
-    }, [])
-
-    // Filter out all the transactions
-    transactions = transactions.filter((transaction) =>
-    budget.BudgetCategory.category_ids.includes(transaction.category_id) === true &&
-    transaction.amount > 0
-  );   
-
-  return {
-    success: true,
-    statusCode: HttpStatus.OK,
-    message: `Transactions fetched successfully!`,
-    data: transactions,
   }
-  } catch (error) {
-    if (error instanceof HttpException) {
-      throw error;
+
+  async fetchMyTransactions(user_id: number, budgetId: number) {
+    try {
+      if (!budgetId) {
+        throw new HttpException("Budget id not found", HttpStatus.BAD_REQUEST)
+      }
+      const budget = await this.prisma.budget.findUnique({
+        where: {
+          id: budgetId,
+        },
+        select: {
+          id: true,
+          user_id: true,
+          BudgetCategory: {
+            select: {
+              category_ids: true
+            }
+          },
+          collaborations: true
+        }
+      })
+
+      if (!budget) {
+        throw new HttpException(`Budget not found associated with user id : ${user_id}`, HttpStatus.NOT_FOUND);
+      }
+      // Check user wants to access budget details is should be either admin or collaborator
+      if (budget.user_id !== user_id) {
+        const collaborator = budget.collaborations.find((clb) => clb.collaborator_id === user_id)
+        if (!collaborator || (collaborator && collaborator.status !== "ACCEPTED")) {
+          throw new HttpException(`You are eligible to access the budget with id : ${budgetId}`,
+            HttpStatus.UNAUTHORIZED
+          )
+        }
+      }
+      const accountsOfCurrentUser = await this.prisma.account.findMany({
+        where: {
+          user_id
+        },
+        select: {
+          id: true,
+          Transaction: true
+        }
+      })
+
+      // Combine all the transactions
+      let transactions = accountsOfCurrentUser.reduce((transactions, trs) => {
+        return [...transactions, ...trs.Transaction]
+      }, [])
+
+      // Filter out all the transactions
+      transactions = transactions.filter((transaction) =>
+        budget.BudgetCategory.category_ids.includes(transaction.category_id) === true &&
+        transaction.amount > 0
+      );
+
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: `Transactions fetched successfully!`,
+        data: transactions,
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error.toString(),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-    throw new HttpException(
-      error.toString(),
-      HttpStatus.INTERNAL_SERVER_ERROR,
-    );
   }
-}
 
 }
 
