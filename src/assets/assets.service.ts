@@ -496,14 +496,6 @@ export class AssetsService {
         if (!userManualAsset) {
           throw new HttpException("Asset not found with id : " + asset_id, HttpStatus.NOT_FOUND);
         }
-
-        let userAssetFields = fieldData.map((f) => f.field_id).sort();
-        let originalFields = userManualAsset.asset_fields.map((f) => f.field_id).sort();
-        const areArraysEqual = JSON.stringify(userAssetFields) === JSON.stringify(originalFields);      
-  
-        if (fieldData.length !== userManualAsset.asset_fields.length || !areArraysEqual) {
-          throw new HttpException("Some assets fields are missing or bad field id", HttpStatus.BAD_REQUEST);
-        }
   
         let updatedFields = userManualAsset.asset_fields.map(async (field) => {
           return await this.prismaClient.userAssetsDetails.update({
