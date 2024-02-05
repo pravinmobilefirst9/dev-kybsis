@@ -57,21 +57,6 @@ export class DashboardService {
     }
   }
 
-  calculateHoursAfterUserCreated(created_at : string) : number {
-    // Assuming `created_at` is a timestamp representing the creation time
-    const createdAtTimestamp = new Date(created_at).getTime();
-
-    // Get the current timestamp
-    const currentTimestamp = new Date().getTime();
-
-    // Calculate the time difference in milliseconds
-    const timeDifference = currentTimestamp - createdAtTimestamp;
-
-    // Convert milliseconds to hours
-    const hoursDifference = timeDifference / (1000 * 60 * 60);
-
-    return hoursDifference;
-  }
 
   async fetchWidgets(user_id : number, active : string){
     try {
@@ -149,7 +134,7 @@ export class DashboardService {
             where : {user_id, active : true},}
           );
 
-          if (userWidgets.length === 0 && this.calculateHoursAfterUserCreated(user.created_at.toDateString()) <= 24) {
+          if (userWidgets.length === 0 && !user.widgetsAlreadyAdded) {
             const defaultWidgets = allWidgets.filter((w) => w.default === true);
             defaultWidgets.forEach(async (widget) => {
               await this.prisma.userWidgets.create({
@@ -160,6 +145,11 @@ export class DashboardService {
                   user_id : user_id
                 }
               })
+            })
+
+            await this.prisma.user.update({
+              data : {widgetsAlreadyAdded : true},
+              where : {id : user.id}
             })
           }
           
@@ -183,7 +173,7 @@ export class DashboardService {
           resultObj = await this.prisma.userWidgets.findMany({
             where : {
               user_id,
-              active : true
+              active : true 
             },
             select : {
               id : true,

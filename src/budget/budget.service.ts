@@ -232,6 +232,7 @@ export class BudgetService {
           amount: true,
           User: {
             select: {
+              id : true,
               account: {
                 select: {
                   id: true,
@@ -274,7 +275,7 @@ export class BudgetService {
         },
         where: { user_id: userId }
       });
-
+      
       let resultTransactions = [];
 
       if (userBudgets.length === 0) {

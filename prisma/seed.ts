@@ -298,8 +298,8 @@ const investmentCategories = [
 const widgets = [
   {name : "Income", default : true, role : "BASIC"},
   {name : "Expense", default : true, role : "BASIC"},
-  {name : "Plaid Investment", default : false, role : "PREMIUM"},
-  {name : "Manual Investment", default : false, role : "PREMIUM"},
+  {name : "Plaid Investment", default : false, role : "BASIC"},
+  {name : "Manual Investment", default : false, role : "BASIC"},
   {name : "Total Investment", default : false, role : "PREMIUM"},
   {name : "Budget", default : false, role : "PREMIUM"},
   {name : "Houshold", default : false, role : "PREMIUM"},

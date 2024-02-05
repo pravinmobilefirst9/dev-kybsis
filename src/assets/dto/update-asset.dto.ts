@@ -1,13 +1,13 @@
 import { Type } from "class-transformer";
-import { IsArray, IsInt, IsNotEmpty, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString, ValidateNested } from "class-validator";
 
 class AssetFieldDTO {
     @IsInt({ message: 'Field ID must be an integer' })
     @IsNotEmpty({ message: 'Field ID is required' })
     field_id: number;
-  
+    
+    @IsOptional()
     @IsString({ message: 'Value must be a string' })
-    @IsNotEmpty({ message: 'Value is required' })
     value: string;  
 }
 

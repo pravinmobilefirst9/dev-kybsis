@@ -399,13 +399,17 @@ export class AssetsService {
           asset_sub_id: userManualAsset ? userManualAsset.asset_subtype_id : asset_subtype_id,
           asset_type_id : userManualAsset ? userManualAsset.asset_type_id : asset_type_id
         },
+        orderBy: {
+          order_id : "asc"
+        },
         select: {
           label: true,
           options: true,
           type: true,
           id: true,
           name : true,
-          mandatory : true
+          mandatory : true,
+          order_id : true,
         },
       });
 
@@ -438,7 +442,31 @@ export class AssetsService {
       if (!user) {
         throw new HttpException('User not found', HttpStatus.BAD_REQUEST);
       }
+      const rawFields = await this.prismaClient.assetFields.findMany({
+        where : {
+          asset_sub_id,
+          asset_type_id
+        }
+      })
 
+      let wrongIds = []
+      const rawIds = rawFields.map(f => f.id)
+      fieldData.map((f) => {
+        if (!rawIds.includes(f.field_id)) {
+          wrongIds.push(f.field_id)
+        }})
+
+        
+      if (wrongIds.length > 0) {
+        return {
+          success: true,
+          statusCode: HttpStatus.CREATED,
+          message: 'Invalid Fields',
+          data: {
+            invalid_field_ids : wrongIds
+          },
+        }
+      }
       // Create parent Asset
       const newAsset = await this.prismaClient.userManualAssets.create({
         data : {
@@ -447,14 +475,19 @@ export class AssetsService {
           user_id
         }
       })
+
+
       // add fields data of assets
       const userAssetsFieldsArr = fieldData.map((f) => {
-        return {
-          value: f.value,
-          field_id: f.field_id,
-          asset_id : newAsset.id,
-        };
+          return {
+            value: f.value,
+            field_id: f.field_id,
+            asset_id : newAsset.id,
+          };
+
       });
+
+
 
       await this.prismaClient.userAssetsDetails.createMany({
         data : userAssetsFieldsArr
@@ -489,6 +522,8 @@ export class AssetsService {
           },
           select : {
             asset_fields : true,
+            asset_type_id : true,
+            asset_subtype_id : true,
             id : true
           }
         })
@@ -496,23 +531,74 @@ export class AssetsService {
         if (!userManualAsset) {
           throw new HttpException("Asset not found with id : " + asset_id, HttpStatus.NOT_FOUND);
         }
+
+        const rawFields = await this.prismaClient.assetFields.findMany({
+          where : {
+            asset_sub_id : userManualAsset.asset_subtype_id,
+            asset_type_id : userManualAsset.asset_type_id
+          }
+        })
   
-        let updatedFields = userManualAsset.asset_fields.map(async (field) => {
-          return await this.prismaClient.userAssetsDetails.update({
-            data : {
-              ...field,
-              value : fieldData.find((f) => f.field_id === field.field_id).value
+        let wrongIds = []
+        const rawIds = rawFields.map(f => f.id)
+        fieldData.map((f) => {
+          if (!rawIds.includes(f.field_id)) {
+            wrongIds.push(f.field_id)
+          }})
+  
+          
+        if (wrongIds.length > 0) {
+          return {
+            success: true,
+            statusCode: HttpStatus.CREATED,
+            message: 'Invalid Fields',
+            data: {
+              invalid_field_ids : wrongIds
             },
+          }
+        }        
+        
+        fieldData.map(async (f) => {
+          const fieldExists = await this.prismaClient.userAssetsDetails.findFirst({
             where : {
-              id : field.id
+              asset_id : asset_id,
+              field_id : f.field_id
             }
           })
-        })      
+
+          if (fieldExists) {
+            await this.prismaClient.userAssetsDetails.update({
+              data : {
+                value : f.value.trim()
+              },
+              where : {
+                id : fieldExists.id
+              }
+            })
+          }
+          else {
+            const isFieldAppropriate = await this.prismaClient.assetFields.findFirst({
+              where : {
+                asset_type_id : userManualAsset.asset_type_id,
+                asset_sub_id : userManualAsset.asset_subtype_id
+              }
+            })
+            if (isFieldAppropriate) {
+              await this.prismaClient.userAssetsDetails.create({
+                data : {
+                  asset_id,
+                  field_id : f.field_id,
+                  value : f.value,
+                }
+              })
+            }
+          }
+        })   
         return {
           success: true,
           statusCode: HttpStatus.OK,
           message: 'Asset updated successfully',
-          data: {userManualAsset, updatedFields},
+          data: {},
         };
       } catch (error) {
         if (error instanceof HttpException) {

@@ -3,6 +3,7 @@ import { CreatePlaidTartanDto } from './dto/create-plaid-tartan.dto';
 import { UpdatePlaidTartanDto } from './dto/update-plaid-tartan.dto';
 import { PrismaService } from 'src/prisma.service';
 import { TransactionService } from 'src/transaction/transaction.service';
+import { ManualAccountDTO } from './dto/manual-account.dto';
 
 @Injectable()
 export class PlaidTartanService {
@@ -204,7 +205,8 @@ export class PlaidTartanService {
                 category_name: transaction.category,
                 date: new Date(transaction.date),
                 pending: transaction.pending,
-                account_id: existingAccount.id
+                account_id: existingAccount.id,
+                user_id : userId
               })),
           });
 
@@ -227,6 +229,34 @@ export class PlaidTartanService {
     }
   }
 
+
+  async addManualAccount(user_id : number, payload : ManualAccountDTO){
+    try {
+
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error.toString(),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async addManualTransaction(user_id : number){
+    try {
+      
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error.toString(),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
   // create(createPlaidTartanDto: CreatePlaidTartanDto) {
   //   return 'This action adds a new plaidTartan';
   // }

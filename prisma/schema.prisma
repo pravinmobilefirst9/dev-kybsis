@@ -124,6 +124,7 @@ model User {
   user_otp_createdAt            DateTime?
   user_role                     UserRole                        @default(BASIC)
   device_token                  String
+  widgetsAlreadyAdded           Boolean                         @default(false)
   created_at                    DateTime                        @default(now())
   updated_at                    DateTime                        @updatedAt
   account                       Account[]
@@ -143,6 +144,7 @@ model User {
   userManualAssets              UserManualAssets[]
   accountForcasting             Forecast[]
   userWidgets                   userWidgets[]
+  bankTransactions              Transaction[]
 }
 
 model Goal {
@@ -172,16 +174,19 @@ model UserDetails {
 model Transaction {
   id                   Int      @id @default(autoincrement())
   account_id           Int
-  plaid_transaction_id String
+  plaid_transaction_id String?
   name                 String
   amount               Float
-  category_id          String
+  category_id          String?
   category_name        String[]
   date                 DateTime
-  pending              Boolean
+  pending              Boolean?  @default(false)
+  manual               Boolean  @default(false)
+  user_id              Int
   created_at           DateTime @default(now())
   updated_at           DateTime @default(now())
   Account              Account  @relation(fields: [account_id], references: [id], onDelete: Cascade)
+  User                 User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([plaid_transaction_id, account_id, date])
 }
@@ -191,18 +196,19 @@ model Account {
   user_id             Int
   account_name        String
   account_id          String
-  plaid_item_id       Int
+  plaid_item_id       Int?
   institution_name    String
-  official_name       String
-  mask                String
-  type                String
-  subtype             String
-  institution_id      String
-  verification_status String
+  official_name       String?
+  mask                String?
+  type                String?
+  subtype             String?
+  institution_id      String?
+  verification_status String?
+  manual              Boolean       @default(false)
   created_at          DateTime
   updated_at          DateTime
   User                User          @relation(fields: [user_id], references: [id])
-  PlaidItem           PlaidItem     @relation(fields: [plaid_item_id], references: [id])
+  PlaidItem           PlaidItem?     @relation(fields: [plaid_item_id], references: [id])
   Balance             Balance[]
   Transaction         Transaction[]
 }
@@ -515,7 +521,7 @@ model AssetType {
   id          Int      @id @default(autoincrement())
   name        String
   description String?
-  hasSubType  Boolean @default(true)
+  hasSubType  Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -549,7 +555,7 @@ model AssetFields {
   type          String
   options       String[]
   order_id      Int
-  mandatory     Boolean 
+  mandatory     Boolean
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -562,7 +568,7 @@ model UserAssetsDetails {
   id        Int      @id @default(autoincrement())
   asset_id  Int
   field_id  Int
-  value     String
+  value     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -570,6 +576,8 @@ model UserAssetsDetails {
   // asset_sub_type AssetSubType     @relation(fields: [asset_sub_id], references: [id])
   asset_field AssetFields      @relation(fields: [field_id], references: [id])
   asset       UserManualAssets @relation(fields: [asset_id], references: [id])
+
+  @@unique([asset_id, field_id])
 }
 
 enum CompoundFrequency {
