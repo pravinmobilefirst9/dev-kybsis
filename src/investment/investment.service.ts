@@ -293,24 +293,30 @@ export class InvestmentService {
                 security_id: holding.security_id
               }
             });
+            const dataObject = 
+              {
+                account_id: holding.account_id,
+                cost_basis: holding.cost_basis,
+                institution_price: holding.institution_price,
+                institution_value: holding.institution_value,
+                iso_currency_code: holding.iso_currency_code,
+                quantity: holding.quantity,
+                security_id: holding.security_id,
+                unofficial_currency_code: holding.unofficial_currency_code,
+                institution_price_as_of: holding.institution_price_as_of ? new Date(holding.institution_price_as_of) : null,
+                institution_price_datetime: holding.institution_price_datetime ? new Date(holding.institution_price_datetime) : null
+              }
             if (isHoldingExists) {
-              await this.prisma.investmentHolding.update({
-                data: {
-                  ...holding,
-                  institution_price_as_of: holding.institution_price_as_of ? new Date(holding.institution_price_as_of) : null,
-                  institution_price_datetime: holding.institution_price_datetime ? new Date(holding.institution_price_datetime) : null
 
-                },
+                
+              await this.prisma.investmentHolding.update({
+                data: dataObject,
                 where: { id: isHoldingExists.id }
               })
             }
             else {
               await this.prisma.investmentHolding.create({
-                data: {
-                  ...holding,
-                  institution_price_as_of: holding.institution_price_as_of ? new Date(holding.institution_price_as_of) : null,
-                  institution_price_datetime: holding.institution_price_datetime ? new Date(holding.institution_price_datetime) : null
-                },
+                data: dataObject
               })
             }
           }
