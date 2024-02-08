@@ -5,7 +5,7 @@ import {
   IsOptional,
   IsNotEmpty,
   IsEmail,
-  registerDecorator, ValidationOptions, ValidationArguments 
+  registerDecorator, ValidationOptions, ValidationArguments, Max 
 } from 'class-validator';
 
 export enum Duration {
@@ -30,6 +30,7 @@ export class CreateBudgetDto {
   readonly categoryId: number;
 
   @IsNumber({}, { message: 'Amount must be a number.' })
+  @Max(1000000, {message : "amount must be less than or equal to 1 Million"})
   readonly amount: number;
 
   @IsNotEmpty({ message: 'Date should not be empty' })

@@ -28,6 +28,43 @@ export class TransactionService {
     this.client = new PlaidApi(this.configuration);
   }
 
+  async fetchRecentTransactionForDashboard (user_id : number){
+    try {
+      const transactions = await this.prisma.transaction.findMany({
+        where : {
+          user_id,
+        },
+        select : {
+          amount : true,
+          Account : {
+            select :{
+              account_id : true,
+              account_name : true,
+              institution_name :  true,
+              institution_id : true
+            }
+          },
+          pending : true,
+        },
+        orderBy : {
+          created_at : "desc"
+        },
+        take : 20
+      })
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: "Transactions fetched successfully",
+        data: transactions
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
   async getTransactions(user_id: number) {
     const user = await this.prisma.user.findUnique({ where: { id: user_id } });
 

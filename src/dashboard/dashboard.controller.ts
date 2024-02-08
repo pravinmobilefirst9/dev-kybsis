@@ -30,9 +30,6 @@ export class DashboardController {
     return await this.dashboardService.removeUserWidget(user_id, payload);
   }
 
-
-
-
   @Post()
   create(@Body() createDashboardDto: CreateDashboardDto) {
     return this.dashboardService.create(createDashboardDto);

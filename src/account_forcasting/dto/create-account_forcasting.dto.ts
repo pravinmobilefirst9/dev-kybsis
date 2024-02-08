@@ -1,4 +1,4 @@
-import { IsEnum, IsNumber, IsOptional, IsPositive, Min } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsPositive, Max, Min } from 'class-validator';
 
 export enum CompoundFrequency {
   ANNUALLY = 'ANNUALLY',
@@ -25,6 +25,7 @@ export class CreateAccountForcastingDto {
 
   @IsNumber({}, { message: 'Starting amount must be a number' })
   @IsPositive({ message: 'Starting amount must be a positive number' })
+  @Max(1000000, {message : "Starting amount must be less than or equal to 1 Million"})
   startingAmount: number;
 
   @IsNumber({}, { message: 'Time period must be a number' })
