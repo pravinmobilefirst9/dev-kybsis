@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, HttpException, HttpStatus, UseGuards } from '@nestjs/common';
 import { LiabilitiesService } from './liabilities.service';
 import { CreateLiabilityDto } from './dto/create-liability.dto';
 import { UpdateLiabilityDto } from './dto/update-liability.dto';
+import { AuthGuard } from 'src/guards/auth.guard';
 
 @Controller('liabilities')
 export class LiabilitiesController {
@@ -9,14 +10,14 @@ export class LiabilitiesController {
 
 
   @Post("import_liabilities")
-  // @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)
   async importLiabilities(
     @Req() request : any
   )
   {
     try {
-      // const {user_id} = req.auth     
-      const result = await this.liabilitiesService.importLiabilities();
+      const {user_id} = request.auth     
+      const result = await this.liabilitiesService.importLiabilities(user_id);
       return result;
     } catch (error) {
       throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);

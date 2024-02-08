@@ -145,6 +145,7 @@ model User {
   accountForcasting             Forecast[]
   userWidgets                   userWidgets[]
   bankTransactions              Transaction[]
+  liabilities                   liabilities[]
 }
 
 model Goal {
@@ -180,7 +181,7 @@ model Transaction {
   category_id          String?
   category_name        String[]
   date                 DateTime
-  pending              Boolean?  @default(false)
+  pending              Boolean? @default(false)
   manual               Boolean  @default(false)
   user_id              Int
   created_at           DateTime @default(now())
@@ -208,7 +209,7 @@ model Account {
   created_at          DateTime
   updated_at          DateTime
   User                User          @relation(fields: [user_id], references: [id])
-  PlaidItem           PlaidItem?     @relation(fields: [plaid_item_id], references: [id])
+  PlaidItem           PlaidItem?    @relation(fields: [plaid_item_id], references: [id])
   Balance             Balance[]
   Transaction         Transaction[]
 }
@@ -576,8 +577,6 @@ model UserAssetsDetails {
   // asset_sub_type AssetSubType     @relation(fields: [asset_sub_id], references: [id])
   asset_field AssetFields      @relation(fields: [field_id], references: [id])
   asset       UserManualAssets @relation(fields: [asset_id], references: [id])
-
-  @@unique([asset_id, field_id])
 }
 
 enum CompoundFrequency {
@@ -641,4 +640,19 @@ model userWidgets {
   Widget Widgets @relation(fields: [widget_id], references: [id])
 
   @@unique([user_id, widget_id])
+}
+
+model liabilities {
+  id                  Int      @id @default(autoincrement())
+  user_id             Int
+  last_payment_date   DateTime
+  account_id          String
+  account_number      String?
+  last_payment_amount Float
+  type                String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  User User @relation(fields: [user_id], references: [id])
+  @@unique([last_payment_date, user_id, type])
 }

@@ -1,13 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, HttpException, HttpStatus, ParseIntPipe, Put } from '@nestjs/common';
 import { PlaidTartanService } from './plaid-tartan.service';
 import { CreatePlaidTartanDto } from './dto/create-plaid-tartan.dto';
 import { UpdatePlaidTartanDto } from './dto/update-plaid-tartan.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { ManualAccountDTO } from './dto/manual-account.dto';
+import { CreateTransactionDto } from './dto/create-manual-transaction.dto';
 
 @Controller('plaid_tartan')
 export class PlaidTartanController {
   constructor(private readonly plaidTartanService: PlaidTartanService) {}
+
+  @Get('fetch_manual_accounts')
+  @UseGuards(AuthGuard)
+  async fetchAllManualAccounts(@Req() request : any){
+    const {user_id} = request.auth;     
+    return await this.plaidTartanService.fetchAllManualAccounts(user_id);
+  }
+
 
   @Post("register_plaid_items")
   @UseGuards(AuthGuard)
@@ -39,52 +48,63 @@ export class PlaidTartanController {
       const result = await this.plaidTartanService.addManualAccount(user_id, payload);
       return result;
   }
-   
-  @Post("add_manual_transaction_info")
+
+  @Put("add_manual_account_info/:id")
   @UseGuards(AuthGuard)
-  async AddManualTransactionInfo(@Req() req : any) {
+  async UpdateManualAccountInfo(
+    @Req() req : any, 
+    @Param('id', ParseIntPipe) id : number,
+    @Body() payload : ManualAccountDTO) {
       const {user_id} = req.auth     
-      const result = await this.plaidTartanService.addManualTransaction(user_id);
+      const result = await this.plaidTartanService.addManualAccount(user_id, payload,id);
       return result;
   }
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  // @Post()
-  // create(@Body() createPlaidTartanDto: CreatePlaidTartanDto) {
-  //   return this.plaidTartanService.create(createPlaidTartanDto);
-  // }
-
-  @Get()
-  findAll() {
-    return this.plaidTartanService.findAll();
+  @Delete("delete_manual_account/:id")
+  @UseGuards(AuthGuard)
+  async deleteManualAccount(
+    @Req() req : any,
+    @Param('id', ParseIntPipe) id : number,
+    ) {
+      const {user_id} = req.auth     
+      const result = await this.plaidTartanService.deleteManualAccount(user_id, id);
+      return result;
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.plaidTartanService.findOne(+id);
+  @Post("add_manual_transaction")
+  @UseGuards(AuthGuard)
+  async addManualTransaction(
+    @Req() req : any,
+    @Body() data : CreateTransactionDto,
+    @Param('id', ParseIntPipe) id : number,
+  ){
+    const {user_id} = req.auth     
+    const result = await this.plaidTartanService.addManualTransaction(user_id, data, );
+    return result;
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePlaidTartanDto: UpdatePlaidTartanDto) {
-    return this.plaidTartanService.update(+id, updatePlaidTartanDto);
+  @Put("add_manual_transaction/:id")
+  @UseGuards(AuthGuard)
+  async updateManualTransaction(
+    @Req() req : any,
+    @Body() data : CreateTransactionDto,
+    @Param('id', ParseIntPipe) id : number,
+  ){
+    const {user_id} = req.auth     
+    const result = await this.plaidTartanService.addManualTransaction(user_id, data, id);
+    return result;
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.plaidTartanService.remove(+id);
+  @Delete("delete_manual_transaction/:id")
+  @UseGuards(AuthGuard)
+  async deleteManualTransaction(
+    @Req() req : any,
+    @Param('id', ParseIntPipe) id : number,
+    ) {
+      const {user_id} = req.auth     
+      const result = await this.plaidTartanService.deleteManualTransaction(user_id, id);
+      return result;
   }
+  
+  
 }

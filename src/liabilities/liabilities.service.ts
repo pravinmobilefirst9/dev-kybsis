@@ -12,11 +12,98 @@ export class LiabilitiesService {
     private readonly transactionService: TransactionService,
   ) { }
 
-  async importLiabilities(){
+  async importLiabilities(user_id: number) {
     try {
-      const access_token = "access-sandbox-757ef68d-9504-45f8-803d-f0a34571e257"
-      const liabilities = await this.transactionService.getLiabilities(access_token);
-      return liabilities
+      const plaidItems = await this.prismaClient.plaidItem.findMany({
+        where: {
+          user_id
+        }
+      })
+      if (!plaidItems) {
+        throw new HttpException("Access tokens not found", HttpStatus.NOT_FOUND);
+      }
+      // Map each plaid item to an array of promises
+      const promises = plaidItems.map(async (item) => {
+        const { liabilities } = await this.transactionService.getLiabilities(item.access_token);
+        return liabilities;
+      });
+
+      // Wait for all promises to resolve
+      const resultArr = await Promise.all(promises);
+
+      if (resultArr.length === 0) {
+        return {
+          success: false,
+          statusCode: HttpStatus.NOT_FOUND,
+          message: "Liabilities not found",
+          data: []
+        }
+      }
+
+      let totalData = []
+      resultArr.map((liability) => {
+        let liabilityTypes = Object.keys(liability)
+        liabilityTypes.map((type) => {
+          switch (type) {
+            case 'credit':
+              let creditData = liability['credit']
+              creditData.map((crd) => {
+                totalData.push(
+                  {
+                    user_id,
+                    last_payment_date: new Date(crd.last_payment_date),
+                    account_id: crd.account_id,
+                    last_payment_amount: crd.last_payment_amount,
+                    type: type,
+                  },
+                )
+              })
+              break;
+            case 'mortgage':
+              let mortageData = liability['mortgage']
+              mortageData.map((mrg) => {
+                totalData.push({
+                  user_id,
+                  last_payment_date: new Date(mrg.last_payment_date),
+                  account_id: mrg.account_id,
+                  last_payment_amount: mrg.last_payment_amount,
+                  type: type,
+                  account_number: mrg.account_number
+                })
+              })
+              break;
+            case 'student':
+              let stduentData = liability['student']
+              stduentData.map((std) => {
+                totalData.push({
+                  user_id,
+                  last_payment_date: new Date(std.last_payment_date),
+                  account_id: std.account_id,
+                  last_payment_amount: std.last_payment_amount,
+                  type: type,
+                  account_number: std.account_number
+                })
+              })
+              break;
+
+            default:
+              break;
+          }
+        })
+      })
+
+      await this.prismaClient.liabilities.createMany({
+        skipDuplicates : true,
+        data : totalData
+      })
+
+      return {
+        success: true,
+        statusCode: HttpStatus.CREATED,
+        message: "Liabilities imported successfully",
+        data: totalData
+      }
+
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

@@ -20,7 +20,7 @@ import { User } from './entities/user.entity';
 @Injectable()
 export class UsersService {
   constructor(
-    private readonly prisma: PrismaService,
+    private prisma: PrismaService,
     private jwtService: JwtService,
   ) { }
 
@@ -131,7 +131,7 @@ export class UsersService {
         }
       });
       if (!user) {
-        throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
       const passwordMatches = await bcrypt.compare(payload.password, user.password);
       if (!passwordMatches) {
@@ -210,7 +210,7 @@ export class UsersService {
         success: true,
         statusCode: HttpStatus.OK,
         message: 'Email sent with OTP for password reset',
-        data: null
+        data: null,
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -463,8 +463,7 @@ export class UsersService {
 
       if (!isUserExists) {
         throw new HttpException(
-          "User not found"
-          ,
+          "User not found",
           HttpStatus.NOT_FOUND
         )
       }

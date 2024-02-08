@@ -21,4 +21,4 @@ import { DashboardModule } from './dashboard/dashboard.module';
   controllers: [AppController],
   providers: [AppService, PrismaService, AuthGuard,],
 })
-export class AppModule {}
+export class AppModule { }

@@ -112,7 +112,8 @@ export class DashboardService {
           })
           resultObj = await this.prisma.userWidgets.findMany({
             where : {
-              user_id
+              user_id,
+              active : true
             },
             select : {
               id : true,

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsNumber, IsPositive, IsInt, Min } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsPositive, IsInt, Min, Max } from 'class-validator';
 
 export class CreateManualInvestmentDto {
     @IsNotEmpty({ message: 'Name cannot be empty' })
@@ -15,10 +15,12 @@ export class CreateManualInvestmentDto {
   
     @IsNotEmpty({ message: 'Price cannot be empty' })
     @Min(0, { message: 'Price must be greater than or equal to 0' })
+    @Max(1000000, {message : "Price must be less than or equal to 1 Million"})
     purchasePrice: number;
     
     @IsNotEmpty({ message: 'current price cannot be empty' })
     @Min(0, { message: 'current price must be greater than or equal to 0' })
+    @Max(1000000, {message : "Price must be less than or equal to 1 Million"})
     currentPrice: number;
   
     @IsNotEmpty({ message: 'Quantity cannot be empty' })
