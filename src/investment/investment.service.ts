@@ -675,7 +675,7 @@ export class InvestmentService {
           quantity: data.quantity,
           category_id: data.categoryId,
           user_id,
-          code : data.investmentCode,
+          code : "none",
           purchase_price : data.purchasePrice,
         }
       })

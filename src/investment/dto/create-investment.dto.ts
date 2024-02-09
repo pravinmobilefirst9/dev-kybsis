@@ -4,10 +4,6 @@ export class CreateManualInvestmentDto {
     @IsNotEmpty({ message: 'Name cannot be empty' })
     @IsString({ message: 'Name must be a string' })
     name: string;
-    
-    @IsNotEmpty({ message: 'Code cannot be empty' })
-    @IsString({ message: 'Code must be a string' })
-    investmentCode: string;
   
     @IsNotEmpty({ message: 'Currency cannot be empty' })
     @IsString({ message: 'Currency must be a string' })
