@@ -108,6 +108,7 @@ export class BudgetService {
         throw new HttpException("Start date should not be past date", HttpStatus.BAD_REQUEST);
       }
 
+      let budgetExists = null;
       // Create or update a new budget record
       let userBudget: Budget = null;
       let dataObj = {
@@ -117,6 +118,7 @@ export class BudgetService {
         start_date: userRequestedDate,
         duration: createBudgetDto.duration,
       }
+      
       if (!budgetId) {
         userBudget = await this.prisma.budget.create({
           data: {
@@ -126,7 +128,7 @@ export class BudgetService {
         });
       }
       else {
-        const budgetExists = await this.prisma.budget.findUnique({ where: { id: budgetId } })
+        budgetExists = await this.prisma.budget.findUnique({ where: { id: budgetId } })
         if (!budgetExists) {
           throw new HttpException("Invalid budget Id", HttpStatus.NOT_FOUND)
         }
@@ -151,12 +153,17 @@ export class BudgetService {
         select: {
           user: true,
           id: true,
-          collaborator_id: true
+          collaborator : {
+            select : {
+              email : true,
+              id : true
+            }
+          }
         }
       })
 
       // Filter all collaborators which are not included into current collaborators list to remove if updating
-      const collaboratorsToRemove = alreadyExistedCollaborators.filter((c) => collaborators.includes(c.user.email) === false);
+      const collaboratorsToRemove = alreadyExistedCollaborators.filter((c) => collaborators.includes(c.collaborator.email) === false);
       // Delete all collaborators which are not included in collaborators array if updating
       collaboratorsToRemove.forEach(async (c) => {
         await this.prisma.collaboration.delete({ where: { id: c.id } });
