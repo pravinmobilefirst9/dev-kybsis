@@ -19,6 +19,13 @@ export class TransactionController {
       throw new HttpException(error.message, error.status || HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  @Get("recent_transactions_dashboard")
+  @UseGuards(AuthGuard)
+  async getRecentTransactions(@Req() request : any){
+    const {user_id} = request.auth;
+    return await this.transactionService.fetchRecentTransactionForDashboard(user_id);
+  }
   
   
   

@@ -25,7 +25,7 @@ export class AccountForcastingService {
     let endBalance = this.calculateEndBalance(startingAmount, timePeriod, returnRate, compound);
       // Check if the result is finite and within a reasonable range
   if (!isFinite(endBalance) || isNaN(endBalance) || Math.abs(endBalance) > Number.MAX_SAFE_INTEGER) {
-    throw new HttpException("Return rate should be less then or equal to 50 for current inputs", HttpStatus.NOT_ACCEPTABLE);
+    throw new HttpException("Given inuput", HttpStatus.NOT_ACCEPTABLE);
   }
     let totalContribution = this.calculateTotalContribution(startingAmount, timePeriod, contributeAt);
     let totalInterest = endBalance - startingAmount - totalContribution;

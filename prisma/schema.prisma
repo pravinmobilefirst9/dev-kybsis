@@ -146,6 +146,7 @@ model User {
   userWidgets                   userWidgets[]
   bankTransactions              Transaction[]
   liabilities                   liabilities[]
+  subscriptions                 Subscription[]
 }
 
 model Goal {
@@ -227,6 +228,7 @@ model Balance {
 }
 
 enum UserRole {
+  FREE
   BASIC
   PREMIUM
 }
@@ -654,5 +656,37 @@ model liabilities {
   updatedAt           DateTime @updatedAt
 
   User User @relation(fields: [user_id], references: [id])
+
   @@unique([last_payment_date, user_id, type])
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  CANCELED
+}
+
+// open : 
+enum invoiceStatus {
+  OPEN
+  PAID
+  VOID
+}
+
+model Subscription {
+  id                   Int                @id @default(autoincrement())
+  stripeCustomerId     String
+  stripeSubscriptionId String
+  invoiceId            String?
+  invoiceUrl           String?
+  subscriptionStatus   SubscriptionStatus // Status of the subscription (e.g., active, canceled, etc.)
+  invoiceStatus        invoiceStatus // Status of the subscription (e.g., active, canceled, etc.)
+  currentPeriodStart   DateTime? // Start of the current billing period
+  currentPeriodEnd     DateTime? // End of the current billing period
+  userId               Int
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
