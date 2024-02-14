@@ -79,72 +79,57 @@ export class BudgetService {
   async addUserBudgetDetails(createBudgetDto: CreateBudgetDto, userId: number) {
     try {
       const { collaborators, budgetId } = createBudgetDto;
-      // Find the category ID based on the category name
-      const isCategoryExists = await this.prisma.budgetCategories.findUnique({
-        where: {
-          id: createBudgetDto.categoryId
-        }
-      })
-
+  
       const admin = await this.prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
-
+  
       if (collaborators.includes(admin.email)) {
         throw new HttpException('User creating budget cannot add yourself as a collaborator', HttpStatus.NOT_ACCEPTABLE);
       }
-
+  
+      const isCategoryExists = await this.prisma.budgetCategories.findUnique({
+        where: { id: createBudgetDto.categoryId }
+      });
+  
       if (!isCategoryExists) {
         throw new HttpException("Invalid Category", HttpStatus.BAD_REQUEST);
       }
-
-      // Check start date if it is older than today's date
+  
       const today = new Date();
-
-      // Split the date string into day, month, and year components
-      const [day, month, year] = createBudgetDto.startDate.split("-");
-
-      // Create a new Date object using the components
-      const userRequestedDate = new Date(`${year}-${month}-${day}`);
+      const userRequestedDate = new Date(createBudgetDto.startDate);
       if (userRequestedDate < today) {
-        throw new HttpException("Start date should not be past date", HttpStatus.BAD_REQUEST);
+        throw new HttpException("Start date should not be a past date", HttpStatus.BAD_REQUEST);
       }
-
-      let budgetExists = null;
-      // Create or update a new budget record
-      let userBudget: Budget = null;
-      let dataObj = {
-        name: createBudgetDto.name,
-        amount: createBudgetDto.amount,
-        budgets_category_id: createBudgetDto.categoryId,
-        start_date: userRequestedDate,
-        duration: createBudgetDto.duration,
-      }
-      
+  
+      let userBudget: Budget;
+  
       if (!budgetId) {
         userBudget = await this.prisma.budget.create({
           data: {
-            ...dataObj,
+            name: createBudgetDto.name,
+            amount: createBudgetDto.amount,
+            budgets_category_id: createBudgetDto.categoryId,
+            start_date: userRequestedDate,
+            duration: createBudgetDto.duration,
             user_id: userId
           },
         });
-      }
-      else {
-        budgetExists = await this.prisma.budget.findUnique({ where: { id: budgetId } })
+      } else {
+        const budgetExists = await this.prisma.budget.findUnique({ where: { id: budgetId } });
         if (!budgetExists) {
           throw new HttpException("Invalid budget Id", HttpStatus.NOT_FOUND)
         }
         userBudget = await this.prisma.budget.update({
-          data: dataObj,
+          data: {
+            name: createBudgetDto.name,
+            amount: createBudgetDto.amount,
+            budgets_category_id: createBudgetDto.categoryId,
+            start_date: userRequestedDate,
+            duration: createBudgetDto.duration,
+          },
           where: { id: budgetId }
-        })
+        });
       }
-
-      // Add collaborators
-      const user = await this.prisma.user.findUnique({
-        where: {
-          id: userId
-        }
-      })
-      // Get all already existed collaborators if any or if budget is getting updated
+  
       const alreadyExistedCollaborators = await this.prisma.collaboration.findMany({
         where: {
           user_id: userId,
@@ -153,6 +138,7 @@ export class BudgetService {
         select: {
           user: true,
           id: true,
+          collaborator_id: true,
           collaborator : {
             select : {
               email : true,
@@ -160,44 +146,33 @@ export class BudgetService {
             }
           }
         }
-      })
-
-      // Filter all collaborators which are not included into current collaborators list to remove if updating
-      const collaboratorsToRemove = alreadyExistedCollaborators.filter((c) => collaborators.includes(c.collaborator.email) === false);
-      // Delete all collaborators which are not included in collaborators array if updating
-      collaboratorsToRemove.forEach(async (c) => {
+      });
+  
+      const collaboratorsToRemove = alreadyExistedCollaborators.filter(c => !collaborators.includes(c.collaborator.email));
+  
+      await Promise.all(collaboratorsToRemove.map(async (c) => {
         await this.prisma.collaboration.delete({ where: { id: c.id } });
-      })
-      // Now add all fresh collaborators whether it is creating new or updating
-      collaborators.forEach(async (collaborator) => {
-        const existedUser = await this.prisma.user.findFirst({
-          where: {
-            email: collaborator
-          }
-        })
-
+      }));
+  
+      await Promise.all(collaborators.map(async (collaborator) => {
+        const existedUser = await this.prisma.user.findFirst({ where: { email: collaborator } });
+  
         if (!existedUser) {
           await this.userService.sendEmail(
             collaborator,
             'Collaboration Invitation',
-            `
-                Hello,
-
-                You have been added as a collaborator by ${user.email}.
-                
-                Thank you for collaborating!
-                `,
+            `Hello,\n\nYou have been added as a collaborator by ${admin.email}.\n\nThank you for collaborating!`,
             0,
           );
-        }
-        else {
+        } else {
           const isCollaboratorExists = await this.prisma.collaboration.findFirst({
             where: {
               collaborator_id: existedUser.id,
               budget_id: userBudget.id,
               user_id: userId
             }
-          })
+          });
+  
           if (!isCollaboratorExists) {
             await this.prisma.collaboration.create({
               data: {
@@ -206,11 +181,11 @@ export class BudgetService {
                 status: 'PENDING',
                 user_id: userId
               }
-            })
+            });
           }
         }
-      })
-
+      }));
+  
       return {
         success: true,
         statusCode: HttpStatus.CREATED,
@@ -294,7 +269,7 @@ export class BudgetService {
         }
       }
       // Loop through all budgets and filter out the transactions as per category ids for that budgets
-      userBudgets.forEach(async (budget) => {
+      userBudgets.map(async (budget) => {
 
         // 1) Calculate all admin transactions
         let allUserTransactions: any[] = budget.User.account.map((acc) => {
@@ -614,7 +589,7 @@ export class BudgetService {
 
       let resultArr = []
       // Loop through all budgets and fetch all transactions
-      budgets.forEach(async (budget) => {
+      budgets.map(async (budget) => {
         // First of all fetch User transactions who has created this budget
         let allUserTransactions: any[] = budget.User.account.map((acc) => {
           return { account: { name: acc.account_name, id: acc.id }, transactions: acc.Transaction }
