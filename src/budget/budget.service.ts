@@ -95,7 +95,11 @@ export class BudgetService {
       }
   
       const today = new Date();
-      const userRequestedDate = new Date(createBudgetDto.startDate);
+      // Split the date string into day, month, and year components
+      const [day, month, year] = createBudgetDto.startDate.split("-");
+
+      // Create a new Date object using the components
+      const userRequestedDate = new Date(`${year}-${month}-${day}`);
       if (userRequestedDate < today) {
         throw new HttpException("Start date should not be a past date", HttpStatus.BAD_REQUEST);
       }
