@@ -475,7 +475,7 @@ export class InvestmentService {
           market_value,
           total_quantity,
           totalProfit,
-          totalLoss,
+          totalLoss : -totalLoss,
           growth_percentage,
           portfolio_value,
         }
