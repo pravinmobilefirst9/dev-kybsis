@@ -44,6 +44,11 @@ export class ManualAccountDTO {
   @IsString({ message: 'Account ID must be a string' })
   accountId: string;
 
+  @IsNotEmpty({ message: 'Item id must not be empty' })
+  @IsNumber({}, { message: 'Item id must be a number' })
+  @IsPositive({ message: 'Item id must be a positive number' })
+  item_id : number;
+
   @IsNotEmpty({ message: 'type must not be empty' })
   @IsString({ message: 'type must be a string' })
   @IsEnum(PlaidAccountType, { message: 'Invalid type' })

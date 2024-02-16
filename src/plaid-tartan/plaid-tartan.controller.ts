@@ -5,23 +5,31 @@ import { UpdatePlaidTartanDto } from './dto/update-plaid-tartan.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { ManualAccountDTO } from './dto/manual-account.dto';
 import { CreateTransactionDto } from './dto/create-manual-transaction.dto';
+import { AddBankDTO } from './dto/add-manual-bank.dto';
+import { FetchUserBanks } from './dto/fetch-user-banks.dto';
 
 @Controller('plaid_tartan')
 export class PlaidTartanController {
   constructor(private readonly plaidTartanService: PlaidTartanService) {}
 
-  @Get('fetch_manual_accounts')
+  @Get('fetch_manual_accounts/:item_id')
   @UseGuards(AuthGuard)
-  async fetchAllManualAccounts(@Req() request : any){
+  async fetchAllManualAccounts(
+    @Req() request : any,
+    @Param('item_id', ParseIntPipe) item_id : number
+    ){
     const {user_id} = request.auth;     
-    return await this.plaidTartanService.fetchAllManualAccounts(user_id);
+    return await this.plaidTartanService.fetchAllManualAccounts(user_id, item_id);
   }
 
-  @Get('fetch_manual_accounts/:id')
+  @Get('fetch_manual_accounts/:item_id/:id')
   @UseGuards(AuthGuard)
-  async fetchAllManualAccountById(@Req() request : any, @Param('id') id : number ){
+  async fetchAllManualAccountById(
+    @Req() request : any,
+    @Param('item_id', ParseIntPipe) item_id : number,
+    @Param('id') id : number ){
     const {user_id} = request.auth;     
-    return await this.plaidTartanService.fetchAllManualAccounts(user_id, id);
+    return await this.plaidTartanService.fetchAllManualAccounts(user_id, item_id, id);
   }
 
 
@@ -145,5 +153,32 @@ export class PlaidTartanController {
     return await this.plaidTartanService.getAllInstitutions(cursor, pageSize, keyword);
   }
   
-  
+  // Manual Banks
+  @Post("fetch_user_manual_banks")
+  @UseGuards(AuthGuard)
+  async fetchUserManualBanks(@Req() req : any, @Body() payload : FetchUserBanks){
+    const {user_id} = req.auth     
+      const result = await this.plaidTartanService.fetchAllUserBanks(user_id, payload);
+      return result;
+  }
+
+  @Post("add_manual_bank")
+  @UseGuards(AuthGuard)
+  async addManualBank(
+    @Req() req : any, 
+    @Body() payload : AddBankDTO
+  ){
+    const {user_id} = req.auth     
+    return await this.plaidTartanService.addUserManualBank(user_id, payload)
+  }
+
+  @Delete("delete_manual_bank/:item_id")
+  @UseGuards(AuthGuard)
+  async deleteManualBank(
+    @Req() req : any, 
+    @Param("item_id", ParseIntPipe) item_id : number
+  ){
+    const {user_id} = req.auth     
+    return await this.plaidTartanService.deleteManualBank(user_id, item_id)
+  }
 }

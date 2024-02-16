@@ -85,17 +85,19 @@ model InstitutionAccount {
 }
 
 model PlaidItem {
-  id            Int                             @id @default(autoincrement())
-  plaid_item_id String
-  user_id       Int
-  access_token  String
-  public_token  String
-  ins_id        String
-  ins_name      String
-  created_at    DateTime                        @default(now())
-  updated_at    DateTime                        @default(now())
-  plaid         PlaidInstitutionImportHistory[]
-  user          User                            @relation(fields: [user_id], references: [id])
+  id              Int                             @id @default(autoincrement())
+  plaid_item_id   String?
+  user_id         Int
+  access_token    String?
+  public_token    String?
+  ins_id          String
+  manual          Boolean                         @default(false)
+  ins_name        String
+  created_at      DateTime                        @default(now())
+  updated_at      DateTime                        @default(now())
+  manuallyDeleted Boolean                         @default(false)
+  plaid           PlaidInstitutionImportHistory[]
+  user            User                            @relation(fields: [user_id], references: [id])
 
   AssetPlaidItem       PlaidAssetItem?
   investmentAccounts   InvestmentAccounts[]

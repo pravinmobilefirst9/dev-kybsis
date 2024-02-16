@@ -6,6 +6,8 @@ import { TransactionService } from 'src/transaction/transaction.service';
 import { ManualAccountDTO } from './dto/manual-account.dto';
 import { CreateTransactionDto } from './dto/create-manual-transaction.dto';
 import { Prisma, Transaction } from '@prisma/client';
+import { FetchUserBanks } from './dto/fetch-user-banks.dto';
+import { AddBankDTO } from './dto/add-manual-bank.dto';
 
 @Injectable()
 export class PlaidTartanService {
@@ -14,13 +16,15 @@ export class PlaidTartanService {
     private transactionService: TransactionService,
   ) { }
 
-  async fetchAllManualAccounts(user_id: number, id?: number) {
+  async fetchAllManualAccounts(user_id: number, item_id : number,id?: number) {
     try {
       let data = null;
       if (id) {
         data = await this.prisma.account.findUnique({
           where: {
-            id
+            id,
+            manual : true,
+            plaid_item_id : item_id
           }
         })
 
@@ -32,7 +36,8 @@ export class PlaidTartanService {
         data = await this.prisma.account.findMany({
           where: {
             user_id,
-            manual: true
+            manual: true,
+            plaid_item_id : item_id
           },
           select: {
             id: true,
@@ -280,6 +285,7 @@ export class PlaidTartanService {
         manual: true,
         subtype: data['type'],
         user_id,
+        plaid_item_id : data['item_id'],
         available_balance: data['availableBalance'],
         current_balance: data['availableBalance'],
         iso_currency_code: data['isoCurrencyCode'],
@@ -471,7 +477,7 @@ export class PlaidTartanService {
       })
 
       if (transactionExists === 0) {
-        throw new HttpException("Transaction you are trying update does not exists", HttpStatus.NOT_FOUND)
+        throw new HttpException("Transaction you are trying delete does not exists", HttpStatus.NOT_FOUND)
       }
 
       await this.prisma.transaction.delete({
@@ -599,4 +605,123 @@ async isFutureDate(dateString : string) {
     // Compare the input date with the current date
     return inputDate.getMilliseconds() > currentDate.getMilliseconds();
   }
+
+
+  // Manual banks
+ async fetchAllUserBanks(user_id : number, {manual} : FetchUserBanks){
+  try {
+    const where : Prisma.PlaidItemWhereInput = manual === true ?
+       {user_id, manual, manuallyDeleted : false}
+       :
+       {user_id, manual}
+    const userBanks = await this.prisma.plaidItem.findMany({
+      where,
+      select : {
+        id : true,
+        ins_id : true,
+        ins_name : true,
+        manual : true
+      }
+    })
+
+    return {
+      success: true,
+      statusCOde: HttpStatus.OK,
+      message: "User banks fetched successfully",
+      data: userBanks
+    }
+  } catch (error) {
+    if (error instanceof HttpException) {
+      throw error;
+    }
+    throw new HttpException(
+      error.toString(),
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  }
+ }
+
+
+ async addUserManualBank(user_id : number, data : AddBankDTO){
+  try {
+    const isBankAlreadyexists = await this.prisma.plaidItem.findFirst({
+      where : {
+        ins_id : data['ins_id'],
+        user_id : user_id,
+        manual : true
+      }
+    })
+
+    if (isBankAlreadyexists && isBankAlreadyexists.manuallyDeleted === false) {
+      throw new HttpException("Bank is already added", HttpStatus.NOT_ACCEPTABLE)
+    }
+
+    if (isBankAlreadyexists) {
+      await this.prisma.plaidItem.update({
+        data : {
+          manuallyDeleted : false
+        },
+        where : {
+          id : isBankAlreadyexists.id
+        }
+      })
+    }
+    else{
+      await this.prisma.plaidItem.create({
+        data : {
+          user_id,
+          ins_id : data['ins_id'],
+          ins_name : data['ins_name'],
+          manuallyDeleted : false,
+          manual : true
+        }
+      })
+    }
+
+    return {
+      success: true,
+      statusCOde: HttpStatus.OK,
+      message: "Bank added successfully",
+      data: {}
+    }
+
+  } catch (error) {
+    if (error instanceof HttpException) {
+      throw error;
+    }
+    throw new HttpException(
+      error.toString(),
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  }
+ }
+
+ async deleteManualBank(user_id : number, item_id : number){
+  try {
+    await this.prisma.plaidItem.update({
+      where : {
+        id : item_id,
+        user_id
+      },
+      data : {
+        manuallyDeleted : true
+      }
+    })
+
+    return {
+      success: true,
+      statusCOde: HttpStatus.OK,
+      message: "Bank removed successfully",
+      data: {}
+    }
+  } catch (error) {
+    if (error instanceof HttpException) {
+      throw error;
+    }
+    throw new HttpException(
+      error.toString(),
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  }
+ }
 }
