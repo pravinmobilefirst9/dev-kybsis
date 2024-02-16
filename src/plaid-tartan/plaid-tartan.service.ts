@@ -6,7 +6,6 @@ import { TransactionService } from 'src/transaction/transaction.service';
 import { ManualAccountDTO } from './dto/manual-account.dto';
 import { CreateTransactionDto } from './dto/create-manual-transaction.dto';
 import { Prisma, Transaction } from '@prisma/client';
-import { isFutureDate } from 'src/helper';
 
 @Injectable()
 export class PlaidTartanService {
@@ -381,12 +380,14 @@ export class PlaidTartanService {
     }
   }
 
+  
+
   async addManualTransaction(user_id: number, data: CreateTransactionDto, id: number | undefined = undefined) {
     try {
       // Checks
       const validateDate = new Date(data['date'])
 
-      if (isFutureDate(data['date'])) {
+      if (await this.isFutureDate(data['date'])) {
         throw new HttpException("Future date is not allowed", HttpStatus.NOT_ACCEPTABLE);
       }
 
@@ -588,5 +589,14 @@ export class PlaidTartanService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+
+async isFutureDate(dateString : string) {
+    const currentDate = new Date(); // Current date and time
+    const inputDate = new Date(dateString); // Date parsed from the input string
+    
+    // Compare the input date with the current date
+    return inputDate.getMilliseconds() > currentDate.getMilliseconds();
   }
 }
