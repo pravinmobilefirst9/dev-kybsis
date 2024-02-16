@@ -385,8 +385,8 @@ export class InvestmentService {
       let totalProfit = 0;
       let totalLoss = 0;
       
-      investmentData.forEach((account) => {
-        account.investmentHolding.forEach((holding) => {
+      investmentData.map((account) => {
+        account.investmentHolding.map((holding) => {
           // value = current investment market value * no of quantity held by user
           const value = holding.institution_value || 0;
           // cost basis = user has spend money for 1 share

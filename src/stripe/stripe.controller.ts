@@ -1,10 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, ParseIntPipe, Headers, HttpException, HttpStatus } from '@nestjs/common';
 import { StripeService } from './stripe.service';
-import { CreateStripeDto } from './dto/create-stripe.dto';
-import { UpdateStripeDto } from './dto/update-stripe.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
 import RequestWithRawBody from 'src/middlewares/interfaces/requestWithRawBody.interface';
-import { HttpService } from '@nestjs/axios';
 
 @Controller('stripe')
 export class StripeController {
@@ -27,6 +24,8 @@ export class StripeController {
     @Headers('stripe-signature') signature: string,
     @Req() request: RequestWithRawBody
   ) { 
+    console.log({signature});
+    
     if (!signature) {
       throw new HttpException('Missing stripe-signature header', HttpStatus.INTERNAL_SERVER_ERROR);
     }

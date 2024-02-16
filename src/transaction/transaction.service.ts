@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma.service';
 import { Configuration, InstitutionsGetByIdRequest, PlaidApi, PlaidEnvironments, CountryCode, InvestmentsTransactionsGetRequest, TransactionsEnrichRequest, AssetReportCreateRequest, AssetReportGetRequest, LiabilitiesGetRequest, AssetReportCreateResponse, AssetReportGetResponse, InvestmentsHoldingsGetRequest } from 'plaid';
 import { PlaidItem } from '@prisma/client';
 import axios, { AxiosResponse } from 'axios';
+import { ResponseReturnType } from 'src/common/responseType';
 
 
 @Injectable()
@@ -235,7 +236,49 @@ export class TransactionService {
     }    
   }
 
+  async importAllUSAInstitution() : Promise<ResponseReturnType> {
+    try {
+      let totalBanks = 0;
+      for (let index = 6000; index < 12000; index+=500) {
+        const Institutions = await this.client.institutionsGet({
+          count : 500,
+          offset : index,
+          country_codes : [CountryCode.Us],
+        })
 
+        if (Institutions.data.institutions.length === 0) {
+          break
+        }
+        totalBanks = totalBanks + Institutions.data.institutions.length;
+        let modified = Institutions.data.institutions.map((i) => {
+            const {country_codes, institution_id, products, name, oauth} = i;
+            return {
+              country_codes,
+              institution_id,
+              products,
+              name,
+              oauth
+            }
+        })
+        await this.prisma.institution.createMany({
+          skipDuplicates : true,
+          data : modified
+        })
+      }
+        
+        
+
+        return {
+            message : `${totalBanks} Institutions imported successfully`,
+            statusCode : HttpStatus.CREATED,
+            success : true,
+            data : {}
+        }
+      
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
   create(createTransactionDto: CreateTransactionDto) {
     return 'This action adds a new transaction';
   }

@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 datasource db {
@@ -197,7 +198,7 @@ model Account {
   id                  Int           @id @default(autoincrement())
   user_id             Int
   account_name        String
-  account_id          String
+  account_id          String        @unique
   plaid_item_id       Int?
   institution_name    String
   official_name       String?
@@ -206,25 +207,15 @@ model Account {
   subtype             String?
   institution_id      String?
   verification_status String?
+  current_balance     Float
+  available_balance   Float
+  iso_currency_code   String
   manual              Boolean       @default(false)
   created_at          DateTime
   updated_at          DateTime
   User                User          @relation(fields: [user_id], references: [id])
   PlaidItem           PlaidItem?    @relation(fields: [plaid_item_id], references: [id])
-  Balance             Balance[]
   Transaction         Transaction[]
-}
-
-model Balance {
-  id                Int      @id @default(autoincrement())
-  account_tbl_id    Int
-  current_balance   Float
-  available_balance Float
-  iso_currency_code String
-  date              DateTime
-  created_at        DateTime @default(now())
-  updated_at        DateTime @default(now())
-  Account           Account  @relation(fields: [account_tbl_id], references: [id], onDelete: Cascade)
 }
 
 enum UserRole {
@@ -689,4 +680,17 @@ model Subscription {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Institution {
+  id             Int      @id @default(autoincrement())
+  country_codes  String[] @map(name: "country_codes")
+  institution_id String   @map(name: "institution_id")
+  name           String
+  oauth          Boolean
+  products       String[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([institution_id])
 }

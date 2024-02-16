@@ -26,6 +26,12 @@ export class TransactionController {
     const {user_id} = request.auth;
     return await this.transactionService.fetchRecentTransactionForDashboard(user_id);
   }
+
+  @Get("import_all_plaid_institutions")
+  // @UseGuards(AuthGuard)
+  async fetchAllPlaidInstitutions(@Req() request : any){
+    return await this.transactionService.importAllUSAInstitution();
+  }
   
   
   

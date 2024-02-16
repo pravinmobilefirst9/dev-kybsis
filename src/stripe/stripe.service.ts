@@ -132,6 +132,9 @@ export class StripeService {
     console.log("Event type : ",event.type)
     switch (event.type) {
       case 'invoice.paid':
+        const data = event.data.object
+        console.log({data});
+        
         // Used to provision services after the trial has ended.
         // The status of the invoice will show up as paid. Store the status in your
         // database to reference when a user accesses your service to avoid hitting rate limits.

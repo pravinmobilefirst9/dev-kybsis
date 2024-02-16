@@ -302,7 +302,7 @@ const widgets = [
   {name : "Manual Investment", default : false, role : "BASIC"},
   {name : "Total Investment", default : false, role : "PREMIUM"},
   {name : "Budget", default : false, role : "PREMIUM"},
-  {name : "Houshold", default : false, role : "PREMIUM"},
+  {name : "HouseHold", default : false, role : "PREMIUM"},
   {name : "Plaid Assets", default : false, role : "PREMIUM"},
   {name : "Manual Assets", default : false, role : "PREMIUM"},
 ]

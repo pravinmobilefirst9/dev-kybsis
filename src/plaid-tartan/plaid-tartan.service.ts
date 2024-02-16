@@ -5,7 +5,8 @@ import { PrismaService } from 'src/prisma.service';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { ManualAccountDTO } from './dto/manual-account.dto';
 import { CreateTransactionDto } from './dto/create-manual-transaction.dto';
-import { Transaction } from '@prisma/client';
+import { Prisma, Transaction } from '@prisma/client';
+import { isFutureDate } from 'src/helper';
 
 @Injectable()
 export class PlaidTartanService {
@@ -14,31 +15,46 @@ export class PlaidTartanService {
     private transactionService: TransactionService,
   ) { }
 
-  async fetchAllManualAccounts(user_id : number){
+  async fetchAllManualAccounts(user_id: number, id?: number) {
     try {
-      const accounts = await this.prisma.account.findMany({
-        where : {
-          user_id,
-          manual : true
-        },
-        select : {
-          account_id : true,
-          account_name : true,
-          Balance : {
-            select : {
-              available_balance:  true
-            }
-          },
-          institution_name : true,
-          type : true
+      let data = null;
+      if (id) {
+        data = await this.prisma.account.findUnique({
+          where: {
+            id
+          }
+        })
+
+        if (!data) {
+          throw new HttpException("Account not found", HttpStatus.NOT_FOUND);
         }
-      });
+      }
+      else {
+        data = await this.prisma.account.findMany({
+          where: {
+            user_id,
+            manual: true
+          },
+          select: {
+            id: true,
+            account_id: true,
+            account_name: true,
+            available_balance: true,
+            current_balance: true,
+            institution_name: true,
+            type: true
+          },
+          orderBy : {
+            created_at : "desc"
+          }
+        });
+      }
 
       return {
         success: true,
         statusCode: HttpStatus.OK,
-        message: "Accounts fetched successfully",
-        data: accounts
+        message: `${id ? "Account" : "Accounts"} fetched successfully `,
+        data
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -177,53 +193,37 @@ export class PlaidTartanService {
               user_id: userId,
             },
           });
-
           const currentTime = new Date();
+          let dataObj = {
+            account_name: account.name,
+            account_id: account.account_id,
+            institution_name: itemData.ins_name,
+            official_name: account.official_name || "--",
+            mask: account.mask,
+            type: account.type,
+            subtype: account.subtype,
+            institution_id: item.institution_id,
+            verification_status: 'verified', // Adjust as per your requirements
+            plaid_item_id: itemData.id,
+            user_id: userId,
+            available_balance: account.balances.available || 0,
+            current_balance: account.balances.current || 0,
+            iso_currency_code: account.balances.iso_currency_code || 'USD',
+            // Timestamps
+            created_at: currentTime,
+            updated_at: currentTime,
+            // User: { connect: { id: userId } },
+          }
           if (!existingAccount) {
             existingAccount = await this.prisma.account.create({
-              data: {
-                account_name: account.name,
-                account_id: account.account_id,
-                institution_name: itemData.ins_name,
-                official_name: account.official_name || "--",
-                mask: account.mask,
-                type: account.type,
-                subtype: account.subtype,
-                institution_id: item.institution_id,
-                verification_status: 'verified', // Adjust as per your requirements
-                plaid_item_id: itemData.id,
-                user_id: userId,
-                // Timestamps
-                created_at: currentTime,
-                updated_at: currentTime,
-                // User: { connect: { id: userId } },
-              },
-            });
-
-            await this.prisma.balance.create({
-              data: {
-                available_balance: account.balances.available || 0,
-                current_balance: account.balances.current || 0,
-                iso_currency_code: account.balances.iso_currency_code || 'USD',
-                date: new Date(),
-                account_tbl_id: existingAccount.id,
-              },
+              data: dataObj,
             });
           } else {
-            const existingBalance = await this.prisma.balance.findFirst({
-              where: { account_tbl_id: existingAccount.id },
-            });
-            await this.prisma.balance.update({
-              data: {
-                available_balance: account.balances.available || 0,
-                current_balance: account.balances.current || 0,
-                iso_currency_code: account.balances.iso_currency_code || 'USD',
-                date: new Date(),
-              },
-              where: {
-                id: existingBalance.id,
-              },
-            });
+            existingAccount = await this.prisma.account.update({
+              data: dataObj,
+              where: { id: existingAccount.id }
+            })
+
           }
 
           await this.prisma.transaction.createMany({
@@ -281,11 +281,15 @@ export class PlaidTartanService {
         manual: true,
         subtype: data['type'],
         user_id,
+        available_balance: data['availableBalance'],
+        current_balance: data['availableBalance'],
+        iso_currency_code: data['isoCurrencyCode'],
         created_at: new Date(),
         updated_at: new Date()
       }
 
-      if (id !== undefined) {
+      let account = null;
+      if (id) {
         const existedAccount = await this.prisma.account.findUnique({
           where: {
             id,
@@ -297,25 +301,37 @@ export class PlaidTartanService {
           throw new HttpException('Invalid account id', HttpStatus.BAD_REQUEST);
         }
 
-        await this.prisma.account.update({
+        account = await this.prisma.account.update({
           where: { id },
           data: {
             ...dataObj,
-            created_at : existedAccount.created_at,
-            updated_at : new Date()
+            created_at: existedAccount.created_at,
+            updated_at: new Date()
           }
         })
       } else {
-        await this.prisma.account.create({
+        const isSimilerAccountExists = await this.prisma.account.findFirst({
+          where: {
+            manual: true,
+            institution_id: data['institutionId'],
+            account_id: data['accountId'],
+            user_id
+          }
+        })
+        if (isSimilerAccountExists) {
+          throw new HttpException(`Account already exists with current account id`, HttpStatus.NOT_ACCEPTABLE);
+        }
+        account = await this.prisma.account.create({
           data: dataObj
         });
       }
+
 
       return {
         success: true,
         statusCOde: HttpStatus.CREATED,
         message: `Account ${id ? "updated" : "created"} successfully`,
-        data: {}
+        data: account
       }
 
     } catch (error) {
@@ -329,80 +345,100 @@ export class PlaidTartanService {
     }
   }
 
-async deleteManualAccount(user_id : number, id : number){
-  try {
-    const deleted = await this.prisma.account.delete({
-      where : {
-        id,
-        user_id,
-        manual : true
-      }
-    })
-
-    if (!deleted) {
-      return {
-        success: false,
-        statusCOde: HttpStatus.OK,
-        message: `Manual account with id ${id} associated with current user not found`,
-        data: {}
-      }
-    } 
-
-    return {
-      success: true,
-      statusCOde: HttpStatus.OK,
-      message: `Manual account deleted successfully`,
-      data: {}
-    }
-  } catch (error) {
-    if (error instanceof HttpException) {
-      throw error;
-    }
-    throw new HttpException(
-      error.toString(),
-      HttpStatus.INTERNAL_SERVER_ERROR,
-    );
-  }
-}
-
-  async addManualTransaction(user_id: number, data : CreateTransactionDto, id : number | undefined = undefined) {
+  async deleteManualAccount(user_id: number, id: number) {
     try {
-      let dataObj = {
-        account_id : data['account_id'],
-        amount : data['amount'],
-        date : new Date(data['date']),
-        manual : true,
-        name : data['name'],
-        pending : data['pending'],
-        user_id,
-        category_id : null,
-        category_name : null
-      }
-
-      const category = await this.prisma.budgetCategories.findUnique({
-        where : {
-          id : data['category_id']
+      const deleted = await this.prisma.account.delete({
+        where: {
+          id,
+          user_id,
+          manual: true
         }
       })
+
+      if (!deleted) {
+        return {
+          success: false,
+          statusCOde: HttpStatus.OK,
+          message: `Manual account with id ${id} associated with current user not found`,
+          data: {}
+        }
+      }
+
+      return {
+        success: true,
+        statusCOde: HttpStatus.OK,
+        message: `Manual account deleted successfully`,
+        data: {}
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error.toString(),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async addManualTransaction(user_id: number, data: CreateTransactionDto, id: number | undefined = undefined) {
+    try {
+      // Checks
+      const validateDate = new Date(data['date'])
+
+      if (isFutureDate(data['date'])) {
+        throw new HttpException("Future date is not allowed", HttpStatus.NOT_ACCEPTABLE);
+      }
+
+      const accountExists = await this.prisma.account.count({
+        where : {id : data['account_id']}
+      })
+
+      if (accountExists === 0) {
+        throw new HttpException("Invalid account id", HttpStatus.NOT_ACCEPTABLE);
+      }
+      
+      const category = await this.prisma.budgetCategories.findUnique({
+        where: {
+          id: data['category_id']
+        }
+      })
+
+      if (!category) {
+        throw new HttpException("Invalid category Id", HttpStatus.NOT_ACCEPTABLE);
+      }
+
+      let dataObj = {
+        account_id: data['account_id'],
+        amount: data['amount'],
+        date: validateDate,
+        manual: true,
+        name: data['name'],
+        pending: data['pending'],
+        user_id,
+        category_id: null,
+        category_name: null
+      }
+
 
       dataObj.category_id = category.category_ids[0];
       dataObj.category_name = [category.category_name];
 
       if (id) {
         const transactionExists = await this.prisma.transaction.count({
-          where : {id, user_id}
+          where: { id, user_id }
         })
         if (transactionExists === 0) {
           throw new HttpException("Transaction you are trying update does not exists", HttpStatus.NOT_FOUND)
         }
         await this.prisma.transaction.update({
-          data : dataObj,
-          where : {id}
+          data: dataObj,
+          where: { id }
         })
       }
-      else{
+      else {
         await this.prisma.transaction.create({
-          data : dataObj,
+          data: dataObj,
         })
       }
 
@@ -424,10 +460,10 @@ async deleteManualAccount(user_id : number, id : number){
     }
   }
 
-  async deleteManualTransaction(user_id : number, id : number){
+  async deleteManualTransaction(user_id: number, id: number) {
     try {
       const transactionExists = await this.prisma.transaction.count({
-        where : {
+        where: {
           id,
           user_id
         }
@@ -438,7 +474,7 @@ async deleteManualAccount(user_id : number, id : number){
       }
 
       await this.prisma.transaction.delete({
-        where : {
+        where: {
           id,
           user_id
         }
@@ -462,5 +498,95 @@ async deleteManualAccount(user_id : number, id : number){
     }
   }
 
+  async getAllInstitutions(cursor: any = '0', pageSize: any = '10', keyword?: string) {
+    try {
+      cursor = parseInt(cursor)
+      pageSize = parseInt(pageSize)
+      const where: Prisma.InstitutionWhereInput = { id: { gte: cursor } };
+      if (keyword) {
+        // Add keyword search condition if provided
+        where.OR = [
+          { name: { contains: keyword, mode: 'insensitive' } },
+        ];
+      }
 
+      const institutions = await this.prisma.institution.findMany({
+        take: pageSize + 1, // Fetch one extra record to determine if there are more pages
+        where: where,
+        orderBy: { id: 'asc' }, // Ensure consistent ordering for pagination
+        select: {
+          id: true,
+          institution_id: true,
+          name: true
+        }
+      });
+
+      let nextCursor = null;
+      if (institutions.length > pageSize) {
+        // If more records are fetched than the page size, set the next cursor
+        nextCursor = institutions[pageSize].id;
+        institutions.pop(); // Remove the extra record used for determining pagination
+      }
+
+      return {
+        success: true,
+        statusCOde: HttpStatus.OK,
+        message: `Institutions fetched successfully`,
+        data: { institutions, nextCursor }
+      }
+
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error.toString(),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async fetchTransactions(user_id : number, account_id : number, transactionId ?: number){
+    try {
+      let data = null;
+      if (!account_id) {
+        throw new HttpException("Account id not found", HttpStatus.BAD_REQUEST);
+      }
+
+      if (transactionId) {
+        data = await this.prisma.transaction.findUnique({
+          where : {
+            id : transactionId,
+            user_id,
+            account_id
+          }
+        })
+      }else{
+        data = await this.prisma.transaction.findMany({
+          where : {
+            account_id,
+            user_id
+          },
+          orderBy : {
+            created_at : "desc"
+          }
+        })
+      }
+
+      return {
+        success: true,
+        statusCOde: HttpStatus.OK,
+        message: transactionId ? "Transaction details fetched successfully" : "Transactions fetched successfully",
+        data
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error.toString(),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

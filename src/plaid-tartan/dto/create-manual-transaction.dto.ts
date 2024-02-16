@@ -1,4 +1,5 @@
 import { IsInt, IsString, IsNotEmpty, IsOptional, IsBoolean, IsArray, IsDate, IsPositive } from 'class-validator';
+import { IsDateFormat } from 'src/budget/dto/create-budget.dto';
 
 export class CreateTransactionDto {
   @IsInt({ message: 'Account ID must be an integer' })
@@ -17,8 +18,9 @@ export class CreateTransactionDto {
   @IsNotEmpty({ message: 'Category id is required' })
   category_id : number;
 
-  @IsDate({ message: 'Date must be a valid date' })
-  date : Date;
+  @IsNotEmpty({ message: 'Date should not be empty' })
+  @IsString({ message: 'Date must be a string' })
+  date : string;
 
   @IsBoolean({ message: 'Pending must be a boolean value'})
   @IsOptional()
