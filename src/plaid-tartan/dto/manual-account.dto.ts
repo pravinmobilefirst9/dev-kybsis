@@ -54,18 +54,13 @@ export class ManualAccountDTO {
   @IsEnum(PlaidAccountType, { message: 'Invalid type' })
   type: string;
 
-  @IsNotEmpty({ message: 'Current balance must not be empty' })
-  @IsNumber({}, { message: 'Current balance must be a number' })
-  @IsPositive({ message: 'Current balance must be a positive number' })
-  currentBalance: number;
-
   @IsNotEmpty({ message: 'Available balance must not be empty' })
   @IsNumber({}, { message: 'Available balance must be a number' })
   @IsPositive({ message: 'Available balance must be a positive number' })
   availableBalance: number;
 
-  @IsNotEmpty({ message: 'ISO currency code must not be empty' })
-  @IsString({ message: 'ISO currency code must be a string' })
-  @IsEnum(CurrencyCode, { message: 'Invalid ISO currency code' })
-  isoCurrencyCode: string;
+  // @IsNotEmpty({ message: 'ISO currency code must not be empty' })
+  // @IsString({ message: 'ISO currency code must be a string' })
+  // @IsEnum(CurrencyCode, { message: 'Invalid ISO currency code' })
+  // isoCurrencyCode: string;
 }

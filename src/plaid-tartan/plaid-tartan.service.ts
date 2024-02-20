@@ -288,7 +288,7 @@ export class PlaidTartanService {
         plaid_item_id : data['item_id'],
         available_balance: data['availableBalance'],
         current_balance: data['availableBalance'],
-        iso_currency_code: data['isoCurrencyCode'],
+        iso_currency_code: 'USD',
         created_at: new Date(),
         updated_at: new Date()
       }
@@ -624,11 +624,20 @@ async isFutureDate(dateString : string) {
       }
     })
 
+    let result = userBanks.map((b) => {
+      const {id, ins_id, ins_name, manual} = b;
+      return {
+        id,
+        institution_id : ins_id,
+        name : ins_name,
+      }
+    })
+
     return {
       success: true,
       statusCOde: HttpStatus.OK,
       message: "User banks fetched successfully",
-      data: userBanks
+      data: result
     }
   } catch (error) {
     if (error instanceof HttpException) {
