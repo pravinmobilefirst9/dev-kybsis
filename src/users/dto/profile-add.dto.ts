@@ -13,8 +13,9 @@ export class ProfileAddDto {
   // @IsDate({ message: 'Invalid date format for date of birth' })
   date_of_birth: Date;
 
-  @IsPhoneNumber("IN", { message: 'Invalid phone number format' }) // 'ZZ' allows any country code
   @IsNotEmpty({ message: 'Phone number cannot be empty' })
+  @IsString({ message: 'Date of birth must be a string' })
+  @Matches(/^\+1\s?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, {message : "Invalid number"}  )
   phone_number: string;
 
   @IsNotEmpty({ message: 'Gender cannot be empty' })
