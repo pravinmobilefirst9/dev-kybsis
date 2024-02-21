@@ -1,6 +1,5 @@
-import { IsDate, IsIn, IsNotEmpty, IsOptional, IsPhoneNumber, IsString } from "class-validator"
-import { CountryCode } from 'libphonenumber-js';
-
+import { IsDate, IsIn, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, Matches } from "class-validator"
+let regex = /^\+1 \([2-9][0-9]{2}\) [2-9][0-9]{2}-[0-9]{4}$/
 export class UpdateProfileDto {
     @IsString({ message: 'First name must be a string' })
     @IsNotEmpty({ message: 'Firstname cannot be empty' })
@@ -15,8 +14,10 @@ export class UpdateProfileDto {
     @IsString({ message: 'Date of birth must be a string' })
     date_of_birth: Date;
 
-    @IsPhoneNumber("IN", { message: 'Invalid phone number format' }) // 'ZZ' allows any country code
+    // @IsPhoneNumber("US", { message: 'Invalid phone number format' })
     @IsNotEmpty({ message: 'Phone number cannot be empty' })
+    @IsString({ message: 'Date of birth must be a string' })
+    @Matches(regex, {message : "Invalid phone number"})
     phone_number: string;
 
     @IsString({ message: 'Gender must be a string' })
