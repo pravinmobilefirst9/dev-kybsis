@@ -42,19 +42,11 @@ model Budget {
   budgets_category_id Int
   start_date          DateTime
   created_at          DateTime         @default(now())
-  updated_at          DateTime         @default(now())
+  updated_at          DateTime         @updatedAt
   duration            Duration
   collaborations      Collaboration[] // This line indicates that a Budget can have many Collaborations
   BudgetCategory      BudgetCategories @relation(fields: [budgets_category_id], references: [id])
   User                User             @relation(fields: [user_id], references: [id])
-}
-
-model GoalCategory {
-  id         Int      @id @default(autoincrement())
-  name       String
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
-  Goal       Goal[]
 }
 
 model UserEmail {
@@ -62,8 +54,9 @@ model UserEmail {
   sender           String
   receiver         String
   response_details Int
-  created_at       Int
-  updated_at       Int
+  created_at       DateTime    @default(now())
+  updated_at       DateTime    @updatedAt
+
 }
 
 model InstitutionAccount {
@@ -79,8 +72,8 @@ model InstitutionAccount {
   verification_status String
   balance             Float
   available_balance   Float
-  created_at          DateTime
-  updated_at          DateTime
+  created_at          DateTime    @default(now())
+  updated_at          DateTime    @updatedAt
   User                User     @relation(fields: [user_id], references: [id])
 }
 
@@ -94,7 +87,7 @@ model PlaidItem {
   manual          Boolean                         @default(false)
   ins_name        String
   created_at      DateTime                        @default(now())
-  updated_at      DateTime                        @default(now())
+  updated_at      DateTime                        @updatedAt
   manuallyDeleted Boolean                         @default(false)
   plaid           PlaidInstitutionImportHistory[]
   user            User                            @relation(fields: [user_id], references: [id])
@@ -112,7 +105,7 @@ model PlaidInstitutionImportHistory {
   ins_id        String
   imported_at   DateTime?
   created_at    DateTime  @default(now())
-  updated_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
   plaidItem     PlaidItem @relation(fields: [plaid_item_id], references: [id])
   user          User      @relation(fields: [user_id], references: [id])
 }
@@ -152,16 +145,6 @@ model User {
   subscriptions                 Subscription[]
 }
 
-model Goal {
-  id               Int          @id @default(autoincrement())
-  user_id          Int
-  goal_category_id Int
-  name             String
-  created_at       DateTime     @default(now())
-  updated_at       DateTime     @default(now())
-  GoalCategory     GoalCategory @relation(fields: [goal_category_id], references: [id])
-}
-
 model UserDetails {
   id          Int      @id @default(autoincrement())
   user_id     Int      @unique
@@ -172,7 +155,7 @@ model UserDetails {
   gender      String
   zipcode     String
   created_at  DateTime @default(now())
-  updated_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
   user        User     @relation(fields: [user_id], references: [id])
 }
 
@@ -189,7 +172,7 @@ model Transaction {
   manual               Boolean  @default(false)
   user_id              Int
   created_at           DateTime @default(now())
-  updated_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
   Account              Account  @relation(fields: [account_id], references: [id], onDelete: Cascade)
   User                 User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
@@ -213,8 +196,8 @@ model Account {
   available_balance   Float
   iso_currency_code   String
   manual              Boolean       @default(false)
-  created_at          DateTime
-  updated_at          DateTime
+  created_at          DateTime      @default(now())
+  updated_at          DateTime      @updatedAt
   User                User          @relation(fields: [user_id], references: [id])
   PlaidItem           PlaidItem?    @relation(fields: [plaid_item_id], references: [id])
   Transaction         Transaction[]
@@ -237,8 +220,8 @@ model InvestmentAccounts {
   type                String
   subtype             String
   verification_status String
-  created_at          DateTime
-  updated_at          DateTime
+  created_at          DateTime  @default(now())
+  updated_at          DateTime  @updatedAt
 
   // References
   User      User      @relation(fields: [user_id], references: [id])
@@ -267,7 +250,7 @@ model InvestmentTransactions {
   unofficial_currency_code  String?
   platform                  String?            @default("plaid")
   created_at                DateTime           @default(now())
-  updated_at                DateTime           @default(now())
+  updated_at                DateTime           @updatedAt
   // References
   investment_account        InvestmentAccounts @relation(fields: [account_id], references: [id])
 
@@ -281,7 +264,7 @@ model InvestmentBalance {
   available_balance Float
   iso_currency_code String?
   created_at        DateTime @default(now())
-  updated_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
 
   // References
   investment_account InvestmentAccounts @relation(fields: [account_id], references: [id])
@@ -304,7 +287,7 @@ model InvestmentHolding {
   investment_account  InvestmentAccounts @relation(fields: [account_id], references: [account_id])
   investment_security InvestmentSecurity @relation(fields: [security_id], references: [security_id])
   created_at          DateTime           @default(now())
-  updated_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
 
   @@unique([account_id, security_id])
 }
@@ -313,7 +296,7 @@ model InvestmentCategories {
   id         Int      @id @default(autoincrement())
   name       String
   created_at DateTime @default(now())
-  updated_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   manualInvestments ManualInvestments[]
 }
@@ -329,7 +312,7 @@ model ManualInvestments {
   user_id        Int
   category_id    Int
   created_at     DateTime @default(now())
-  updated_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 
   user               User                 @relation(fields: [user_id], references: [id])
   investmentCategory InvestmentCategories @relation(fields: [category_id], references: [id])
@@ -356,7 +339,7 @@ model InvestmentSecurity {
   unofficial_currency_code String?
   update_datetime          DateTime?
   created_at               DateTime  @default(now())
-  updated_at               DateTime  @default(now())
+  updated_at               DateTime  @updatedAt
 
   InvestmentHolding InvestmentHolding[]
 
@@ -369,7 +352,7 @@ model TransactionCategory {
   category_id String // Category ID, assumed to be a string in this case
   hierarchy   String[] // Array storing the hierarchy levels (e.g., ["Bank Fees", "Overdraft"])
   created_at  DateTime @default(now())
-  updated_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 }
 
 model BudgetCategories {
@@ -377,7 +360,7 @@ model BudgetCategories {
   category_name String
   category_ids  String[]
   created_at    DateTime @default(now())
-  updated_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
   Budgets       Budget[]
 }
 
