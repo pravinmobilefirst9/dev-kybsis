@@ -21,6 +21,7 @@ export class StripeService {
 
   async fetchAllSubscriptionPlans() : Promise<ResponseReturnType>{
     try {
+      console.log("Fetch subscription")
       const products = await this.stripe.products.list({
         active: true,
         expand: ['data.default_price']
