@@ -7,7 +7,7 @@ import RequestWithRawBody from 'src/middlewares/interfaces/requestWithRawBody.in
 export class StripeController {
   constructor(private readonly stripeService: StripeService) {}
 
- @Post('get_subscription_plans')
+ @Get('get_subscription_plans')
   async fetchAllProducts(){
     return await this.stripeService.fetchAllSubscriptionPlans();
   }
