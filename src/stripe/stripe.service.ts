@@ -1,6 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateStripeDto } from './dto/create-stripe.dto';
-import { UpdateStripeDto } from './dto/update-stripe.dto';
 import Stripe from 'stripe';
 import { PrismaService } from 'src/prisma.service';
 import { ResponseReturnType } from 'src/common/responseType';
@@ -89,16 +87,17 @@ export class StripeService {
       });
       
       // Create subscription in DB
-      const newSubscription = await this.prisma.subscription.create({
-        data : {
-          stripeCustomerId : customerId,
-          stripeSubscriptionId : subscription.id,
-          user : {connect : {id : user_id}},
-          subscriptionStatus : "INACTIVE",
-          invoiceStatus : "OPEN"
-        }
-      })
-    
+      // const newSubscription = await this.prisma.subscription.create({
+      //   data : {
+      //     stripeCustomerId : customerId,
+      //     stripeSubscriptionId : subscription.id,
+      //     user : {connect : {id : user_id}},
+      //     subscriptionStatus : "INACTIVE",
+      //     invoiceStatus : "OPEN"
+      //   }
+      // })
+      console.log({subscription});
+      
       return {
         success : true,
         message : "Subscription added successfully",
@@ -106,7 +105,7 @@ export class StripeService {
         data : {
           subscriptionId: subscription.id,
           clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-          newSubscription
+          // newSubscription
         }
       };  
 
@@ -131,6 +130,7 @@ export class StripeService {
 
   async handleSubscriptionEvent(event : Stripe.Event){
     console.log("Event type : ",event.type)
+    console.log("Event data : ",event.data.object)
     switch (event.type) {
       case 'invoice.paid':
         const data = event.data.object
