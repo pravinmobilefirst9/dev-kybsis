@@ -118,11 +118,14 @@ model User {
   otp_verified                  Boolean                         @default(false)
   user_otp                      Int
   user_otp_createdAt            DateTime?
-  user_role                     UserRole                        @default(BASIC)
+  user_role                     UserRole                        @default(FREE)
   device_token                  String
   widgetsAlreadyAdded           Boolean                         @default(false)
+  stripe_customer_id            String?
+  current_subscription_id       Int?
   created_at                    DateTime                        @default(now())
   updated_at                    DateTime                        @updatedAt
+  
   account                       Account[]
   budget                        Budget[]
   collaboratedWith              Collaboration[]                 @relation("CollaboratorCollaborations")
@@ -294,7 +297,8 @@ model InvestmentHolding {
 
 model InvestmentCategories {
   id         Int      @id @default(autoincrement())
-  name       String
+  name       String   @unique
+  fields     Json[]
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -303,12 +307,7 @@ model InvestmentCategories {
 
 model ManualInvestments {
   id             Int      @id @default(autoincrement())
-  name           String
-  code           String
-  currency       String
-  purchase_price Float
-  current_price  Float
-  quantity       Float
+  data           Json[]
   user_id        Int
   category_id    Int
   created_at     DateTime @default(now())
@@ -651,10 +650,16 @@ enum invoiceStatus {
 
 model Subscription {
   id                   Int                @id @default(autoincrement())
-  stripeCustomerId     String
-  stripeSubscriptionId String
+  stripeCustomerId     String             @unique
+  stripeSubscriptionId String             @unique
   invoiceId            String?
   invoiceUrl           String?
+  priceId              String?
+  amount               Int?
+  currency             String?
+  interval             String?
+  interval_count       Int?
+  product              String?
   subscriptionStatus   SubscriptionStatus // Status of the subscription (e.g., active, canceled, etc.)
   invoiceStatus        invoiceStatus // Status of the subscription (e.g., active, canceled, etc.)
   currentPeriodStart   DateTime? // Start of the current billing period

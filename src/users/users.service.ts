@@ -16,12 +16,14 @@ import { JwtService } from '@nestjs/jwt';
 import { ProfileAddDto } from './dto/profile-add.dto';
 import { UpdatePasswordDTO } from './dto/update-password.dto';
 import { User } from './entities/user.entity';
+import { StripeService } from 'src/stripe/stripe.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private stripeService : StripeService,
   ) { }
 
   async registerUser(createUserDto: RegisterUserDto) {
@@ -57,6 +59,16 @@ export class UsersService {
         },
       });
 
+      const customerData = await this.stripeService.createStripeCustomer(user);
+      const customerId = customerData['data']['id'];
+      await this.prisma.user.update({
+        data : {
+          stripe_customer_id : customerId
+        },
+        where : {
+          id : user.id
+        }
+      })
       await this.sendEmail(
         user,
         'Welcome and verify your email.',

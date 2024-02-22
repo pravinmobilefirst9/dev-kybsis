@@ -4,6 +4,12 @@ import { PrismaService } from 'src/prisma.service';
 import { ResponseReturnType } from 'src/common/responseType';
 import { User } from '@prisma/client';
 
+
+const  ProductIdWithRole = {
+  prod_PbPAM3TNohple7 : "PREMIUM",
+  prod_PbPAaKx3F2jl88 : "BASIC"
+}
+
 @Injectable()
 export class StripeService {
 
@@ -43,7 +49,10 @@ export class StripeService {
     try {
      // Create stripe customer
       const stripeCustomer = await this.stripe.customers.create({
-        email : user.email
+        email : user.email,
+        metadata : {
+          user_id : user.id
+        }
       })
 
       return {
@@ -65,18 +74,9 @@ export class StripeService {
     try {
       const user = await this.prisma.user.findUnique({where : {id : user_id}})
 
-      // Checks
-
-
-      // Basic Flow
-
-      //  1) Create Customer
-      const customerData = await this.createStripeCustomer(user);
-      const customerId = customerData['data']['id'];
-
-      // 2) Create a subscription
+      // 1) Create a subscription
       const subscription : any = await this.stripe.subscriptions.create({
-        customer: customerId,
+        customer: user.stripe_customer_id,
         items: [{
           price: priceId,
         }],
@@ -87,16 +87,22 @@ export class StripeService {
       });
       
       // Create subscription in DB
-      // const newSubscription = await this.prisma.subscription.create({
-      //   data : {
-      //     stripeCustomerId : customerId,
-      //     stripeSubscriptionId : subscription.id,
-      //     user : {connect : {id : user_id}},
-      //     subscriptionStatus : "INACTIVE",
-      //     invoiceStatus : "OPEN"
-      //   }
-      // })
-      console.log({subscription});
+      await this.prisma.subscription.create({
+        data : {
+          stripeCustomerId : user.stripe_customer_id,
+          stripeSubscriptionId : subscription.id,
+          invoiceId : subscription.latest_invoice.id,
+          user : {connect : {id : user_id}},
+          subscriptionStatus : "INACTIVE",
+          invoiceStatus : "OPEN",
+          amount : subscription.plan.amount,
+          currency : subscription.plan.currency,
+          interval : subscription.plan.interval,
+          interval_count : 1,
+          priceId : subscription.plan.id,
+          product : subscription.plan.product
+        }
+      })     
       
       return {
         success : true,
@@ -128,23 +134,49 @@ export class StripeService {
     );
   }
 
-  async handleSubscriptionEvent(event : Stripe.Event){
+
+  async handleSubscriptionEvent(event : any){
     console.log("Event type : ",event.type)
     console.log("Event data : ",event.data.object)
+    const data = event.data.object;
     switch (event.type) {
-      case 'invoice.paid':
-        const data = event.data.object
-        console.log({data});
-        
-        // Used to provision services after the trial has ended.
-        // The status of the invoice will show up as paid. Store the status in your
-        // database to reference when a user accesses your service to avoid hitting rate limits.
-        break;
       case 'invoice.payment_failed':
         // If the payment fails or the customer does not have a valid payment method,
         //  an invoice.payment_failed event is sent, the subscription becomes past_due.
         // Use this webhook to notify your user that their payment has
         // failed and to retrieve new card details.
+        break;
+      case 'invoice.payment_succeeded' || 'invoice.paid':
+        const {subscription, customer_email} = data
+        const user = await this.prisma.user.findFirst({
+          where : {
+            email : customer_email
+          }
+        });
+
+        const futureDate = await this.getDateThirtyDaysAfterToday();
+        const updatedSubscription = await this.prisma.subscription.update({
+          where : {
+            stripeSubscriptionId : subscription
+          },
+          data : {
+            subscriptionStatus : "ACTIVE",
+            invoiceStatus : "PAID",
+             currentPeriodStart : new Date(),
+             currentPeriodEnd : futureDate           
+          }
+        });
+
+        
+        await this.prisma.user.update({
+          data : {
+            current_subscription_id : updatedSubscription.id,
+            user_role : ProductIdWithRole[`${updatedSubscription['product']}`]
+          },
+          where : {
+            id : user.id
+          }
+        });
         break;
       case 'customer.subscription.deleted':
         if (event.request != null) {
@@ -165,4 +197,12 @@ export class StripeService {
 
   }
 
+  async getDateThirtyDaysAfterToday() {
+    const today = new Date();
+    // Add 30 days to today's date
+    const futureDate = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+    return futureDate;
+  }
+    
+  
 }
