@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsNumber, IsIn } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsIn, IsEnum } from 'class-validator';
+import { Compound } from '../account_forcasting.service';
 
 enum ContributionFrequency {
   Monthly = 'monthly',
@@ -11,6 +12,10 @@ enum ContributionTiming {
 }
 
 class InvestmentQueryDto {
+  @IsNotEmpty()
+  @IsEnum(Compound, { message: 'Compound frequency must be one of: annually, semiannually, quarterly, monthly, semimonthly, biweekly, weekly, daily, continuously' })
+  compound: Compound;
+
   @IsNotEmpty({ message: 'Starting amount must be provided' })
   @IsNumber({},{ message: 'Starting amount must be a number' })
   startingAmount: number;

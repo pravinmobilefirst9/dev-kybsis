@@ -30,39 +30,69 @@ export class AccountForcastingService {
   async calculateForecasting({
     additionalContribution,
     contributionFrequency,
-    contributionTiming,
     investmentLength,
     returnRate,
-    startingAmount
+    startingAmount,
+    compound
   }: InvestmentQueryDto) {
-    
-    let totalContributions =
-      contributionFrequency === 'monthly'
-        ? additionalContribution * investmentLength * 12 
-        : additionalContribution * investmentLength;
 
-    let adjustedStartingAmount = contributionTiming === 'end'
-      ? startingAmount - (contributionFrequency === 'monthly' ? additionalContribution : 0)
-      : startingAmount;
+    let periodsPerYear = 0;
+  switch (compound) {
+    case Compound.ANNUALLY:
+      periodsPerYear = 1;
+      break;
+    case Compound.SEMIANNUALLY:
+      periodsPerYear = 2;
+      break;
+    case Compound.QUARTERLY:
+      periodsPerYear = 4;
+      break;
+    case Compound.MONTHLY:
+      periodsPerYear = 12;
+      break;
+    case Compound.SEMIMONTHLY:
+      periodsPerYear = 24;
+      break;
+    case Compound.BIWEEKLY:
+      periodsPerYear = 26;
+      break;
+    case Compound.WEEKLY:
+      periodsPerYear = 52;
+      break;
+    case Compound.DAILY:
+      periodsPerYear = 365;
+      break;
+    case Compound.CONTINUOUSLY:
+      periodsPerYear = 1; // Continuous compounding
+      break;
+    default:
+      throw new Error('Invalid compound frequency');
+  }
 
-    let interestPerPeriod = adjustedStartingAmount * returnRate / (contributionFrequency === 'monthly' ? 12 : 1);
-    let totalInterest = interestPerPeriod * investmentLength;
+  const totalPeriods = investmentLength * periodsPerYear;
 
-    let endBalance = adjustedStartingAmount + totalContributions + totalInterest;
+  // Calculate total contributions based on contribution period
+  let totalContributions = 0;
+  if (contributionFrequency === 'monthly') {
+    totalContributions = additionalContribution * investmentLength * periodsPerYear;
+  } else if (contributionFrequency === 'annually') {
+    totalContributions = additionalContribution * investmentLength;
+  }
 
-
-    endBalance = parseFloat(endBalance.toFixed(2));
-    totalInterest = parseFloat(totalInterest.toFixed(2));
+  // Calculate future value using compound interest formula
+  const monthlyInterestRate = returnRate / 100 / periodsPerYear;
+  let futureValue = startingAmount * Math.pow(1 + monthlyInterestRate, totalPeriods) +
+                      (additionalContribution * ((Math.pow(1 + monthlyInterestRate, totalPeriods) - 1) / monthlyInterestRate));
 
     return {
       success: true,
       statusCode: HttpStatus.CREATED,
       message: `Account forcasting fetched successfully`,
       data: {
-        endBalance,
+        endBalance: parseFloat(futureValue.toFixed(2)),
         startingAmount,
         totalContributions,
-        totalInterest,
+        totalInterest: parseFloat((futureValue - startingAmount - totalContributions).toFixed(2)),
       }
     };
   }
