@@ -18,14 +18,19 @@ export class StripeController {
     const {user_id} = req.auth;
     return await this.stripeService.createSubscription(user_id, priceId);
   }
+ 
+  @Post('create_session/:priceId')
+  @UseGuards(AuthGuard)
+  async createSesion(@Req() req : any, @Param('priceId') priceId : string) {
+    const {user_id} = req.auth;
+    return await this.stripeService.createSession(user_id, priceId);
+  }
 
   @Post('webhook')
   async handleStripeWebhook(
     @Headers('stripe-signature') signature: string,
     @Req() request: RequestWithRawBody
-  ) { 
-    console.log({signature});
-    
+  ) {    
     if (!signature) {
       throw new HttpException('Missing stripe-signature header', HttpStatus.INTERNAL_SERVER_ERROR);
     }

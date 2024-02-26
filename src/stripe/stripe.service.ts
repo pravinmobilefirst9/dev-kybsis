@@ -127,6 +127,53 @@ export class StripeService {
     }
   }
 
+  async createSession(user_id : number, priceId : string){
+    try {
+      let user = await this.prisma.user.findUnique({where : {id : user_id}})
+      if (!user.stripe_customer_id) {
+        const stripeCustomer = await this.stripe.customers.create({
+          email : user.email,
+          metadata : {
+            user_id : user.id
+          }
+        })
+
+        user = await this.prisma.user.update({
+          where : {
+            id : user.id
+          },data : {
+            stripe_customer_id : stripeCustomer.id
+          }
+        })
+      }
+      
+      const session = await this.stripe.checkout.sessions.create({
+        mode: 'subscription',
+        customer: user.stripe_customer_id,
+        line_items: [
+          {
+            price: priceId,
+            // For metered billing, do not pass quantity
+            quantity: 1,
+          },
+          
+        ],
+        // {CHECKOUT_SESSION_ID} is a string literal; do not change it!
+        // the actual Session ID is returned in the query parameter when your customer
+        // is redirected to the success page.
+        success_url: 'https://example.com/success.html?session_id={CHECKOUT_SESSION_ID}',
+        cancel_url: 'https://example.com/canceled.html',
+      });
+
+      return session;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
 
   async constructEventFromPayload(signature: string, payload: Buffer) : Promise<Stripe.Event> {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -142,8 +189,15 @@ export class StripeService {
   async handleSubscriptionEvent(event : any){
     // console.log("Event data : ",event.data.object)
     const data = event.data.object;
+    console.log({data});
+    
     switch (event.type) {
+
+      case 'checkout.session.completed':
+        console.log(event.type);
+      
       case 'invoice.payment_succeeded' || 'invoice.paid':
+        console.log(event.type);
         const {subscription, customer_email} = data
         const user = await this.prisma.user.findFirst({
           where : {
@@ -179,6 +233,7 @@ export class StripeService {
         this.eventEmitter.emit("subscription.invoice.paid", new UserSubscriptionInvoicePayload(user, updatedSubscription));
         break;
       case 'customer.subscription.deleted':
+        console.log(event.type);
         const subscriptionExists = await this.prisma.subscription.findUnique({
           where : {
             stripeSubscriptionId : data.id
