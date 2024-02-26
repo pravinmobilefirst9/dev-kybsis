@@ -36,19 +36,23 @@ export class AccountForcastingService {
     startingAmount
   }: InvestmentQueryDto) {
     
-    const totalContributions =
+    let totalContributions =
       contributionFrequency === 'monthly'
         ? additionalContribution * investmentLength * 12 
         : additionalContribution * investmentLength;
 
-    const adjustedStartingAmount = contributionTiming === 'end'
+    let adjustedStartingAmount = contributionTiming === 'end'
       ? startingAmount - (contributionFrequency === 'monthly' ? additionalContribution : 0)
       : startingAmount;
 
-    const interestPerPeriod = adjustedStartingAmount * returnRate / (contributionFrequency === 'monthly' ? 12 : 1);
-    const totalInterest = interestPerPeriod * investmentLength;
+    let interestPerPeriod = adjustedStartingAmount * returnRate / (contributionFrequency === 'monthly' ? 12 : 1);
+    let totalInterest = interestPerPeriod * investmentLength;
 
-    const endBalance = adjustedStartingAmount + totalContributions + totalInterest;
+    let endBalance = adjustedStartingAmount + totalContributions + totalInterest;
+
+
+    endBalance = parseFloat(endBalance.toFixed(2));
+    totalInterest = parseFloat(totalInterest.toFixed(2));
 
     return {
       success: true,
