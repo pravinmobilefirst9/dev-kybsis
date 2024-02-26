@@ -615,12 +615,17 @@ async isFutureDate(dateString : string) {
 
 
   // Manual banks
- async fetchAllUserBanks(user_id : number, {manual} : FetchUserBanks){
+ async fetchAllUserBanks(user_id : number, data ?: FetchUserBanks){
   try {
-    const where : Prisma.PlaidItemWhereInput = manual === true ?
-       {user_id, manual, manuallyDeleted : false}
-       :
-       {user_id, manual}
+    const {manual} = data
+    
+    const where : Prisma.PlaidItemWhereInput = 
+    !manual 
+    ? 
+    {user_id}
+    :
+    {user_id, manual}
+       
     const userBanks = await this.prisma.plaidItem.findMany({
       where,
       select : {
@@ -726,6 +731,40 @@ async isFutureDate(dateString : string) {
       statusCOde: HttpStatus.OK,
       message: "Bank removed successfully",
       data: {}
+    }
+  } catch (error) {
+    if (error instanceof HttpException) {
+      throw error;
+    }
+    throw new HttpException(
+      error.toString(),
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  }
+ }
+
+ async fetchAllAccountsByInstitutionId(user_id : number, ins_id : string){
+  try {
+    const accounts = await this.prisma.account.findMany({
+      where : {
+        user_id,
+        institution_id : ins_id
+      },
+      select : {
+        id : true,
+        available_balance : true,
+        manual : true,
+        account_name : true,
+        account_id : true,
+        type : true
+      }
+    })
+
+    return {
+      success: true,
+      statusCOde: HttpStatus.OK,
+      message: "Accounts fetched successfully",
+      data: accounts
     }
   } catch (error) {
     if (error instanceof HttpException) {

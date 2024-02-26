@@ -1,8 +1,7 @@
-import { IsString, IsBoolean, IsNotEmpty } from 'class-validator';
+import { IsString, IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class FetchUserBanks {
-  @IsNotEmpty({ message: 'manual must not be empty' })
+  @IsOptional()
   @IsBoolean({ message: 'manual must be a boolean' })
   manual: boolean;
-
 }

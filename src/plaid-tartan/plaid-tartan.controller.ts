@@ -22,6 +22,16 @@ export class PlaidTartanController {
     return await this.plaidTartanService.fetchAllManualAccounts(user_id, item_id);
   }
 
+  @Get('fetch_all_accounts/:ins_id')
+  @UseGuards(AuthGuard)
+  async fetchAllAccountsByInstitutionId(
+    @Req() request : any,
+    @Param('ins_id') ins_id : string
+    ){
+    const {user_id} = request.auth;     
+    return await this.plaidTartanService.fetchAllAccountsByInstitutionId(user_id, ins_id);
+  }
+
   @Get('fetch_manual_accounts/:item_id/:id')
   @UseGuards(AuthGuard)
   async fetchAllManualAccountById(
@@ -159,6 +169,14 @@ export class PlaidTartanController {
   async fetchUserManualBanks(@Req() req : any, @Body() payload : FetchUserBanks){
     const {user_id} = req.auth     
       const result = await this.plaidTartanService.fetchAllUserBanks(user_id, payload);
+      return result;
+  }
+
+  @Get("fetch_all_user_banks")
+  @UseGuards(AuthGuard)
+  async fetchUserAllBanks(@Req() req : any){
+    const {user_id} = req.auth     
+      const result = await this.plaidTartanService.fetchAllUserBanks(user_id, {manual : undefined});
       return result;
   }
 

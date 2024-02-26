@@ -705,7 +705,7 @@ export class InvestmentService {
         success: true,
         statusCode: HttpStatus.CREATED,
         message: 'Investment added successfully!',
-        data: 1,
+        data: null,
       };
     } catch (error) {
       if (error instanceof HttpException) {
