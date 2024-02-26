@@ -121,7 +121,7 @@ model User {
   user_role                     UserRole                        @default(FREE)
   device_token                  String
   widgetsAlreadyAdded           Boolean                         @default(false)
-  stripe_customer_id            String?
+  stripe_customer_id            String?                         @unique
   current_subscription_id       Int?
   created_at                    DateTime                        @default(now())
   updated_at                    DateTime                        @updatedAt
@@ -201,8 +201,8 @@ model Account {
   manual              Boolean       @default(false)
   created_at          DateTime      @default(now())
   updated_at          DateTime      @updatedAt
-  User                User          @relation(fields: [user_id], references: [id])
-  PlaidItem           PlaidItem?    @relation(fields: [plaid_item_id], references: [id])
+  User                User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  PlaidItem           PlaidItem?    @relation(fields: [plaid_item_id], references: [id], onDelete: Cascade)
   Transaction         Transaction[]
 }
 
@@ -650,7 +650,7 @@ enum invoiceStatus {
 
 model Subscription {
   id                   Int                @id @default(autoincrement())
-  stripeCustomerId     String             @unique
+  stripeCustomerId     String             
   stripeSubscriptionId String             @unique
   invoiceId            String?
   invoiceUrl           String?

@@ -285,15 +285,74 @@ const cashAssetFieldsBankDeposit = [
 
 
 const investmentCategories = [
-  {"name": "Mutual Fund"},
-  {"name": "Equity"},
-  {"name": "ETFs (Exchange-Traded Funds)"},
-  {"name": "Cash"},
-  {"name": "Private Equity"},
-  {"name": "Hedge Fund"},
-  {"name": "Annuity"},
-  {"name": "Whole Life Insurance"}
-]
+  {
+    name: "Annuity",
+    fields: [
+      { name: 'contract', type: 'text', label: 'Contract', order_id: 1, mandatory: true },
+      { name: 'beginning_account_value', type: 'number', label: 'Beginning Account Value', order_id: 2, mandatory: true },
+      { name: 'ending_account_value', type: 'number', label: 'Ending Account Value', order_id: 3, mandatory: true },
+      { name: 'surrender_value', type: 'number', label: 'Surrender Value', order_id: 4, mandatory: true },
+      { name: 'lifetime_income_value', type: 'number', label: 'Lifetime Income Value', order_id: 5, mandatory: true },    
+    ]
+  },
+  {
+    name: "Cash & Money Market",
+    fields: [
+      { name: 'market_value', type: 'number', label: 'Market Value', order_id: 1, mandatory: true },
+    ]
+  },
+  {
+    name: "Equity/ETF",
+    fields: [
+      { name: 'symbol', type: 'text', label: 'Symbol', order_id: 1, mandatory: true },
+      { name: 'quantity', type: 'number', label: 'Quantity', order_id: 2, mandatory: true },
+      { name: 'purchase_price_(per_share)', type: 'number', label: 'Purchase Price (Per Share)', order_id: 3, mandatory: true },
+      { name: 'market_price_(per_share)', type: 'number', label: 'Market Price (Per Share)', order_id: 4, mandatory: true },
+      { name: 'market_value', type: 'number', label: 'Market Value', order_id: 5, mandatory: true },    
+    ]
+  },
+  {
+    name: "Hedge Fund",
+    fields: [
+      { name: 'name', type: 'text', label: 'Name', order_id: 1, mandatory: true },
+      { name: 'value', type: 'number', label: 'Value', order_id: 2, mandatory: true },    
+    ]
+  },
+  {
+    name: "Life Insurance",
+    fields: [
+      { name: 'policy', type: 'text', label: 'Policy', order_id: 1, mandatory: true },
+      { name: 'cash_value', type: 'number', label: 'Cash Value', order_id: 2, mandatory: true },    
+    ]
+  },
+  {
+    name: "Mutual Fund",
+    fields: [
+      { name: 'symbol', type: 'text', label: 'Symbol', order_id: 1, mandatory: true },
+      { name: 'quantity', type: 'number', label: 'Quantity', order_id: 2, mandatory: true },
+      { name: 'cost_basis', type: 'number', label: 'Cost Basis', order_id: 3, mandatory: true },
+      { name: 'market_price', type: 'number', label: 'Market Price', order_id: 4, mandatory: true },
+      { name: 'market_value', type: 'number', label: 'Market Value', order_id: 5, mandatory: true },    
+    ]
+  },
+  {
+    name: "Fixed Income",
+    fields: [
+      { name: 'bond', type: 'text', label: 'Bond', order_id: 1, mandatory: true },
+      { name: 'par', type: 'number', label: 'Par', order_id: 2, mandatory: true },
+      { name: 'market_price', type: 'number', label: 'Market Price', order_id: 3, mandatory: true },
+      { name: 'market_value', type: 'number', label: 'Market Value', order_id: 4, mandatory: true },    
+    ]
+  },
+  {
+    name: "Private Equity",
+    fields: [
+      { name: 'name', type: 'text', label: 'Name', order_id: 1, mandatory: true },
+      { name: 'value', type: 'number', label: 'Value', order_id: 2, mandatory: true }    
+    ]
+  }
+];
+
 
 const widgets = [
   {name : "Income", default : true, role : "BASIC"},
@@ -466,9 +525,16 @@ async function main() {
     }
   })
 
-  await prisma.investmentCategories.createMany({
-    data : investmentCategories
-  })
+  for (const categoryData of investmentCategories) {
+    const { name, fields } = categoryData;
+    // Create the investment category
+    await prisma.investmentCategories.create({
+      data: {
+        name,
+        fields
+        }
+    });
+  }
 
   await prisma.budgetCategories.createMany({
     data : categories

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, HttpException, HttpStatus, ParseIntPipe } from '@nestjs/common';
 import { InvestmentService } from './investment.service';
 import { UpdateInvestmentDto } from './dto/update-investment.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
@@ -69,6 +69,39 @@ export class InvestmentController {
     const result = await this.investmentService.addUserInvestment(data, user_id);
     return result;
   }
+
+  @Post("add_user_investment/:investmentId")
+  @UseGuards(AuthGuard)
+  async editUserInvestment(
+    @Req() req : any, 
+    @Body() data : CreateManualInvestmentDto,
+    @Param('investmentId', ParseIntPipe) investmentId : number
+    ){
+    const {user_id} = req.auth     
+    const result = await this.investmentService.addUserInvestment(data, user_id,investmentId);
+    return result;
+  }
+
+  @Get("get_user_investment_form_data")
+  @UseGuards(AuthGuard)
+  async getAllInvestments(
+    @Req() req : any
+    ){
+    const {user_id} = req.auth     
+    return await this.investmentService.getManualInvestmentCategoryFormData(user_id);
+  }
+  @Get("get_user_investment_form_data/:investmentId")
+  @UseGuards(AuthGuard)
+  async getInvestmentFormByCategory(
+    @Param('investmentId', ParseIntPipe) investmentId : number,
+    @Req() req : any
+    ){
+    const {user_id} = req.auth     
+    return await this.investmentService.getManualInvestmentCategoryFormData(user_id, investmentId);
+  }
+
+  
+
 
 
 

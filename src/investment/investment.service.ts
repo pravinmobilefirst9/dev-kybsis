@@ -546,19 +546,19 @@ export class InvestmentService {
       let totalProfit = 0;
       let totalLoss = 0;
       let investmentsResult = []
-      allManualInvestments.forEach((investment) => {
-        const marketPrice = investment.current_price || 0;
-        const userPurchasePrice = investment.purchase_price;
-        const quantity = investment.quantity;
-        const profitLoss = (marketPrice * quantity) - (userPurchasePrice * quantity)
+      // allManualInvestments.forEach((investment) => {
+      //   const marketPrice = investment.current_price || 0;
+      //   const userPurchasePrice = investment.purchase_price;
+      //   const quantity = investment.quantity;
+      //   const profitLoss = (marketPrice * quantity) - (userPurchasePrice * quantity)
 
-        total_investment += (userPurchasePrice * quantity);
-        if (profitLoss > 0) {
-          totalProfit += profitLoss;
-        } else {
-          totalLoss += Math.abs(profitLoss);          
-        }
-      })
+      //   total_investment += (userPurchasePrice * quantity);
+      //   if (profitLoss > 0) {
+      //     totalProfit += profitLoss;
+      //   } else {
+      //     totalLoss += Math.abs(profitLoss);          
+      //   }
+      // })
       
       let totalValue = total_investment + totalProfit - totalLoss;
       let profitPercentage = Math.ceil((totalProfit / totalValue) * 100) || 0;
@@ -572,48 +572,48 @@ export class InvestmentService {
         totalLoss
       }
 
-      allManualInvestments.map((investment) => {
-        let market_value = investment.current_price || 0;
-        let userPurchasePrice = investment.purchase_price;
-        let total_quantity = investment.quantity;
-        let profitLoss = (market_value * total_quantity) - (userPurchasePrice * total_quantity)
-        let totalInvestment = (userPurchasePrice * total_quantity);
-        let name = investment.name
+      // allManualInvestments.map((investment) => {
+      //   let market_value = investment.current_price || 0;
+      //   let userPurchasePrice = investment.purchase_price;
+      //   let total_quantity = investment.quantity;
+      //   let profitLoss = (market_value * total_quantity) - (userPurchasePrice * total_quantity)
+      //   let totalInvestment = (userPurchasePrice * total_quantity);
+      //   let name = investment.name
 
-        market_value = parseFloat(market_value.toFixed(2))
-        userPurchasePrice = parseFloat(userPurchasePrice.toFixed(2))
-        total_quantity = parseFloat(total_quantity.toFixed(2))
-        profitLoss = parseFloat(profitLoss.toFixed(2))
-        let growth_percentage = 25
+      //   market_value = parseFloat(market_value.toFixed(2))
+      //   userPurchasePrice = parseFloat(userPurchasePrice.toFixed(2))
+      //   total_quantity = parseFloat(total_quantity.toFixed(2))
+      //   profitLoss = parseFloat(profitLoss.toFixed(2))
+      //   let growth_percentage = 25
         
-        let portfolio_value = market_value * total_quantity
+      //   let portfolio_value = market_value * total_quantity
         
-        let profitLossPercentage = Math.ceil((Math.abs(profitLoss) / totalInvestment) * 100)
-        totalInvestment = parseFloat(totalInvestment.toFixed(2))
+      //   let profitLossPercentage = Math.ceil((Math.abs(profitLoss) / totalInvestment) * 100)
+      //   totalInvestment = parseFloat(totalInvestment.toFixed(2))
 
-        let profitLossObj = {
-          totalProfit : 0,
-          totalLoss : 0
-        }
-        if (profitLoss > 0) {
-          profitLossObj.totalProfit = profitLoss;
-        }else{
-          profitLossObj.totalLoss = profitLoss
-        }
+      //   let profitLossObj = {
+      //     totalProfit : 0,
+      //     totalLoss : 0
+      //   }
+      //   if (profitLoss > 0) {
+      //     profitLossObj.totalProfit = profitLoss;
+      //   }else{
+      //     profitLossObj.totalLoss = profitLoss
+      //   }
 
-        investmentsResult.push({
-          growth_percentage,
-          market_value,
-          totalInvestment,
-          total_quantity,
-          name,
-          ...profitLossObj,
-          portfolio_value,
-          profitLossPercentage,
-          created_at : investment.created_at
-        })
+      //   investmentsResult.push({
+      //     growth_percentage,
+      //     market_value,
+      //     totalInvestment,
+      //     total_quantity,
+      //     name,
+      //     ...profitLossObj,
+      //     portfolio_value,
+      //     profitLossPercentage,
+      //     created_at : investment.created_at
+      //   })
 
-      })
+      // })
 
 
       return {
@@ -637,7 +637,8 @@ export class InvestmentService {
       const investmentCategories = await this.prisma.investmentCategories.findMany({
         select: {
           name: true,
-          id: true
+          id: true, 
+          fields : true
         }
       });
       return {
@@ -653,39 +654,120 @@ export class InvestmentService {
       throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
-  async addUserInvestment(data: CreateManualInvestmentDto, user_id: number) {
+  async addUserInvestment(data: CreateManualInvestmentDto, user_id: number, investmentId ?: number) {
     try {
-      const isCategoryExists = await this.prisma.investmentCategories.findUnique({
-        where: {
-          id: data.categoryId
+
+      const investmentCategory = await this.prisma.investmentCategories.findUnique({
+        where : {
+          id : data.categoryId
         }
       })
 
-      if (!isCategoryExists) {
-        throw new HttpException(
-          "Invalid category, Category not found",
-          HttpStatus.BAD_REQUEST
-        )
+      if (!investmentCategory) {
+        throw new HttpException("Invalid category Id", HttpStatus.BAD_REQUEST);
       }
-      const newInvestment = await this.prisma.manualInvestments.create({
-        data: {
-          current_price: data.currentPrice,
-          currency: data.currency,
-          name: data.name,
-          quantity: data.quantity,
-          category_id: data.categoryId,
-          user_id,
-          code : "none",
-          purchase_price : data.purchasePrice,
+
+      let formFields : any = data.formFields;
+      let categoryId : number = data.categoryId
+
+      if (investmentId) {
+        const isExists = await this.prisma.manualInvestments.findUnique({
+          where : {
+            id : investmentId,
+            user_id,
+            category_id : data.categoryId
+          }
+        })
+        if (!isExists) {
+          throw new HttpException("Invalid investment id or category id", HttpStatus.NOT_FOUND)
         }
-      })
+        await this.prisma.manualInvestments.update({
+          where : {
+            id : investmentId,
+            user_id
+          },
+          data : {
+            data : formFields
+          }
+        })
+      }
+      else{
+        await this.prisma.manualInvestments.create({
+          data : {
+            data : formFields,
+            category_id : categoryId,
+            user_id
+          }
+        })
+      }
 
       return {
         success: true,
         statusCode: HttpStatus.CREATED,
         message: 'Investment added successfully!',
-        data: newInvestment,
+        data: 1,
       };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+  async getManualInvestmentCategoryFormData(user_id : number, investmentId ?: number){
+    try {
+      let userInvetmentData = null
+      
+      if (investmentId) {
+        userInvetmentData = await this.prisma.manualInvestments.findUnique({
+          where : {
+            id : investmentId,
+            user_id
+          },
+          select : {
+            id: true,
+            investmentCategory : {
+              select : {
+                id : true,
+                name : true
+              }
+            },
+            data : true
+          }
+        })
+
+        
+      if (!userInvetmentData) {
+        throw new HttpException("Invalid investment id", HttpStatus.BAD_REQUEST);
+      }
+      }
+      else{
+        userInvetmentData = await this.prisma.manualInvestments.findMany({
+          where : {
+            user_id
+          },
+          select : {
+            id : true,
+            investmentCategory: {
+              select : {
+                id : true,
+                fields : true,
+              }
+            },
+            data : true
+          }
+        })
+      }
+
+
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: 'Investment form details fetched successfully!',
+        data: userInvetmentData,
+      };
+
     } catch (error) {
       if (error instanceof HttpException) {
         throw error

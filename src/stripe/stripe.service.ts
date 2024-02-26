@@ -3,6 +3,9 @@ import Stripe from 'stripe';
 import { PrismaService } from 'src/prisma.service';
 import { ResponseReturnType } from 'src/common/responseType';
 import { User } from '@prisma/client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserSubscriptionInvoicePayload } from 'src/event-emittors/types/user-invoice-paid.event';
+import { UserSubscriptionDeleted } from 'src/event-emittors/types/user-subscription-deleted.event';
 
 
 const  ProductIdWithRole = {
@@ -16,7 +19,8 @@ export class StripeService {
   private readonly stripe: Stripe;
 
   constructor(
-    public readonly prisma: PrismaService
+    public readonly prisma: PrismaService,
+    private eventEmitter : EventEmitter2
   ) {
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
       apiVersion: '2023-10-16',
@@ -136,16 +140,9 @@ export class StripeService {
 
 
   async handleSubscriptionEvent(event : any){
-    console.log("Event type : ",event.type)
-    console.log("Event data : ",event.data.object)
+    // console.log("Event data : ",event.data.object)
     const data = event.data.object;
     switch (event.type) {
-      case 'invoice.payment_failed':
-        // If the payment fails or the customer does not have a valid payment method,
-        //  an invoice.payment_failed event is sent, the subscription becomes past_due.
-        // Use this webhook to notify your user that their payment has
-        // failed and to retrieve new card details.
-        break;
       case 'invoice.payment_succeeded' || 'invoice.paid':
         const {subscription, customer_email} = data
         const user = await this.prisma.user.findFirst({
@@ -163,7 +160,8 @@ export class StripeService {
             subscriptionStatus : "ACTIVE",
             invoiceStatus : "PAID",
              currentPeriodStart : new Date(),
-             currentPeriodEnd : futureDate           
+             currentPeriodEnd : futureDate,
+             invoiceUrl : subscription.invoice_pdf          
           }
         });
 
@@ -177,9 +175,36 @@ export class StripeService {
             id : user.id
           }
         });
+
+        this.eventEmitter.emit("subscription.invoice.paid", new UserSubscriptionInvoicePayload(user, updatedSubscription));
         break;
       case 'customer.subscription.deleted':
-        if (event.request != null) {
+        const subscriptionExists = await this.prisma.subscription.findUnique({
+          where : {
+            stripeSubscriptionId : data.id
+          }
+        });
+
+        const subscriptionUser = await this.prisma.user.findFirst({
+          where : {
+            stripe_customer_id : data.customer
+          }
+        })
+
+        if (subscriptionExists && subscriptionUser && 
+          subscriptionExists.id === subscriptionUser.current_subscription_id) {
+          await this.prisma.user.update({
+            data : {
+              user_role : "FREE"
+            },
+            where : {
+              id : subscriptionUser.id
+            }
+          })
+        }
+
+        this.eventEmitter.emit("user.subscription.deleted", new UserSubscriptionDeleted(user, subscription));
+        if (event.request != null) {    
           // handle a subscription canceled by your request
           // from above.
         } else {
@@ -187,10 +212,7 @@ export class StripeService {
           // upon your subscription settings.
         }
         break;
-        case 'payment_intent.succeeded':
-          const paymentMethod = event.data.object;
-          // Then define and call a function to handle the event payment_intent.succeeded
-          break;
+
       default:
       // Unexpected event type
     }

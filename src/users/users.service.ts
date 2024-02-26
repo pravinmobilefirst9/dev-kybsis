@@ -15,8 +15,9 @@ import { ForgetPassword } from './dto/forget-password.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ProfileAddDto } from './dto/profile-add.dto';
 import { UpdatePasswordDTO } from './dto/update-password.dto';
-import { User } from './entities/user.entity';
 import { StripeService } from 'src/stripe/stripe.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserCreatedEventPayload } from 'src/event-emittors/types/user-created.event';
 
 @Injectable()
 export class UsersService {
@@ -24,6 +25,7 @@ export class UsersService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private stripeService : StripeService,
+    private eventEmitter : EventEmitter2
   ) { }
 
   async registerUser(createUserDto: RegisterUserDto) {
@@ -69,26 +71,9 @@ export class UsersService {
           id : user.id
         }
       })
-      await this.sendEmail(
-        user,
-        'Welcome and verify your email.',
-        `Thank you for joining Kybsis! We're excited to have you on board.
-        
-        To complete your signup, please verify your email address by entering the following code in the app:
-        
-        Verification Code: ${otp}
-        
-        This code will expire in 10 minutes.
-        
-        If you didn't request this code, please ignore this email.
-        
-        We're looking forward to seeing you in the app!
-        
-        Sincerely,
-        The Kybsis Team`,
-        otp,
-      );
 
+      this.eventEmitter.emit("user.created", new UserCreatedEventPayload(user, otp));
+      
       delete user.password;
       delete user.user_otp;
       return {

@@ -352,6 +352,13 @@ export class PlaidTartanService {
 
   async deleteManualAccount(user_id: number, id: number) {
     try {
+      // First delete all transactions related to manual account
+      await this.prisma.transaction.deleteMany({
+        where : {
+          account_id : id
+        }
+      })
+
       const deleted = await this.prisma.account.delete({
         where: {
           id,
@@ -707,13 +714,10 @@ async isFutureDate(dateString : string) {
 
  async deleteManualBank(user_id : number, item_id : number){
   try {
-    await this.prisma.plaidItem.update({
+    await this.prisma.plaidItem.delete({
       where : {
         id : item_id,
         user_id
-      },
-      data : {
-        manuallyDeleted : true
       }
     })
 

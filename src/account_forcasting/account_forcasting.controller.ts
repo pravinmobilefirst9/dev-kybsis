@@ -3,6 +3,7 @@ import { AccountForcastingService } from './account_forcasting.service';
 import { CreateAccountForcastingDto } from './dto/create-account_forcasting.dto';
 import { UpdateAccountForcastingDto } from './dto/update-account_forcasting.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { InvestmentDataDto } from './dto/forecast-account-v1.dto';
 
 @Controller('account_forcasting')
 export class AccountForcastingController {
@@ -16,6 +17,16 @@ export class AccountForcastingController {
     ) {
     const {user_id} = request.auth;
     return await this.accountForcastingService.calculateForecastDetails(user_id, createAccountForcastingDto);
+  }
+
+  @Post("create_forcast/v1")
+  @UseGuards(AuthGuard)
+  async calculateFutureValue(
+    @Body() createAccountForcastingDto: InvestmentDataDto,
+    @Req() request: any,
+    ) {
+    const {user_id} = request.auth;
+    return await this.accountForcastingService.calculateForecasting(createAccountForcastingDto);
   }
 
   @Get("fetch_all_forcasting")
