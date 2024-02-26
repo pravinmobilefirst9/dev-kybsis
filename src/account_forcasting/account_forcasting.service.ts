@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CompoundFrequency, CreateAccountForcastingDto, Timing } from './dto/create-account_forcasting.dto';
 import { UpdateAccountForcastingDto } from './dto/update-account_forcasting.dto';
 import { PrismaService } from 'src/prisma.service';
-import { InvestmentDataDto } from './dto/forecast-account-v1.dto';
+import { InvestmentQueryDto } from './dto/forecast-account-v1.dto';
 
 export enum Compound {
   ANNUALLY = 'annually',
@@ -27,71 +27,39 @@ export class AccountForcastingService {
     private readonly prisma: PrismaService,
   ) { }
 
+  async calculateForecasting({
+    additionalContribution,
+    contributionFrequency,
+    contributionTiming,
+    investmentLength,
+    returnRate,
+    startingAmount
+  }: InvestmentQueryDto) {
+    
+    const totalContributions =
+      contributionFrequency === 'monthly'
+        ? additionalContribution * investmentLength * 12 
+        : additionalContribution * investmentLength;
 
-  async calculateForecasting(data: InvestmentDataDto) {
-    const { startingAmount, investLength, returnRate, compound, contributeAmount, contributionPeriod } = data;
-  
-    // Calculate total number of periods based on compound frequency
-    let periodsPerYear = 0;
-    switch (compound) {
-      case Compound.ANNUALLY:
-        periodsPerYear = 1;
-        break;
-      case Compound.SEMIANNUALLY:
-        periodsPerYear = 2;
-        break;
-      case Compound.QUARTERLY:
-        periodsPerYear = 4;
-        break;
-      case Compound.MONTHLY:
-        periodsPerYear = 12;
-        break;
-      case Compound.SEMIMONTHLY:
-        periodsPerYear = 24;
-        break;
-      case Compound.BIWEEKLY:
-        periodsPerYear = 26;
-        break;
-      case Compound.WEEKLY:
-        periodsPerYear = 52;
-        break;
-      case Compound.DAILY:
-        periodsPerYear = 365;
-        break;
-      case Compound.CONTINUOUSLY:
-        periodsPerYear = 1; // Continuous compounding
-        break;
-      default:
-        throw new Error('Invalid compound frequency');
-    }
-  
-    const totalPeriods = investLength * periodsPerYear;
-  
-    // Calculate total contributions based on contribution period
-    let totalContributions = 0;
-    if (contributionPeriod === 'monthly') {
-      totalContributions = contributeAmount * investLength * periodsPerYear;
-    } else if (contributionPeriod === 'annually') {
-      totalContributions = contributeAmount * investLength;
-    }
-  
-    // Calculate future value using compound interest formula
-    const monthlyInterestRate = returnRate / 100 / periodsPerYear;
-    const futureValue = startingAmount * Math.pow(1 + monthlyInterestRate, totalPeriods) +
-                        (contributeAmount * ((Math.pow(1 + monthlyInterestRate, totalPeriods) - 1) / monthlyInterestRate));
-  
-    const result =  {
-      endBalance: futureValue,
-      startingAmount,
-      totalContributions,
-      totalInterest: futureValue - startingAmount - totalContributions,
-    };
+    const adjustedStartingAmount = contributionTiming === 'end'
+      ? startingAmount - (contributionFrequency === 'monthly' ? additionalContribution : 0)
+      : startingAmount;
+
+    const interestPerPeriod = adjustedStartingAmount * returnRate / (contributionFrequency === 'monthly' ? 12 : 1);
+    const totalInterest = interestPerPeriod * investmentLength;
+
+    const endBalance = adjustedStartingAmount + totalContributions + totalInterest;
 
     return {
       success: true,
       statusCode: HttpStatus.CREATED,
       message: `Account forcasting fetched successfully`,
-      data: result
+      data: {
+        endBalance,
+        startingAmount,
+        totalContributions,
+        totalInterest,
+      }
     };
   }
 
