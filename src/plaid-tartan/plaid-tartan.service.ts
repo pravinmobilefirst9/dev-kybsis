@@ -297,8 +297,7 @@ export class PlaidTartanService {
       if (id) {
         const existedAccount = await this.prisma.account.findUnique({
           where: {
-            id,
-            user_id
+            id
           }
         })
 
@@ -317,14 +316,11 @@ export class PlaidTartanService {
       } else {
         const isSimilerAccountExists = await this.prisma.account.findFirst({
           where: {
-            manual: true,
-            institution_id: data['institutionId'],
             account_id: data['accountId'],
-            user_id
           }
         })
         if (isSimilerAccountExists) {
-          throw new HttpException(`Account already exists with current account id`, HttpStatus.NOT_ACCEPTABLE);
+          throw new HttpException(`Account id cannot be accepted`, HttpStatus.NOT_ACCEPTABLE);
         }
         account = await this.prisma.account.create({
           data: dataObj
