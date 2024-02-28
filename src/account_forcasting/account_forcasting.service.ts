@@ -143,6 +143,7 @@ export class AccountForcastingService {
           user_id
         },
         select : {
+          id : true,
           additionalContribution: true,
           contributionFrequency: true,
           investmentLength: true,
