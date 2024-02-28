@@ -62,7 +62,6 @@ export class DashboardService {
     try {
       if (!active) {
         throw new HttpException("active Query Parameter cannot be empty", HttpStatus.NOT_ACCEPTABLE);
-        
       }
       const activeArr = ["true", "false"]
 

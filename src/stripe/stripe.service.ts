@@ -190,32 +190,27 @@ export class StripeService {
     // console.log("Event data : ",event.data.object)
     const data = event.data.object;
     console.log({data});
-    
+    const user = await this.prisma.user.findFirst({
+      where : {
+        email : data['customer_email']
+      }
+    });
     switch (event.type) {
 
       case 'checkout.session.completed':
-        console.log(event.type);
       
-      case 'invoice.payment_succeeded' || 'invoice.paid':
-        console.log(event.type);
-        const {subscription, customer_email} = data
-        const user = await this.prisma.user.findFirst({
-          where : {
-            email : customer_email
-          }
-        });
-
+      case 'invoice.paid':
         const futureDate = await this.getDateThirtyDaysAfterToday();
         const updatedSubscription = await this.prisma.subscription.update({
           where : {
-            stripeSubscriptionId : subscription
+            stripeSubscriptionId : data['subscription']
           },
           data : {
             subscriptionStatus : "ACTIVE",
             invoiceStatus : "PAID",
              currentPeriodStart : new Date(),
              currentPeriodEnd : futureDate,
-             invoiceUrl : subscription.invoice_pdf          
+             invoiceUrl : data['subscription']['invoice_pdf']          
           }
         });
 
@@ -232,6 +227,27 @@ export class StripeService {
 
         this.eventEmitter.emit("subscription.invoice.paid", new UserSubscriptionInvoicePayload(user, updatedSubscription));
         break;
+      
+      case 'invoice.payment_succeeded':
+        let subscriptionDetails = await this.stripe.subscriptions.retrieve(data['subscription']);
+              // Create subscription in DB
+          // await this.prisma.subscription.create({
+          //   data : {
+          //     stripeCustomerId : user.stripe_customer_id,
+          //     stripeSubscriptionId : data['subscription'],
+          //     invoiceId : data[],
+          //     user : {connect : {id : user.id}},
+          //     subscriptionStatus : "ACTIVE",
+          //     invoiceStatus : "PAID",
+          //     amount : subscription.plan.amount,
+          //     currency : subscription.plan.currency,
+          //     interval : subscription.plan.interval,
+          //     interval_count : 1,
+          //     priceId : subscription.plan.id,
+          //     product : subscription.plan.product
+          //   }
+          // }) 
+        
       case 'customer.subscription.deleted':
         console.log(event.type);
         const subscriptionExists = await this.prisma.subscription.findUnique({
@@ -258,7 +274,7 @@ export class StripeService {
           })
         }
 
-        this.eventEmitter.emit("user.subscription.deleted", new UserSubscriptionDeleted(user, subscription));
+        this.eventEmitter.emit("user.subscription.deleted", new UserSubscriptionDeleted(user, subscriptionExists));
         if (event.request != null) {    
           // handle a subscription canceled by your request
           // from above.

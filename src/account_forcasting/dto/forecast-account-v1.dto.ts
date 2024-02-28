@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsIn, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsIn, IsEnum, ArrayMinSize, IsArray } from 'class-validator';
 import { Compound } from '../account_forcasting.service';
 
 enum ContributionFrequency {
@@ -39,6 +39,16 @@ class InvestmentQueryDto {
   @IsNotEmpty({ message: 'Contribution timing must be provided' })
   @IsIn(Object.values(ContributionTiming), { message: 'Contribution timing must be either "beginning" or "end"' })
   contributionTiming: ContributionTiming;
+
+  @IsArray({ message: 'Account Ids must be an array' })
+  @ArrayMinSize(1, { message: 'Account Ids must not be empty' })
+  @IsNotEmpty({ each: true, message: 'Account Ids elements must not be empty' })
+  @IsNumber({}, { each: true, message: 'Account Ids elements must be numbers' })
+  readonly accountIds: number[];
+
+  @IsNotEmpty({ message: 'Item id must be provided' })
+  @IsNumber({},{ message: 'Item id must be a number' })
+  item_id: number;
 }
 
 export { InvestmentQueryDto };

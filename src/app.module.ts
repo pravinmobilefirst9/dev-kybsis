@@ -18,10 +18,12 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { StripeModule } from './stripe/stripe.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { EventEmittorsModule } from './event-emittors/event-emittors.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
     UsersModule, PlaidTartanModule, TransactionModule, InvestmentModule, TransactionCategoriesModule, AssetsModule, LiabilitiesModule, PaymentModule, SubscriptionModule, BudgetModule, AccountForcastingModule, DashboardModule, StripeModule, EventEmittorsModule],
   controllers: [AppController],
   providers: [AppService, PrismaService, AuthGuard,],

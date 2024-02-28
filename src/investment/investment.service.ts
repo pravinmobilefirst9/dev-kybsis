@@ -58,79 +58,61 @@ export class InvestmentService {
         });
 
         const currentTime = new Date();
+        const dataObj = {
+          plaidItem: { connect: { id: itemData.id } },
+          account_name: account.name,
+          account_id: account.account_id,
+          official_name: account.official_name || '--',
+          mask: account.mask,
+          type: account.type,
+          subtype: account.subtype,
+          verification_status: 'verified', // Adjust as per your requirements
+          // Timestamps
+          created_at: currentTime,
+          updated_at: currentTime,
+          User: { connect: { id: user_id } },
+          available_balance: account.balances.available || 0,
+          current_balance: account.balances.current || 0,
+          iso_currency_code: account.balances.iso_currency_code || 'USD',
+        }
         if (!existingAccount) {
           // If account is not exists the create new one with balance
           existingAccount = await this.prisma.investmentAccounts.create({
-            data: {
-              plaidItem: { connect: { id: itemData.id } },
-              account_name: account.name,
-              account_id: account.account_id,
-              official_name: account.official_name || '--',
-              mask: account.mask,
-              type: account.type,
-              subtype: account.subtype,
-              verification_status: 'verified', // Adjust as per your requirements
-              // Timestamps
-              created_at: currentTime,
-              updated_at: currentTime,
-              User: { connect: { id: user_id } },
-            },
-          });
-
-          await this.prisma.investmentBalance.create({
-            data: {
-              available_balance: account.balances.available || 0,
-              current_balance: account.balances.current || 0,
-              iso_currency_code: account.balances.iso_currency_code || 'USD',
-              account_id: existingAccount.id,
-            },
+            data: dataObj,
           });
         } else {
-          // If account exuists then balanceshould be existed
-          // So update its current balance
-          const existingBalance = await this.prisma.investmentBalance.findFirst(
-            {
-              where: { account_id: existingAccount.id },
-            },
-          );
-          await this.prisma.investmentBalance.update({
-            data: {
-              available_balance: account.balances.available || 0,
-              current_balance: account.balances.current || 0,
-              iso_currency_code: account.balances.iso_currency_code || 'USD',
-            },
-            where: {
-              id: existingBalance.id,
-            },
+          existingAccount = await this.prisma.investmentAccounts.update({
+            data: dataObj,
+            where : {id : existingAccount.id}
           });
         }
 
         // Save the investment transactions
-        await this.prisma.investmentTransactions.createMany({
-          skipDuplicates: true,
-          data: investment_transactions
-            .filter(
-              (transaction: any) =>
-                transaction.account_id === account.account_id,
-            )
-            .map((transaction: any) => ({
-              account_id: existingAccount.id,
-              cancel_transaction_id: transaction.cancel_transaction_id,
-              amount: transaction.amount,
-              date_of_transaction: new Date(transaction.date),
-              fees: transaction.fees,
-              investment_transaction_id: transaction.investment_transaction_id,
-              iso_currency_code: transaction.iso_currency_code,
-              name: transaction.name,
-              price: transaction.price,
-              quantity: transaction.quantity,
-              security_id: transaction.security_id,
-              subtype: transaction.subtype,
-              type: transaction.type,
-              unofficial_currency_code: transaction.unofficial_currency_code,
-              platform: transaction.platform,
-            })),
-        });
+        // await this.prisma.investmentTransactions.createMany({
+        //   skipDuplicates: true,
+        //   data: investment_transactions
+        //     .filter(
+        //       (transaction: any) =>
+        //         transaction.account_id === account.account_id,
+        //     )
+        //     .map((transaction: any) => ({
+        //       account_id: existingAccount.id,
+        //       cancel_transaction_id: transaction.cancel_transaction_id,
+        //       amount: transaction.amount,
+        //       date_of_transaction: new Date(transaction.date),
+        //       fees: transaction.fees,
+        //       investment_transaction_id: transaction.investment_transaction_id,
+        //       iso_currency_code: transaction.iso_currency_code,
+        //       name: transaction.name,
+        //       price: transaction.price,
+        //       quantity: transaction.quantity,
+        //       security_id: transaction.security_id,
+        //       subtype: transaction.subtype,
+        //       type: transaction.type,
+        //       unofficial_currency_code: transaction.unofficial_currency_code,
+        //       platform: transaction.platform,
+        //     })),
+        // });
 
         resultArray.push({
           account_id: account.account_id,
@@ -236,50 +218,31 @@ export class InvestmentService {
           });
 
           const currentTime = new Date();
+          const dataObj = {
+            plaidItem: { connect: { id: itemData.id } },
+            account_name: account.name,
+            account_id: account.account_id,
+            official_name: account.official_name || '--',
+            mask: account.mask,
+            type: account.type,
+            subtype: account.subtype,
+            verification_status: 'verified', // Adjust as per your requirements
+            created_at: currentTime,
+            updated_at: currentTime,
+            User: { connect: { id: user_id } },
+            available_balance: account.balances.available || 0,
+            current_balance: account.balances.current || 0,
+            iso_currency_code: account.balances.iso_currency_code || 'USD',
+          }
           if (!existingAccount) {
             // If account is not exists the create new one with balance
             existingAccount = await this.prisma.investmentAccounts.create({
-              data: {
-                plaidItem: { connect: { id: itemData.id } },
-                account_name: account.name,
-                account_id: account.account_id,
-                official_name: account.official_name || '--',
-                mask: account.mask,
-                type: account.type,
-                subtype: account.subtype,
-                verification_status: 'verified', // Adjust as per your requirements
-                // Timestamps
-                created_at: currentTime,
-                updated_at: currentTime,
-                User: { connect: { id: user_id } },
-              },
-            });
-
-            await this.prisma.investmentBalance.create({
-              data: {
-                available_balance: account.balances.available || 0,
-                current_balance: account.balances.current || 0,
-                iso_currency_code: account.balances.iso_currency_code || 'USD',
-                account_id: existingAccount.id,
-              },
+              data: dataObj,
             });
           } else {
-            // If account exuists then balance should be existed
-            // So update its current balance
-            const existingBalance = await this.prisma.investmentBalance.findFirst(
-              {
-                where: { account_id: existingAccount.id },
-              },
-            );
-            await this.prisma.investmentBalance.update({
-              data: {
-                available_balance: account.balances.available || 0,
-                current_balance: account.balances.current || 0,
-                iso_currency_code: account.balances.iso_currency_code || 'USD',
-              },
-              where: {
-                id: existingBalance.id,
-              },
+            existingAccount = await this.prisma.investmentAccounts.update({
+              data: dataObj,
+              where : {id : existingAccount.id}
             });
           }
 
@@ -687,7 +650,8 @@ export class InvestmentService {
             user_id
           },
           data : {
-            data : formFields
+            data : formFields,
+            account_id : data['accountId']
           }
         })
       }
@@ -696,7 +660,8 @@ export class InvestmentService {
           data : {
             data : formFields,
             category_id : categoryId,
-            user_id
+            user_id,
+            account_id : data['accountId']
           }
         })
       }

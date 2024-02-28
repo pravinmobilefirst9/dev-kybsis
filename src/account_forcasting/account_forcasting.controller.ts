@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, ParseIntPipe, Put } from '@nestjs/common';
 import { AccountForcastingService } from './account_forcasting.service';
 import { CreateAccountForcastingDto } from './dto/create-account_forcasting.dto';
 import { UpdateAccountForcastingDto } from './dto/update-account_forcasting.dto';
@@ -8,17 +8,6 @@ import { InvestmentQueryDto } from './dto/forecast-account-v1.dto';
 @Controller('account_forcasting')
 export class AccountForcastingController {
   constructor(private readonly accountForcastingService: AccountForcastingService) {}
-
-  @Post("create_forcast")
-  @UseGuards(AuthGuard)
-  async create(
-    @Body() createAccountForcastingDto: CreateAccountForcastingDto,
-    @Req() request: any,
-    ) {
-    const {user_id} = request.auth;
-    return await this.accountForcastingService.calculateForecastDetails(user_id, createAccountForcastingDto);
-  }
-
   @Post("create_forcast/v1")
   @UseGuards(AuthGuard)
   async calculateFutureValue(
@@ -26,7 +15,18 @@ export class AccountForcastingController {
     @Req() request: any,
     ) {
     const {user_id} = request.auth;
-    return await this.accountForcastingService.calculateForecasting(createAccountForcastingDto);
+    return await this.accountForcastingService.calculateForecasting(createAccountForcastingDto,user_id);
+  }
+
+  @Put("create_forcast/v1/:forecastId")
+  @UseGuards(AuthGuard)
+  async updateFutureValueData(
+    @Body() createAccountForcastingDto: InvestmentQueryDto,
+    @Req() request: any,
+    @Param('forecastId', ParseIntPipe) forecastId : number
+    ) {
+    const {user_id} = request.auth;
+    return await this.accountForcastingService.calculateForecasting(createAccountForcastingDto, user_id, forecastId);
   }
 
   @Get("fetch_all_forcasting")

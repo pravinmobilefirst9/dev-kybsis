@@ -11,6 +11,10 @@ export class CreateManualInvestmentDto {
   @IsNotEmpty({ message: 'Category ID is required' })
   @IsInt({ message: 'Category ID must be an integer' })
   categoryId: number;
+
+  @IsNotEmpty({ message: 'Account ID is required' })
+  @IsInt({ message: 'Account ID must be an integer' })
+  accountId: number;
 }
   
 export class InvestmentFormDataDTO {

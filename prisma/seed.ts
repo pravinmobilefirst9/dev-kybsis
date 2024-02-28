@@ -277,8 +277,8 @@ const cashAssetsFieldsPhysical = [
 ];
 
 const cashAssetFieldsBankDeposit = [
-  { name: "bank_name", type: "text", label: "Bank Name", order_id: 1, mandatory: true },
-  { name: "account_number", type: "text", label: "Account Number", order_id: 2, mandatory: true },
+  { name: "bank_name", type: "textWithoutNumber", label: "Bank Name", order_id: 1, mandatory: true },
+  { name: "account_number", type: "AccountNumber", label: "Account Number", order_id: 2, mandatory: true },
   { name: "value", type: "number", label: "Amount", order_id: 3, mandatory: true },
   { name: "additional_details", type: "textarea", label: "Additional Details", order_id: 4, mandatory: false },
 ];

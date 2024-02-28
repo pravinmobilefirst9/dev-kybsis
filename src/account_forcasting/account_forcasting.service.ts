@@ -33,8 +33,11 @@ export class AccountForcastingService {
     investmentLength,
     returnRate,
     startingAmount,
-    compound
-  }: InvestmentQueryDto) {
+    compound,
+    accountIds,
+    contributionTiming,
+    item_id
+  }: InvestmentQueryDto, user_id : number, forecastId ?: number) {
 
     let periodsPerYear = 0;
   switch (compound) {
@@ -82,12 +85,48 @@ export class AccountForcastingService {
   // Calculate future value using compound interest formula
   const monthlyInterestRate = returnRate / 100 / periodsPerYear;
   let futureValue = startingAmount * Math.pow(1 + monthlyInterestRate, totalPeriods) +
-                      (additionalContribution * ((Math.pow(1 + monthlyInterestRate, totalPeriods) - 1) / monthlyInterestRate));
+                      (additionalContribution * ((Math.pow(1 + monthlyInterestRate, totalPeriods) - 1) / monthlyInterestRate));          
 
+  let resultObj = { 
+    additionalContribution,
+    contributionFrequency,
+    investmentLength,
+    returnRate,
+    startingAmount,
+    compound,
+    accountIds,
+    contributionTiming,
+    endBalance: parseFloat(futureValue.toFixed(2)),
+    totalContributions,
+    totalInterest: parseFloat((futureValue - startingAmount - totalContributions).toFixed(2)),
+    user_id : user_id,
+    ins_id : item_id 
+  }
+
+  if (forecastId) {
+    const isExists = await this.prisma.forecast.findUnique({
+      where: { id: forecastId }
+    })
+
+    if (!isExists) {
+      throw new HttpException(`Account Forcasting with id ${forecastId} not found`, HttpStatus.NOT_FOUND)
+    }
+    else {
+      await this.prisma.forecast.update({
+        data: resultObj,
+        where: { id: forecastId }
+      })
+    }
+  }
+  else {
+    await this.prisma.forecast.create({
+    data:  resultObj
+    })
+  }
     return {
       success: true,
       statusCode: HttpStatus.CREATED,
-      message: `Account forcasting fetched successfully`,
+      message: `Account forcasting ${forecastId ? "updated" : "calculated"} successfully`,
       data: {
         endBalance: parseFloat(futureValue.toFixed(2)),
         startingAmount,
@@ -97,149 +136,34 @@ export class AccountForcastingService {
     };
   }
 
-  async calculateForecastDetails(
-    user_id: number,
-    {
-      forcastingId,
-      compound,
-      contributeAt,
-      returnRate,
-      startingAmount,
-      timePeriod
-    }: CreateAccountForcastingDto): Promise<any> {
-    try {
-      // Calculate end balance, total contribution, and total interest
-      let endBalance = this.calculateEndBalance(startingAmount, timePeriod, returnRate, compound);
-      // Check if the result is finite and within a reasonable range
-      if (!isFinite(endBalance) || isNaN(endBalance) || Math.abs(endBalance) > Number.MAX_SAFE_INTEGER) {
-        throw new HttpException("Given inuput", HttpStatus.NOT_ACCEPTABLE);
-      }
-      let totalContribution = this.calculateTotalContribution(startingAmount, timePeriod, contributeAt);
-      let totalInterest = endBalance - startingAmount - totalContribution;
-
-      endBalance = parseFloat(endBalance.toFixed(2))
-      totalContribution = parseFloat(totalContribution.toFixed(2))
-      totalInterest = parseFloat(totalInterest.toFixed(2))
-
-      const resultObj = {
-        compound,
-        contributeAt,
-        endBalance,
-        returnRate,
-        startingAmount,
-        startingBalance: startingAmount,
-        timePeriod,
-        totalContribution,
-        totalInterest
-      }
-
-      if (forcastingId) {
-        const isExists = await this.prisma.forecast.findUnique({
-          where: { id: forcastingId }
-        })
-
-        if (!isExists) {
-          throw new HttpException(`Account Forcasting with id ${forcastingId} not found`, HttpStatus.NOT_FOUND)
-        }
-        else {
-          await this.prisma.forecast.update({
-            data: resultObj,
-            where: { id: forcastingId }
-          })
-        }
-      }
-      else {
-        await this.prisma.forecast.create({
-          data: { ...resultObj, user: { connect: { id: user_id } } }
-        })
-      }
-
-      return {
-        success: true,
-        statusCode: HttpStatus.CREATED,
-        message: `Account forcasting ${forcastingId ? "updated" : "created"} successfully`,
-        data: {
-          endBalance,
-          totalContribution,
-          totalInterest,
-          startingAmount
-        },
-      };
-
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error
-      }
-      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
-    }
-
-  }
-
-  private calculateEndBalance(
-    startingAmount: number,
-    timePeriod: number,
-    returnRate: number,
-    compound: CompoundFrequency,
-  ): number {
-    // Perform the calculation based on the compound frequency
-    switch (compound) {
-      case CompoundFrequency.ANNUALLY:
-        return startingAmount * Math.pow(1 + returnRate, timePeriod);
-      case CompoundFrequency.SEMIANNUALLY:
-        return startingAmount * Math.pow(1 + returnRate / 2, timePeriod * 2);
-      case CompoundFrequency.QUARTERLY:
-        return startingAmount * Math.pow(1 + returnRate / 4, timePeriod * 4);
-      case CompoundFrequency.MONTHLY:
-        return startingAmount * Math.pow(1 + returnRate / 12, timePeriod * 12);
-      case CompoundFrequency.BIWEEKLY:
-        return startingAmount * Math.pow(1 + returnRate / 26, timePeriod * 26);
-      case CompoundFrequency.WEEKLY:
-        return startingAmount * Math.pow(1 + returnRate / 52, timePeriod * 52);
-      case CompoundFrequency.DAILY:
-        return startingAmount * Math.pow(1 + returnRate / 365, timePeriod * 365);
-      default:
-        return startingAmount;
-    }
-  }
-
-  private calculateTotalContribution(
-    startingAmount: number,
-    timePeriod: number,
-    contributeAt: Timing,
-  ): number {
-    // Perform the calculation based on the contribution timing
-    switch (contributeAt) {
-      case Timing.BEGINNING:
-        return startingAmount * timePeriod;
-      case Timing.END_OF_EACH_MONTH:
-        return startingAmount * timePeriod;
-      case Timing.END_OF_EACH_YEAR:
-        return startingAmount * timePeriod;
-      // Add more cases as needed for different contribution timings
-      default:
-        return startingAmount;
-    }
-  }
-
   async findAllAccountForcasting(user_id: number) {
     try {
       const accountForcasting = await this.prisma.forecast.findMany({
         where: {
           user_id
         },
-        select: {
-          id: true,
+        select : {
+          additionalContribution: true,
+          contributionFrequency: true,
+          investmentLength: true,
+          returnRate: true,
           startingAmount: true,
           compound: true,
-          contributeAt: true,
-          returnRate: true,
-          createdAt: true,
-          timePeriod: true,
+          accountIds: true,
+          contributionTiming: true,
+          endBalance: true,
+          totalContributions: true,
+          totalInterest: true,
+          user_id: true,
+          Institution : {
+            select : {
+              id : true,
+              ins_id : true,
+              ins_name : true,
+            }
+          }
         }
       })
-
-      console.log({ accountForcasting });
-
       return {
         success: true,
         statusCode: HttpStatus.CREATED,
@@ -261,18 +185,6 @@ export class AccountForcastingService {
         where: {
           id,
           user_id
-        },
-        select: {
-          id: true,
-          compound: true,
-          contributeAt: true,
-          endBalance: true,
-          returnRate: true,
-          startingAmount: true,
-          startingBalance: true,
-          timePeriod: true,
-          totalInterest: true,
-          totalContribution: true,
         }
       })
 

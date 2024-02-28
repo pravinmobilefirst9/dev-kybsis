@@ -47,17 +47,17 @@ export class AssetsService {
               },
             });
           }
-          else{
-            await this.prismaClient.plaidAssetItem.update({
-              where : {
-                plaid_item_id: plaidItem.id,
-              },
-              data: {
-                asset_report_token,
-                user_id
-              },
-            });
-          }
+          // else{
+          //   await this.prismaClient.plaidAssetItem.update({
+          //     where : {
+          //       plaid_item_id: plaidItem.id,
+          //     },
+          //     data: {
+          //       asset_report_token,
+          //       user_id
+          //     },
+          //   });
+          // }
         } catch (error) {
           continue;
         }
@@ -88,7 +88,8 @@ export class AssetsService {
         }
       });
 
-      for (const assetItem of plaidAssetItems) {
+
+      plaidAssetItems.map(async (assetItem) => {
         try {
           const response = await this.transactionService.getAssetsReport(
             assetItem.asset_report_token,
@@ -147,43 +148,44 @@ export class AssetsService {
 
               // Save Assets Transactions
 
-              const filterAssetsTransactions = account.transactions.map(
-                (transaction: any) => {
-                  return {
-                    account_id: transaction.account_id,
-                    transaction_id: transaction.transaction_id,
-                    transaction_type: transaction.transaction_type,
-                    date: new Date(transaction.date),
-                    date_transacted: new Date(transaction.date_transacted),
-                    transaction_name: transaction.name,
-                    transaction_amount: transaction.amount,
-                    transaction_currency: transaction.iso_currency_code || null,
-                    check_number: transaction.check_number || null,
-                    merchant_name: transaction.merchant_name || null,
-                    pending: transaction.pending || false,
-                    category_id: transaction.category_id,
-                    category: transaction.category || [],
-                  };
-                },
-              );
+              // const filterAssetsTransactions = account.transactions.map(
+              //   (transaction: any) => {
+              //     return {
+              //       account_id: transaction.account_id,
+              //       transaction_id: transaction.transaction_id,
+              //       transaction_type: transaction.transaction_type,
+              //       date: new Date(transaction.date),
+              //       date_transacted: new Date(transaction.date_transacted),
+              //       transaction_name: transaction.name,
+              //       transaction_amount: transaction.amount,
+              //       transaction_currency: transaction.iso_currency_code || null,
+              //       check_number: transaction.check_number || null,
+              //       merchant_name: transaction.merchant_name || null,
+              //       pending: transaction.pending || false,
+              //       category_id: transaction.category_id,
+              //       category: transaction.category || [],
+              //     };
+              //   },
+              // );
 
-              await this.prismaClient.assetTransaction.createMany({
-                skipDuplicates: true,
-                data: filterAssetsTransactions,
-              });
+              // await this.prismaClient.assetTransaction.createMany({
+              //   skipDuplicates: true,
+              //   data: filterAssetsTransactions,
+              // });
 
               reports.push({
                 account,
-                filterAssetsTransactions,
-                filterHistoricalBalances,
+                // filterAssetsTransactions,
+                // filterHistoricalBalances,
                 reportItem,
               });
             });
           });
         } catch (error) {
-          continue;
+          
         }
-      }
+      })
+
 
       return  {
         success: true,
@@ -431,7 +433,7 @@ export class AssetsService {
   }
 
   async addUserAssetsDetails(
-    { asset_type_id, asset_sub_id, fieldData }: CreateAssetDto,
+    { asset_type_id, asset_sub_id, fieldData, account_id }: CreateAssetDto,
     user_id: number,
   ) {
     try {
@@ -472,7 +474,8 @@ export class AssetsService {
         data : {
           asset_type_id,
           asset_subtype_id : asset_sub_id,
-          user_id
+          user_id,
+          account_id
         }
       })
 
@@ -562,7 +565,7 @@ export class AssetsService {
           const fieldExists = await this.prismaClient.userAssetsDetails.findFirst({
             where : {
               asset_id : asset_id,
-              field_id : f.field_id
+              field_id : f.field_id,
             }
           })
 

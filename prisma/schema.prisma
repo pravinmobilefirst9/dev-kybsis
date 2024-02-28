@@ -50,13 +50,12 @@ model Budget {
 }
 
 model UserEmail {
-  id               Int    @id @default(autoincrement())
+  id               Int      @id @default(autoincrement())
   sender           String
   receiver         String
   response_details Int
-  created_at       DateTime    @default(now())
-  updated_at       DateTime    @updatedAt
-
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 }
 
 model InstitutionAccount {
@@ -72,8 +71,8 @@ model InstitutionAccount {
   verification_status String
   balance             Float
   available_balance   Float
-  created_at          DateTime    @default(now())
-  updated_at          DateTime    @updatedAt
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
   User                User     @relation(fields: [user_id], references: [id])
 }
 
@@ -95,6 +94,7 @@ model PlaidItem {
   AssetPlaidItem       PlaidAssetItem?
   investmentAccounts   InvestmentAccounts[]
   TransactionsAccounts Account[]
+  Forecasts Forecast[]
 }
 
 model PlaidInstitutionImportHistory {
@@ -111,21 +111,21 @@ model PlaidInstitutionImportHistory {
 }
 
 model User {
-  id                            Int                             @id @default(autoincrement())
-  email                         String                          @unique
-  active                        Boolean                         @default(false)
-  password                      String
-  otp_verified                  Boolean                         @default(false)
-  user_otp                      Int
-  user_otp_createdAt            DateTime?
-  user_role                     UserRole                        @default(FREE)
-  device_token                  String
-  widgetsAlreadyAdded           Boolean                         @default(false)
-  stripe_customer_id            String?                         @unique
-  current_subscription_id       Int?
-  created_at                    DateTime                        @default(now())
-  updated_at                    DateTime                        @updatedAt
-  
+  id                      Int       @id @default(autoincrement())
+  email                   String    @unique
+  active                  Boolean   @default(false)
+  password                String
+  otp_verified            Boolean   @default(false)
+  user_otp                Int
+  user_otp_createdAt      DateTime?
+  user_role               UserRole  @default(FREE)
+  device_token            String
+  widgetsAlreadyAdded     Boolean   @default(false)
+  stripe_customer_id      String?   @unique
+  current_subscription_id Int?
+  created_at              DateTime  @default(now())
+  updated_at              DateTime  @updatedAt
+
   account                       Account[]
   budget                        Budget[]
   collaboratedWith              Collaboration[]                 @relation("CollaboratorCollaborations")
@@ -183,10 +183,10 @@ model Transaction {
 }
 
 model Account {
-  id                  Int           @id @default(autoincrement())
+  id                  Int                @id @default(autoincrement())
   user_id             Int
   account_name        String
-  account_id          String        @unique
+  account_id          String             @unique
   plaid_item_id       Int?
   institution_name    String
   official_name       String?
@@ -198,12 +198,13 @@ model Account {
   current_balance     Float
   available_balance   Float
   iso_currency_code   String
-  manual              Boolean       @default(false)
-  created_at          DateTime      @default(now())
-  updated_at          DateTime      @updatedAt
-  User                User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  PlaidItem           PlaidItem?    @relation(fields: [plaid_item_id], references: [id], onDelete: Cascade)
+  manual              Boolean            @default(false)
+  created_at          DateTime           @default(now())
+  updated_at          DateTime           @updatedAt
+  User                User               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  PlaidItem           PlaidItem?         @relation(fields: [plaid_item_id], references: [id], onDelete: Cascade)
   Transaction         Transaction[]
+  ManualAssets        UserManualAssets[]
 }
 
 enum UserRole {
@@ -223,55 +224,45 @@ model InvestmentAccounts {
   type                String
   subtype             String
   verification_status String
-  created_at          DateTime  @default(now())
-  updated_at          DateTime  @updatedAt
+  current_balance     Float
+  available_balance   Float
+  iso_currency_code   String?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
 
   // References
   User      User      @relation(fields: [user_id], references: [id])
   plaidItem PlaidItem @relation(fields: [pliad_id], references: [id])
 
   investmentHolding InvestmentHolding[]
-  Transactions      InvestmentTransactions[]
-  Balance           InvestmentBalance[]
+  // Transactions      InvestmentTransactions[]
+  // Balance           InvestmentBalance[]
 }
 
-model InvestmentTransactions {
-  id                        Int                @id @default(autoincrement())
-  account_id                Int
-  cancel_transaction_id     String?            @default("NA")
-  amount                    Float
-  date_of_transaction       DateTime
-  fees                      Float
-  investment_transaction_id String
-  iso_currency_code         String?
-  name                      String
-  price                     Float
-  quantity                  Decimal
-  security_id               String
-  subtype                   String?
-  type                      String?
-  unofficial_currency_code  String?
-  platform                  String?            @default("plaid")
-  created_at                DateTime           @default(now())
-  updated_at                DateTime           @updatedAt
-  // References
-  investment_account        InvestmentAccounts @relation(fields: [account_id], references: [id])
+// model InvestmentTransactions {
+//   id                        Int                @id @default(autoincrement())
+//   account_id                Int
+//   cancel_transaction_id     String?            @default("NA")
+//   amount                    Float
+//   date_of_transaction       DateTime
+//   fees                      Float
+//   investment_transaction_id String
+//   iso_currency_code         String?
+//   name                      String
+//   price                     Float
+//   quantity                  Decimal
+//   security_id               String
+//   subtype                   String?
+//   type                      String?
+//   unofficial_currency_code  String?
+//   platform                  String?            @default("plaid")
+//   created_at                DateTime           @default(now())
+//   updated_at                DateTime           @updatedAt
+//   // References
+//   investment_account        InvestmentAccounts @relation(fields: [account_id], references: [id])
 
-  @@unique([account_id, investment_transaction_id, date_of_transaction])
-}
-
-model InvestmentBalance {
-  id                Int      @id @default(autoincrement())
-  account_id        Int
-  current_balance   Float
-  available_balance Float
-  iso_currency_code String?
-  created_at        DateTime @default(now())
-  updated_at        DateTime @updatedAt
-
-  // References
-  investment_account InvestmentAccounts @relation(fields: [account_id], references: [id])
-}
+//   @@unique([account_id, investment_transaction_id, date_of_transaction])
+// }
 
 // Schema for Investment Holdings
 model InvestmentHolding {
@@ -306,12 +297,13 @@ model InvestmentCategories {
 }
 
 model ManualInvestments {
-  id             Int      @id @default(autoincrement())
-  data           Json[]
-  user_id        Int
-  category_id    Int
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  data        Json[]
+  account_id  Int
+  user_id     Int
+  category_id Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   user               User                 @relation(fields: [user_id], references: [id])
   investmentCategory InvestmentCategories @relation(fields: [category_id], references: [id])
@@ -406,13 +398,15 @@ model UserManualAssets {
   user_id          Int
   asset_type_id    Int
   asset_subtype_id Int
+  account_id       Int
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
 
-  AssetType    AssetType           @relation(fields: [asset_type_id], references: [id])
-  AssetSubType AssetSubType        @relation(fields: [asset_subtype_id], references: [id])
-  User         User                @relation(fields: [user_id], references: [id])
-  asset_fields UserAssetsDetails[]
+  AssetType     AssetType           @relation(fields: [asset_type_id], references: [id])
+  AssetSubType  AssetSubType        @relation(fields: [asset_subtype_id], references: [id])
+  User          User                @relation(fields: [user_id], references: [id])
+  asset_fields  UserAssetsDetails[]
+  ManualAccount Account             @relation(fields: [account_id], references: [id])
 }
 
 model AssetHistoricalBalance {
@@ -556,38 +550,47 @@ model UserAssetsDetails {
   asset       UserManualAssets @relation(fields: [asset_id], references: [id])
 }
 
-enum CompoundFrequency {
-  ANNUALLY
-  SEMIANNUALLY
-  QUARTERLY
-  MONTHLY
-  SEMIMONTHLY
-  BIWEEKLY
-  WEEKLY
-  DAILY
-  CONTINUOUSLY
-}
+// enum CompoundFrequency {
+//   ANNUALLY
+//   SEMIANNUALLY
+//   QUARTERLY
+//   MONTHLY
+//   SEMIMONTHLY
+//   BIWEEKLY
+//   WEEKLY
+//   DAILY
+//   CONTINUOUSLY
+// }
 
-enum Timing {
-  BEGINNING
-  END_OF_EACH_MONTH
-  END_OF_EACH_YEAR
-}
+// enum ContributionFrequency {
+//   Monthly 
+//   Annually
+// }
+
+// enum ContributionTiming {
+//   BEGINNING
+//   End
+// }
 
 model Forecast {
-  id                Int               @id @default(autoincrement())
-  startingAmount    Float
-  timePeriod        Int
-  returnRate        Float
-  compound          CompoundFrequency
-  contributeAt      Timing
-  endBalance        Float
-  startingBalance   Float
-  totalContribution Float
-  totalInterest     Float
-  user_id           Int
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  id                     Int      @id @default(autoincrement())
+  compound               String   @db.VarChar(255)
+  ins_id                 Int   
+  startingAmount         Float
+  returnRate             Float
+  investmentLength       Int
+  additionalContribution Float
+  contributionFrequency  String   @db.VarChar(255)
+  contributionTiming     String   @db.VarChar(255)
+  accountIds             Int[]
+  endBalance             Float
+  totalContributions     Float
+  totalInterest          Float
+  user_id                Int
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  Institution PlaidItem @relation(fields: [ins_id], references: [id])
 
   // Relations
   user User @relation(fields: [user_id], references: [id])
@@ -650,7 +653,7 @@ enum invoiceStatus {
 
 model Subscription {
   id                   Int                @id @default(autoincrement())
-  stripeCustomerId     String             
+  stripeCustomerId     String
   stripeSubscriptionId String             @unique
   invoiceId            String?
   invoiceUrl           String?

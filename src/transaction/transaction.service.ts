@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from 'src/prisma.service';
@@ -6,12 +6,14 @@ import { Configuration, InstitutionsGetByIdRequest, PlaidApi, PlaidEnvironments,
 import { PlaidItem } from '@prisma/client';
 import axios, { AxiosResponse } from 'axios';
 import { ResponseReturnType } from 'src/common/responseType';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 
 @Injectable()
 export class TransactionService {
   private readonly configuration: Configuration
   private readonly client: PlaidApi
+  private logger = new Logger(TransactionService.name)
   constructor(
     private readonly prisma: PrismaService,
   ) {
@@ -239,7 +241,7 @@ export class TransactionService {
   async importAllUSAInstitution() : Promise<ResponseReturnType> {
     try {
       let totalBanks = 0;
-      for (let index = 6000; index < 12000; index+=500) {
+      for (let index = 8496; index < 15000; index+=500) {
         const Institutions = await this.client.institutionsGet({
           count : 500,
           offset : index,
@@ -278,6 +280,22 @@ export class TransactionService {
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+
+  // Cron Jobs
+  @Cron(CronExpression.EVERY_SECOND)
+  async cronDemo(){
+    // const allUsers = await this.prisma.user.findMany({
+    //   where : {
+    //     user_role : {
+    //       in : ['BASIC', 'PREMIUM']
+    //     }
+    //   }
+    // })
+    
+    // this.logger.log(allUsers.length)
+
   }
   create(createTransactionDto: CreateTransactionDto) {
     return 'This action adds a new transaction';
