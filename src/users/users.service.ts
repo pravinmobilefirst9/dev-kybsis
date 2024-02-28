@@ -72,7 +72,28 @@ export class UsersService {
         }
       })
 
-      this.eventEmitter.emit("user.created", new UserCreatedEventPayload(user, otp));
+      
+      // this.eventEmitter.emit("user.created", new UserCreatedEventPayload(user, otp));
+
+      await this.sendEmail(
+        user,
+        'Welcome and verify your email.',
+        `Thank you for joining Kybsis! We're excited to have you on board.
+        
+        To complete your signup, please verify your email address by entering the following code in the app:
+        
+        Verification Code: ${otp}
+        
+        This code will expire in 10 minutes.
+        
+        If you didn't request this code, please ignore this email.
+        
+        We're looking forward to seeing you in the app!
+        
+        Sincerely,
+        The Kybsis Team`,
+        otp,
+      );
       
       delete user.password;
       delete user.user_otp;

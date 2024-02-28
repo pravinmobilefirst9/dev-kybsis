@@ -241,7 +241,7 @@ export class TransactionService {
   async importAllUSAInstitution() : Promise<ResponseReturnType> {
     try {
       let totalBanks = 0;
-      for (let index = 8496; index < 15000; index+=500) {
+      for (let index = 10298; index < 15000; index+=500) {
         const Institutions = await this.client.institutionsGet({
           count : 500,
           offset : index,
