@@ -27,6 +27,115 @@ export class AccountForcastingService {
     private readonly prisma: PrismaService,
   ) { }
 
+  // async calculateForecasting({
+  //   additionalContribution,
+  //   contributionFrequency,
+  //   investmentLength,
+  //   returnRate,
+  //   startingAmount,
+  //   compound,
+  //   accountIds,
+  //   contributionTiming,
+  //   item_id
+  // }: InvestmentQueryDto, user_id : number, forecastId ?: number) {
+
+  //   let periodsPerYear = 0;
+  // switch (compound) {
+  //   case Compound.ANNUALLY:
+  //     periodsPerYear = 1;
+  //     break;
+  //   case Compound.SEMIANNUALLY:
+  //     periodsPerYear = 2;
+  //     break;
+  //   case Compound.QUARTERLY:
+  //     periodsPerYear = 4;
+  //     break;
+  //   case Compound.MONTHLY:
+  //     periodsPerYear = 12;
+  //     break;
+  //   case Compound.SEMIMONTHLY:
+  //     periodsPerYear = 24;
+  //     break;
+  //   case Compound.BIWEEKLY:
+  //     periodsPerYear = 26;
+  //     break;
+  //   case Compound.WEEKLY:
+  //     periodsPerYear = 52;
+  //     break;
+  //   case Compound.DAILY:
+  //     periodsPerYear = 365;
+  //     break;
+  //   case Compound.CONTINUOUSLY:
+  //     periodsPerYear = 1; // Continuous compounding
+  //     break;
+  //   default:
+  //     throw new Error('Invalid compound frequency');
+  // }
+
+  // const totalPeriods = investmentLength * periodsPerYear;
+
+  // // Calculate total contributions based on contribution period
+  // let totalContributions = 0;
+  // if (contributionFrequency === 'monthly') {
+  //   totalContributions = additionalContribution * investmentLength * periodsPerYear;
+  // } else if (contributionFrequency === 'annually') {
+  //   totalContributions = additionalContribution * investmentLength;
+  // }
+
+  // // Calculate future value using compound interest formula
+  // const monthlyInterestRate = returnRate / 100 / periodsPerYear;
+  // let futureValue = startingAmount * Math.pow(1 + monthlyInterestRate, totalPeriods) +
+  //                     (additionalContribution * ((Math.pow(1 + monthlyInterestRate, totalPeriods) - 1) / monthlyInterestRate));          
+
+  // let resultObj = { 
+  //   additionalContribution,
+  //   contributionFrequency,
+  //   investmentLength,
+  //   returnRate,
+  //   startingAmount,
+  //   compound,
+  //   accountIds,
+  //   contributionTiming,
+  //   endBalance: parseFloat(futureValue.toFixed(2)),
+  //   totalContributions,
+  //   totalInterest: parseFloat((futureValue - startingAmount - totalContributions).toFixed(2)),
+  //   user_id : user_id,
+  //   ins_id : item_id 
+  // }
+
+  // if (forecastId) {
+  //   const isExists = await this.prisma.forecast.findUnique({
+  //     where: { id: forecastId }
+  //   })
+
+  //   if (!isExists) {
+  //     throw new HttpException(`Account Forcasting with id ${forecastId} not found`, HttpStatus.NOT_FOUND)
+  //   }
+  //   else {
+  //     await this.prisma.forecast.update({
+  //       data: resultObj,
+  //       where: { id: forecastId }
+  //     })
+  //   }
+  // }
+  // else {
+  //   await this.prisma.forecast.create({
+  //   data:  resultObj
+  //   })
+  // }
+  //   return {
+  //     success: true,
+  //     statusCode: HttpStatus.CREATED,
+  //     message: `Account forcasting ${forecastId ? "updated" : "calculated"} successfully`,
+  //     data: {
+  //       endBalance: parseFloat(futureValue.toFixed(2)),
+  //       startingAmount,
+  //       totalContributions,
+  //       totalInterest: parseFloat((futureValue - startingAmount - totalContributions).toFixed(2)),
+  //     }
+  //   };
+  // }
+
   async calculateForecasting({
     additionalContribution,
     contributionFrequency,
@@ -37,92 +146,116 @@ export class AccountForcastingService {
     accountIds,
     contributionTiming,
     item_id
-  }: InvestmentQueryDto, user_id : number, forecastId ?: number) {
-
+  }: InvestmentQueryDto, user_id: number, forecastId?: number) {
     let periodsPerYear = 0;
-  switch (compound) {
-    case Compound.ANNUALLY:
-      periodsPerYear = 1;
-      break;
-    case Compound.SEMIANNUALLY:
-      periodsPerYear = 2;
-      break;
-    case Compound.QUARTERLY:
-      periodsPerYear = 4;
-      break;
-    case Compound.MONTHLY:
-      periodsPerYear = 12;
-      break;
-    case Compound.SEMIMONTHLY:
-      periodsPerYear = 24;
-      break;
-    case Compound.BIWEEKLY:
-      periodsPerYear = 26;
-      break;
-    case Compound.WEEKLY:
-      periodsPerYear = 52;
-      break;
-    case Compound.DAILY:
-      periodsPerYear = 365;
-      break;
-    case Compound.CONTINUOUSLY:
-      periodsPerYear = 1; // Continuous compounding
-      break;
-    default:
-      throw new Error('Invalid compound frequency');
-  }
-
-  const totalPeriods = investmentLength * periodsPerYear;
-
-  // Calculate total contributions based on contribution period
-  let totalContributions = 0;
-  if (contributionFrequency === 'monthly') {
-    totalContributions = additionalContribution * investmentLength * periodsPerYear;
-  } else if (contributionFrequency === 'annually') {
-    totalContributions = additionalContribution * investmentLength;
-  }
-
-  // Calculate future value using compound interest formula
-  const monthlyInterestRate = returnRate / 100 / periodsPerYear;
-  let futureValue = startingAmount * Math.pow(1 + monthlyInterestRate, totalPeriods) +
-                      (additionalContribution * ((Math.pow(1 + monthlyInterestRate, totalPeriods) - 1) / monthlyInterestRate));          
-
-  let resultObj = { 
-    additionalContribution,
-    contributionFrequency,
-    investmentLength,
-    returnRate,
-    startingAmount,
-    compound,
-    accountIds,
-    contributionTiming,
-    endBalance: parseFloat(futureValue.toFixed(2)),
-    totalContributions,
-    totalInterest: parseFloat((futureValue - startingAmount - totalContributions).toFixed(2)),
-    user_id : user_id,
-    ins_id : item_id 
-  }
-
-  if (forecastId) {
-    const isExists = await this.prisma.forecast.findUnique({
-      where: { id: forecastId }
-    })
-
-    if (!isExists) {
-      throw new HttpException(`Account Forcasting with id ${forecastId} not found`, HttpStatus.NOT_FOUND)
+    switch (compound) {
+      case Compound.ANNUALLY:
+        periodsPerYear = 1;
+        break;
+      case Compound.SEMIANNUALLY:
+        periodsPerYear = 2;
+        break;
+      case Compound.QUARTERLY:
+        periodsPerYear = 4;
+        break;
+      case Compound.MONTHLY:
+        periodsPerYear = 12;
+        break;
+      case Compound.SEMIMONTHLY:
+        periodsPerYear = 24;
+        break;
+      case Compound.BIWEEKLY:
+        periodsPerYear = 26;
+        break;
+      case Compound.WEEKLY:
+        periodsPerYear = 52;
+        break;
+      case Compound.DAILY:
+        periodsPerYear = 365;
+        break;
+      case Compound.CONTINUOUSLY:
+        periodsPerYear = 1; // Continuous compounding
+        break;
+      default:
+        throw new Error('Invalid compound frequency');
     }
-    else {
-      await this.prisma.forecast.update({
-        data: resultObj,
+  
+    const totalPeriods = investmentLength * periodsPerYear;
+  
+    // Calculate total contributions based on contribution period
+    let totalContributions = 0;
+    if (contributionFrequency === 'monthly') {
+      totalContributions = additionalContribution * investmentLength * periodsPerYear;
+    } else if (contributionFrequency === 'annually') {
+      totalContributions = additionalContribution * investmentLength;
+    }
+  
+    // Calculate future value using compound interest formula
+    let futureValue = startingAmount;
+    let totalInterest = 0;
+  
+    for (let i = 1; i <= investmentLength; i++) {
+      let yearlyContribution = 0;
+      if (contributionFrequency === 'monthly') {
+        yearlyContribution = additionalContribution * 12;
+      } else if (contributionFrequency === 'annually') {
+        yearlyContribution = additionalContribution;
+      }
+  
+      if (contributionTiming === 'end') {
+        futureValue += yearlyContribution;
+      }
+  
+      // Calculate interest for the year
+      for (let j = 0; j < periodsPerYear; j++) {
+        futureValue *= (1 + (returnRate / 100 / periodsPerYear));
+      }
+  
+      if (contributionTiming === 'beginning') {
+        futureValue += yearlyContribution;
+      }
+  
+      // Calculate total interest for the year
+      totalInterest += (futureValue - startingAmount - totalContributions);
+    }
+  
+    let resultObj = {
+      additionalContribution,
+      contributionFrequency,
+      investmentLength,
+      returnRate,
+      startingAmount,
+      compound,
+      accountIds,
+      contributionTiming,
+      endBalance: parseFloat(futureValue.toFixed(2)),
+      totalContributions,
+      totalInterest: parseFloat(totalInterest.toFixed(2)),
+      user_id: user_id,
+      ins_id: item_id
+    }
+  
+    if (forecastId) {
+      const isExists = await this.prisma.forecast.findUnique({
         where: { id: forecastId }
       })
+  
+      if (!isExists) {
+        throw new HttpException(`Account Forcasting with id ${forecastId} not found`, HttpStatus.NOT_FOUND)
+      }
+      else {
+        await this.prisma.forecast.update({
+          data: resultObj,
+          where: { id: forecastId }
+        })
+      }
     }
-  }
-  else {
-    await this.prisma.forecast.create({
-    data:  resultObj
-    })
-  }
+    else {
+      await this.prisma.forecast.create({
+        data: resultObj
+      })
+    }
+  
     return {
       success: true,
       statusCode: HttpStatus.CREATED,
@@ -131,10 +264,11 @@ export class AccountForcastingService {
         endBalance: parseFloat(futureValue.toFixed(2)),
         startingAmount,
         totalContributions,
-        totalInterest: parseFloat((futureValue - startingAmount - totalContributions).toFixed(2)),
+        totalInterest: parseFloat(totalInterest.toFixed(2)),
       }
     };
   }
+  
 
   async findAllAccountForcasting(user_id: number) {
     try {
