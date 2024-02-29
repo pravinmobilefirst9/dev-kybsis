@@ -194,7 +194,7 @@ export class AccountForcastingService {
     let futureValue = startingAmount;
     let totalInterest = 0;
   
-    for (let i = 1; i <= investmentLength; i++) {
+    for (let year = 1; year <= investmentLength; year++) {
       let yearlyContribution = 0;
       if (contributionFrequency === 'monthly') {
         yearlyContribution = additionalContribution * 12;
@@ -206,8 +206,7 @@ export class AccountForcastingService {
         futureValue += yearlyContribution;
       }
   
-      // Calculate interest for the year
-      for (let j = 0; j < periodsPerYear; j++) {
+      for (let i = 0; i < periodsPerYear; i++) {
         futureValue *= (1 + (returnRate / 100 / periodsPerYear));
       }
   
@@ -215,8 +214,7 @@ export class AccountForcastingService {
         futureValue += yearlyContribution;
       }
   
-      // Calculate total interest for the year
-      totalInterest += (futureValue - startingAmount - totalContributions);
+      totalInterest += futureValue - startingAmount - totalContributions;
     }
   
     let resultObj = {
@@ -241,7 +239,7 @@ export class AccountForcastingService {
       })
   
       if (!isExists) {
-        throw new HttpException(`Account Forcasting with id ${forecastId} not found`, HttpStatus.NOT_FOUND)
+        throw new HttpException(`Account Forecasting with id ${forecastId} not found`, HttpStatus.NOT_FOUND)
       }
       else {
         await this.prisma.forecast.update({
@@ -259,7 +257,7 @@ export class AccountForcastingService {
     return {
       success: true,
       statusCode: HttpStatus.CREATED,
-      message: `Account forcasting ${forecastId ? "updated" : "calculated"} successfully`,
+      message: `Account forecasting ${forecastId ? "updated" : "calculated"} successfully`,
       data: {
         endBalance: parseFloat(futureValue.toFixed(2)),
         startingAmount,
@@ -269,6 +267,7 @@ export class AccountForcastingService {
     };
   }
   
+
 
   async findAllAccountForcasting(user_id: number) {
     try {
