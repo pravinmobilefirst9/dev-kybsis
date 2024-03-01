@@ -52,11 +52,10 @@ export class InvestmentDetailsDto {
   @IsEnum(CompoundingFrequency, { message: 'Compounding frequency must be one of: daily, weekly, monthly, quarterly, semi-annually, annually, continuously.' })
   compoundingFrequency: string;
 
-  @IsArray({ message: 'Account IDs must be provided as an array.' })
-  @ArrayNotEmpty({ message: 'Account IDs array must not be empty.' })
-  @ArrayMinSize(1, { message: 'At least one account ID must be provided.' })
-  @IsNumber({}, { each: true, message: 'Each account ID must be a number.' })
-  accountIds: number[];
+  @IsNotEmpty({ message: 'Annual interest rate is required and must be a number greater than 0.' })
+  @IsNumber({}, { message: 'Annual interest rate must be a number.' })
+  @IsPositive({ message: 'Annual interest rate must be a positive number.' })
+  accountId: number;
 
   @IsNotEmpty({ message: 'Item Id is required and must be a number greater than 0.' })
   @IsNumber({}, { message: 'Item Id must be a number.' })

@@ -34,7 +34,7 @@ export class AccountForcastingService {
       contributionFrequency,
       principal,
       years,
-      accountIds,
+      accountId,
       item_id
   }: InvestmentDetailsDto, user_id : number, forecastId ?: number) {
 
@@ -102,7 +102,7 @@ export class AccountForcastingService {
     returnRate : annualInterestRate,
     startingAmount : principal,
     compound : compoundingFrequency,
-    accountIds,
+    accountId,
     endBalance: parseFloat(totalFV.toFixed(2)),
     totalInterest: parseFloat(totalInterest.toFixed(2)),
     totalContributions: parseFloat((totalContributions - principal).toFixed(2)),

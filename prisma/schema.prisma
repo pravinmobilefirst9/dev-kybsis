@@ -587,7 +587,7 @@ model Forecast {
   investmentLength       Int
   additionalContribution Float
   contributionFrequency  String   @db.VarChar(255)
-  accountIds             Int[]
+  accountId              Int
   endBalance             Float
   totalContributions     Float
   totalInterest          Float
