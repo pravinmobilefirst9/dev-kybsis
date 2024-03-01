@@ -157,7 +157,7 @@ export class AccountForcastingService {
           returnRate: true,
           startingAmount: true,
           compound: true,
-          accountIds: true,
+          accountId: true,
           endBalance: true,
           totalContributions: true,
           totalInterest: true,
