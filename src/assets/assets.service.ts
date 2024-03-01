@@ -236,6 +236,13 @@ export class AssetsService {
               }
             }
           },
+          Institution : {
+            select : {
+              ins_name : true,
+              ins_id : true
+            }
+          },
+          account_id : true
         },
         where : {
           user_id : userId
@@ -433,7 +440,7 @@ export class AssetsService {
   }
 
   async addUserAssetsDetails(
-    { asset_type_id, asset_sub_id, fieldData, account_id }: CreateAssetDto,
+    { asset_type_id, asset_sub_id, fieldData, account_id, item_id}: CreateAssetDto,
     user_id: number,
   ) {
     try {
@@ -475,7 +482,8 @@ export class AssetsService {
           asset_type_id,
           asset_subtype_id : asset_sub_id,
           user_id,
-          account_id
+          account_id,
+          ins_id : item_id
         }
       })
 

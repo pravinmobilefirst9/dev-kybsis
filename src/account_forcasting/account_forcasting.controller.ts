@@ -3,7 +3,7 @@ import { AccountForcastingService } from './account_forcasting.service';
 import { CreateAccountForcastingDto } from './dto/create-account_forcasting.dto';
 import { UpdateAccountForcastingDto } from './dto/update-account_forcasting.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
-import { InvestmentQueryDto } from './dto/forecast-account-v1.dto';
+import { InvestmentDetailsDto } from './dto/forecast-account-v1.dto';
 
 @Controller('account_forcasting')
 export class AccountForcastingController {
@@ -11,7 +11,7 @@ export class AccountForcastingController {
   @Post("create_forcast/v1")
   @UseGuards(AuthGuard)
   async calculateFutureValue(
-    @Body() createAccountForcastingDto: InvestmentQueryDto,
+    @Body() createAccountForcastingDto: InvestmentDetailsDto,
     @Req() request: any,
     ) {
     const {user_id} = request.auth;
@@ -21,7 +21,7 @@ export class AccountForcastingController {
   @Put("create_forcast/v1/:forecastId")
   @UseGuards(AuthGuard)
   async updateFutureValueData(
-    @Body() createAccountForcastingDto: InvestmentQueryDto,
+    @Body() createAccountForcastingDto: InvestmentDetailsDto,
     @Req() request: any,
     @Param('forecastId', ParseIntPipe) forecastId : number
     ) {

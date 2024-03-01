@@ -95,6 +95,8 @@ model PlaidItem {
   investmentAccounts   InvestmentAccounts[]
   TransactionsAccounts Account[]
   Forecasts Forecast[]
+  ManualAssets UserManualAssets[]
+  ManualInvestment ManualInvestments[]
 }
 
 model PlaidInstitutionImportHistory {
@@ -300,11 +302,13 @@ model ManualInvestments {
   id          Int      @id @default(autoincrement())
   data        Json[]
   account_id  Int
+  ins_id      Int
   user_id     Int
   category_id Int
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
+  Institution   PlaidItem         @relation(fields: [ins_id], references: [id])
   user               User                 @relation(fields: [user_id], references: [id])
   investmentCategory InvestmentCategories @relation(fields: [category_id], references: [id])
 }
@@ -399,9 +403,11 @@ model UserManualAssets {
   asset_type_id    Int
   asset_subtype_id Int
   account_id       Int
+  ins_id           Int
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
 
+  Institution   PlaidItem         @relation(fields: [ins_id], references: [id])
   AssetType     AssetType           @relation(fields: [asset_type_id], references: [id])
   AssetSubType  AssetSubType        @relation(fields: [asset_subtype_id], references: [id])
   User          User                @relation(fields: [user_id], references: [id])
@@ -581,7 +587,6 @@ model Forecast {
   investmentLength       Int
   additionalContribution Float
   contributionFrequency  String   @db.VarChar(255)
-  contributionTiming     String   @db.VarChar(255)
   accountIds             Int[]
   endBalance             Float
   totalContributions     Float

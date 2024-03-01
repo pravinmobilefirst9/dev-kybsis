@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsArray, IsInt, IsNotEmpty, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsInt, IsNotEmpty, IsNumber, IsPositive, IsString, ValidateNested } from "class-validator";
 
 class AssetFieldDTO {
     @IsInt({ message: 'Field ID must be an integer' })
@@ -20,6 +20,11 @@ export class CreateAssetDto {
     @IsInt({message : "Account id should be number"})
     @IsNotEmpty({message : "Account id should not be empty"})
     account_id : number
+
+    @IsNotEmpty({ message: 'Item Id is required and must be a number greater than 0.' })
+    @IsNumber({}, { message: 'Item Id must be a number.' })
+    @IsPositive({ message: 'Item Id must be a positive number.' })
+    item_id: number;
     
     @IsInt({message : "Asset Subtype id should be number"})
     @IsNotEmpty({message : "Asset Subtype id should not be empty"})

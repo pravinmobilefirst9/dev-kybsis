@@ -1,54 +1,66 @@
-import { IsNotEmpty, IsNumber, IsIn, IsEnum, ArrayMinSize, IsArray } from 'class-validator';
-import { Compound } from '../account_forcasting.service';
+// investment-details.dto.ts
 
-enum ContributionFrequency {
-  Monthly = 'monthly',
-  Annually = 'annually',
+import { IsNotEmpty, IsNumber, IsPositive, IsString, IsEnum, IsArray, ArrayNotEmpty, ArrayMinSize } from 'class-validator';
+
+enum CompoundingFrequency {
+  annually = 'annually',
+  semiannually = 'semiannually',
+  quarterly = 'quarterly',
+  monthly = 'monthly',
+  biweekly = 'biweekly',
+  weekly = 'weekly',
+  daily = 'daily',
+  continuously = 'continuously'
 }
 
-enum ContributionTiming {
-  Beginning = 'beginning',
-  End = 'end',
+enum ContributionsPerYear {
+  endOfYear = 'endOfYear',
+  endOfMonth = 'endOfMonth',
+  startOfYear = 'startOfYear',
+  startOfMonth = 'startOfMonth'
 }
 
-class InvestmentQueryDto {
-  @IsNotEmpty()
-  @IsEnum(Compound, { message: 'Compound frequency must be one of: annually, semiannually, quarterly, monthly, semimonthly, biweekly, weekly, daily, continuously' })
-  compound: Compound;
 
-  @IsNotEmpty({ message: 'Starting amount must be provided' })
-  @IsNumber({},{ message: 'Starting amount must be a number' })
-  startingAmount: number;
+export class InvestmentDetailsDto {
+  @IsNotEmpty({ message: 'Principal amount is required and must be a number greater than 0.' })
+  @IsNumber({}, { message: 'Principal amount must be a number.' })
+  @IsPositive({ message: 'Principal amount must be a positive number.' })
+  principal: number;
 
-  @IsNotEmpty({ message: 'Return rate must be provided' })
-  @IsNumber({},{ message: 'Return rate must be a number' })
-  returnRate: number;
+  @IsNotEmpty({ message: 'Annual interest rate is required and must be a number greater than 0.' })
+  @IsNumber({}, { message: 'Annual interest rate must be a number.' })
+  @IsPositive({ message: 'Annual interest rate must be a positive number.' })
+  annualInterestRate: number;
 
-  @IsNotEmpty({ message: 'Investment length must be provided' })
-  @IsNumber({},{ message: 'Investment length must be a number' })
-  investmentLength: number;
+  @IsNotEmpty({ message: 'Number of years is required and must be a number greater than 0.' })
+  @IsNumber({}, { message: 'Number of years must be a number.' })
+  @IsPositive({ message: 'Number of years must be a positive number.' })
+  years: number;
 
-  @IsNotEmpty({ message: 'Additional contribution must be provided' })
-  @IsNumber({},{ message: 'Additional contribution must be a number' })
-  additionalContribution: number;
+  @IsNotEmpty({ message: 'Contribution amount is required and must be a number greater than 0.' })
+  @IsNumber({}, { message: 'Contribution amount must be a number.' })
+  @IsPositive({ message: 'Contribution amount must be a positive number.' })
+  contribution: number;
 
-  @IsNotEmpty({ message: 'Contribution frequency must be provided' })
-  @IsIn(Object.values(ContributionFrequency), { message: 'Contribution frequency must be either "monthly" or "annually"' })
-  contributionFrequency: ContributionFrequency;
+  @IsNotEmpty({ message: 'Contribution frequency is required and must be one of: endOfYear, endOfMonth, startOfYear, startOfMonth.' })
+  @IsString({ message: 'Contribution frequency must be a string.' })
+  @IsEnum(ContributionsPerYear, { message: 'Contribution frequency must be one of: endOfYear, endOfMonth, startOfYear, startOfMonth.' })
+  contributionFrequency: string;
 
-  @IsNotEmpty({ message: 'Contribution timing must be provided' })
-  @IsIn(Object.values(ContributionTiming), { message: 'Contribution timing must be either "beginning" or "end"' })
-  contributionTiming: ContributionTiming;
+  @IsNotEmpty({ message: 'Compounding frequency is required and must be one of: daily, weekly, monthly, quarterly, semi-annually, annually, continuously.' })
+  @IsString({ message: 'Compounding frequency must be a string.' })
+  @IsEnum(CompoundingFrequency, { message: 'Compounding frequency must be one of: daily, weekly, monthly, quarterly, semi-annually, annually, continuously.' })
+  compoundingFrequency: string;
 
-  @IsArray({ message: 'Account Ids must be an array' })
-  @ArrayMinSize(1, { message: 'Account Ids must not be empty' })
-  @IsNotEmpty({ each: true, message: 'Account Ids elements must not be empty' })
-  @IsNumber({}, { each: true, message: 'Account Ids elements must be numbers' })
-  readonly accountIds: number[];
+  @IsArray({ message: 'Account IDs must be provided as an array.' })
+  @ArrayNotEmpty({ message: 'Account IDs array must not be empty.' })
+  @ArrayMinSize(1, { message: 'At least one account ID must be provided.' })
+  @IsNumber({}, { each: true, message: 'Each account ID must be a number.' })
+  accountIds: number[];
 
-  @IsNotEmpty({ message: 'Item id must be provided' })
-  @IsNumber({},{ message: 'Item id must be a number' })
+  @IsNotEmpty({ message: 'Item Id is required and must be a number greater than 0.' })
+  @IsNumber({}, { message: 'Item Id must be a number.' })
+  @IsPositive({ message: 'Item Id must be a positive number.' })
   item_id: number;
-}
 
-export { InvestmentQueryDto };
+}

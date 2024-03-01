@@ -661,7 +661,8 @@ export class InvestmentService {
             data : formFields,
             category_id : categoryId,
             user_id,
-            account_id : data['accountId']
+            account_id : data['accountId'],
+            ins_id : data['item_id']
           }
         })
       }
