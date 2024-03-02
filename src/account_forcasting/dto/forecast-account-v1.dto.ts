@@ -29,7 +29,6 @@ export class InvestmentDetailsDto {
 
   @IsNotEmpty({ message: 'Annual interest rate is required and must be a number greater than 0.' })
   @IsNumber({}, { message: 'Annual interest rate must be a number.' })
-  @IsPositive({ message: 'Annual interest rate must be a positive number.' })
   annualInterestRate: number;
 
   @IsNotEmpty({ message: 'Number of years is required and must be a number greater than 0.' })
