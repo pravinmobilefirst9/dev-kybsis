@@ -616,7 +616,7 @@ async isFutureDate(dateString : string) {
     const {manual} = data
     
     const where : Prisma.PlaidItemWhereInput = 
-    !manual 
+    manual === undefined || manual === null
     ? 
     {user_id}
     :
