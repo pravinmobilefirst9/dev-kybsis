@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { User } from '@prisma/client';
 import * as nodeMailer from 'nodemailer';
 import { UserCreatedEventPayload } from './types/user-created.event';
 import { LiabilitiesService } from 'src/liabilities/liabilities.service';
