@@ -3,58 +3,21 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { User } from '@prisma/client';
 import * as nodeMailer from 'nodemailer';
 import { UserCreatedEventPayload } from './types/user-created.event';
-import { UserSubscriptionInvoicePayload } from './types/user-invoice-paid.event';
-import { UserSubscriptionDeleted } from './types/user-subscription-deleted.event';
+import { LiabilitiesService } from 'src/liabilities/liabilities.service';
+import { AssetsService } from 'src/assets/assets.service';
+import { PlaidTartanService } from 'src/plaid-tartan/plaid-tartan.service';
+import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Injectable()
 export class EventEmittorsService {
+  constructor(
+    private liabilitiesService: LiabilitiesService,
+    private assetsService: AssetsService,
+    private plaidTartenService: PlaidTartanService,
+    private firebaseServices : FirebaseService
+  ){}
 
-  @OnEvent("subscription.invoice.paid")
-  async onSubscriptionGet({user, subscription} : UserSubscriptionInvoicePayload){
-    await this.sendEmail(
-      user,
-      'Your Kybsis App Subscription Purchase Confirmation 🚀',
-      `
-      Dear sir/madam,
-
-      Thank you for choosing Kybsis to streamline your productivity and empower your workflow! We're excited to confirm your recent subscription purchase. Below are the details of your subscription:
-      
-      Subscription Plan: ${user.user_role}
-      Subscription Duration: ${await this.formatDate(new Date(subscription.currentPeriodStart)) } - ${await this.formatDate(new Date(subscription.currentPeriodEnd)) }
-      Your subscription ID : ${subscription.id}
-      Price: ${subscription.amount / 100} $
-      
-      You can enjoy uninterrupted access to all premium features and content during this period.
-      
-      To view and manage your subscription details, including invoices, payment history, and renewal options, please visit your account settings here.
-      
-      If you have any questions or need assistance, feel free to reach out to our support team at support@kybsis.com. We're here to help!
-      
-      Thank you for being a valued Kybsis user. We look forward to serving you and providing you with an exceptional experience.
-      
-      Best regards,
-      Kybsis Team
-      
-      Invoice Link: ${subscription.invoiceUrl}
-      `
-    )
-  }
-
-  @OnEvent("user.subscription.deleted")
-  async onUserSubscriptionEnded({user} : UserSubscriptionDeleted){
-    await this.sendEmail(
-      user,
-      "Your Kybsis App Subscription Has Ended",
-      `
-      We hope this message finds you well. We wanted to remind you that your ${user.user_role.toLowerCase()} subscription to Kybsis has ended.
-
-      Best regards,
-      Kybsis Team
-      `
-    )
-  }
-
-  @OnEvent("user.created")
+  @OnEvent("user.created",{async : true})
   async onUserRegistered({otp, user} : UserCreatedEventPayload){
 
     await this.sendEmail(
@@ -77,6 +40,17 @@ export class EventEmittorsService {
       otp,
     );
   }
+
+
+  @OnEvent("plaid.registered",{async : true})
+  async onPlaidAccountRegistered(user_id : number){
+    console.log({user_id});
+    await this.plaidTartenService.syncHistoricalTransactions(user_id)
+    await this.liabilitiesService.importLiabilities(user_id)
+    await this.assetsService.createAssetReportToken(user_id)
+    await this.assetsService.importAssetReports(user_id)
+  }
+
 
 
 
@@ -110,6 +84,14 @@ export class EventEmittorsService {
     // emailOptions.text += ' Your Notification Code is : ' + otp;
 
     await transporter.sendMail(emailOptions);
+
+    if (user.email !== undefined && user.email !== null) {
+      // send Push Notification
+      const welcomeTitle = 'Welcome to Kybsis!';
+      const welcomeBody = 'Thank you for registering. OTP has been sent successfully to your Email!';
+      const deviceToken = user.device_token
+      await this.firebaseServices.sendPushNotification(deviceToken, welcomeTitle, welcomeBody);
+    }
   }
 
   
