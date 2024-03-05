@@ -62,40 +62,28 @@ export class UsersService {
           device_token: createUserDto.device_token,
         },
       });
-
-      const customerData = await this.stripeService.createStripeCustomer(user);
-      const customerId = customerData['data']['id'];
-      await this.prisma.user.update({
-        data : {
-          stripe_customer_id : customerId
-        },
-        where : {
-          id : user.id
-        }
-      })
-
       
-      // this.eventEmitter.emit("user.created", new UserCreatedEventPayload(user, otp));
+      this.eventEmitter.emit("user.created", new UserCreatedEventPayload(user, otp));
 
-      await this.sendEmail(
-        user,
-        'Welcome and verify your email.',
-        `Thank you for joining Kybsis! We're excited to have you on board.
+      // await this.sendEmail(
+      //   user,
+      //   'Welcome and verify your email.',
+      //   `Thank you for joining Kybsis! We're excited to have you on board.
         
-        To complete your signup, please verify your email address by entering the following code in the app:
+      //   To complete your signup, please verify your email address by entering the following code in the app:
         
-        Verification Code: ${otp}
+      //   Verification Code: ${otp}
         
-        This code will expire in 10 minutes.
+      //   This code will expire in 10 minutes.
         
-        If you didn't request this code, please ignore this email.
+      //   If you didn't request this code, please ignore this email.
         
-        We're looking forward to seeing you in the app!
+      //   We're looking forward to seeing you in the app!
         
-        Sincerely,
-        The Kybsis Team`,
-        otp,
-      );
+      //   Sincerely,
+      //   The Kybsis Team`,
+      //   otp,
+      // );
       
       delete user.password;
       delete user.user_otp;
