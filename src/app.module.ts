@@ -19,12 +19,18 @@ import { StripeModule } from './stripe/stripe.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { EventEmittorsModule } from './event-emittors/event-emittors.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { FirebaseModule } from './firebase/firebase.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { ConfigModule, } from "@nestjs/config"
 
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
-    UsersModule, PlaidTartanModule, TransactionModule, InvestmentModule, TransactionCategoriesModule, AssetsModule, LiabilitiesModule, PaymentModule, SubscriptionModule, BudgetModule, AccountForcastingModule, DashboardModule, StripeModule, EventEmittorsModule],
+    ConfigModule.forRoot(
+      {isGlobal: true,}
+    ),
+    UsersModule, PlaidTartanModule, TransactionModule, InvestmentModule, TransactionCategoriesModule, AssetsModule, LiabilitiesModule, PaymentModule, SubscriptionModule, BudgetModule, AccountForcastingModule, DashboardModule, StripeModule, EventEmittorsModule, FirebaseModule, NotificationsModule],
   controllers: [AppController],
   providers: [AppService, PrismaService, AuthGuard,],
 })

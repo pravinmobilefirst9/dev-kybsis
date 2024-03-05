@@ -4,6 +4,7 @@ import { UsersController } from './users.controller';
 import { PrismaService } from 'src/prisma.service';
 import { JwtModule } from '@nestjs/jwt';
 import { StripeService } from 'src/stripe/stripe.service';
+import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Module({
   imports : [
@@ -16,7 +17,7 @@ import { StripeService } from 'src/stripe/stripe.service';
     }),
   ],
   controllers: [UsersController],
-  providers: [UsersService, PrismaService,StripeService],
+  providers: [UsersService, PrismaService, StripeService, FirebaseService ],
   exports : [UsersService]
 })
 export class UsersModule {}

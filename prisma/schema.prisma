@@ -148,6 +148,7 @@ model User {
   bankTransactions              Transaction[]
   liabilities                   liabilities[]
   subscriptions                 Subscription[]
+  notification     Notification[]
 }
 
 model UserDetails {
@@ -691,4 +692,26 @@ model Institution {
   updatedAt      DateTime @updatedAt
 
   @@unique([institution_id])
+}
+
+model Feature {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  free        Boolean @default(false)
+  basic       Boolean @default(false)
+  premium     Boolean @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  userId      Int      // Reference to your User model
+  title       String
+  body        String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id])
 }

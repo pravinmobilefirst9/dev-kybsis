@@ -366,6 +366,24 @@ const widgets = [
   {name : "Manual Assets", default : false, role : "PREMIUM"},
 ]
 
+const features = [
+  {name: 'Add/Remove Widgets on homepage',  free: false,  basic: true,  premium: true,},
+  {name: 'Profile setting', free: true, basic: true, premium: true},
+//{ name: 'Can add more than two plaid banks', free: false, basic: true, premium: true },
+  { name: 'Can add manual Bank and accounts', free: true, basic: true, premium: true },
+  { name: 'Can fetch plaid Transactions', free: false, basic: true, premium: true },
+  { name: 'Can fetch plaid Investments', free: false, basic: true, premium: true },
+  { name: 'Can add manual Investments', free: false, basic: false, premium: true },
+  { name: 'Can fetch plaid Assets', free: false, basic: true, premium: true },
+  { name: 'Can add manual Assets', free: false, basic: false, premium: true },
+  { name: 'Can calculate Net worth', free: false, basic: true, premium: true },
+  { name: 'Can create budget', free: false, basic: false, premium: true },
+  { name: 'Household Collaboration', free: false, basic: false, premium: true },
+  { name: 'Can calculate Account forecasting', free: false, basic: true, premium: true },
+  { name: 'Client Support', free: false, basic: true, premium: true },
+  { name: 'Custom Notification', free: false, basic: true, premium: true },
+]
+
 const tableNames = ['Subscriptions', 'AssetFields', 'AssetSubType', 'AssetType', 'AssetFields', 'InvestmentCategories','BudgetCategories', 'Widgets'];
 
 
@@ -549,10 +567,14 @@ async function main() {
     }))
   })
 
-
+  for (const data of features) {
+    const feature = await prisma.feature.upsert({
+      where: { name: data.name },
+      update: {},
+      create: data,
+    })   
+  }
 }
-
-
 
 main()
   .catch((e) => {
