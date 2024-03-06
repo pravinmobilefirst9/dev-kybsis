@@ -8,12 +8,14 @@ import { CreateTransactionDto } from './dto/create-manual-transaction.dto';
 import { Prisma, Transaction } from '@prisma/client';
 import { FetchUserBanks } from './dto/fetch-user-banks.dto';
 import { AddBankDTO } from './dto/add-manual-bank.dto';
+import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Injectable()
 export class PlaidTartanService {
   constructor(
     private readonly prisma: PrismaService,
     private transactionService: TransactionService,
+    private readonly firebaseServices:FirebaseService
   ) { }
 
   async fetchAllManualAccounts(user_id: number, item_id : number,id?: number) {
@@ -130,6 +132,21 @@ export class PlaidTartanService {
             ins_name: createPlaidTartanDto.institution_name
           },
         });
+
+        try {
+          const token = await this.prisma.user.findUnique({
+            where: { id: user_id },
+            select: { device_token: true }
+          });
+
+          const welcomeTitle = `${createPlaidTartanDto.institution_name} Bank added successfully!`;
+          const welcomeBody = `You can now manage Investment, Assets, Trasaction.`;
+          await this.firebaseServices.sendPushNotification(token.device_token, welcomeTitle, welcomeBody);
+          console.log(token.device_token);
+          
+        } catch (e) {
+        }
+        
       }
 
       await this.syncHistoricalTransactions(user_id)

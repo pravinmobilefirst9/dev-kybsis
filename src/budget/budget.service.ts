@@ -10,12 +10,14 @@ import { UsersService } from 'src/users/users.service';
 import { Transaction } from 'src/transaction/entities/transaction.entity';
 import { CollaborationStatus, InvitationStatusUpdateDTO } from './dto/set-invitation-status.dto';
 import { CollaboratrTransactions } from './dto/collaborator-transactions.dto';
+import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Injectable()
 export class BudgetService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly userService: UsersService,
+    private readonly firebaseServices:FirebaseService
 
   ) { }
 
@@ -186,6 +188,20 @@ export class BudgetService {
                 user_id: userId
               }
             });
+
+            try {
+              const token = await this.prisma.user.findUnique({
+                where: { id: userId },
+                select: { device_token: true }
+              });
+    
+              const welcomeTitle = `Collaborator Added successfully!`;
+              const welcomeBody = `You can view collaborative budget.`;
+              await this.firebaseServices.sendPushNotification(token.device_token, welcomeTitle, welcomeBody);
+              console.log(token.device_token);
+              
+            } catch (e) {
+            }
           }
         }
       }));

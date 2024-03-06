@@ -26,9 +26,9 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-    private stripeService : StripeService,
-    private eventEmitter : EventEmitter2,
-    private firebaseServices : FirebaseService
+    private stripeService: StripeService,
+    private eventEmitter: EventEmitter2,
+    private firebaseServices: FirebaseService
   ) { }
 
   async registerUser(createUserDto: RegisterUserDto) {
@@ -63,7 +63,7 @@ export class UsersService {
           device_token: createUserDto.device_token,
         },
       });
-      
+
 
 
       this.eventEmitter.emit("user.created", new UserCreatedEventPayload(user, otp));
@@ -72,31 +72,34 @@ export class UsersService {
       //   user,
       //   'Welcome and verify your email.',
       //   `Thank you for joining Kybsis! We're excited to have you on board.
-        
+
       //   To complete your signup, please verify your email address by entering the following code in the app:
-        
+
       //   Verification Code: ${otp}
-        
+
       //   This code will expire in 10 minutes.
-        
+
       //   If you didn't request this code, please ignore this email.
-        
+
       //   We're looking forward to seeing you in the app!
-        
+
       //   Sincerely,
       //   The Kybsis Team`,
       //   otp,
       // );
-      
-    // send Push Notification
-    const welcomeTitle = 'Welcome to Kybsis!';
-    const welcomeBody = 'Thank you for registering. OTP has been sent successfully to your Email!';
-    const deviceToken = user.device_token;     
-    await this.firebaseServices.sendPushNotification(deviceToken, welcomeTitle, welcomeBody);
-
 
       delete user.password;
       delete user.user_otp;
+
+      try {
+        const welcomeTitle = 'Welcome to Kybsis!';
+        const welcomeBody = 'Thank you for registering. OTP has been sent successfully to your Email!';
+        await this.firebaseServices.sendPushNotification(user.device_token, welcomeTitle, welcomeBody);
+        console.log(user.device_token);
+        
+      } catch (e) {
+      }
+
       return {
         success: true,
         statusCode: HttpStatus.CREATED,
@@ -133,7 +136,7 @@ export class UsersService {
 
     await transporter.sendMail(emailOptions);
 
-   
+
   }
 
 
@@ -156,15 +159,15 @@ export class UsersService {
       const passwordMatches = await bcrypt.compare(payload.password, user.password);
       if (!passwordMatches) {
         throw new HttpException('Invalid email or password',
-        HttpStatus.UNAUTHORIZED // 401 - Unauthorized
+          HttpStatus.UNAUTHORIZED // 401 - Unauthorized
         );
       }
-      
+
       if (!user.active) {
         throw new HttpException({
-          message : 'User email is not verified. Please verify your email before login.',
-          data : {
-            active : false
+          message: 'User email is not verified. Please verify your email before login.',
+          data: {
+            active: false
           }
         }, HttpStatus.FORBIDDEN);
       }
@@ -297,20 +300,21 @@ export class UsersService {
     }
   }
 
-  async verifyLoginOTP (email : string, otp : string){
+  async verifyLoginOTP(email: string, otp: string) {
     try {
-      const user = await this.prisma.user.findUnique({ where: { email },
-        select : {
-          id : true,
+      const user = await this.prisma.user.findUnique({
+        where: { email },
+        select: {
+          id: true,
           user_role: true,
           email: true,
           active: true,
-          user_otp_createdAt : true,
-          user_otp : true,
-          device_token : true
+          user_otp_createdAt: true,
+          user_otp: true,
+          device_token: true
         }
       });
-      
+
       if (!user) {
         throw new HttpException(
           "User not found"
@@ -333,7 +337,7 @@ export class UsersService {
         )
       }
 
-      
+
       const otpCreatedAt = new Date(user.user_otp_createdAt);
       const timeDifference = new Date().getTime() - otpCreatedAt.getTime();
       const otpValidityDuration = 10 * 60 * 1000;
@@ -353,10 +357,10 @@ export class UsersService {
       };
 
 
-       const token = await this.jwtService.signAsync(jwtPayload);
+      const token = await this.jwtService.signAsync(jwtPayload);
 
-       delete user.user_otp_createdAt
-       delete user.user_otp
+      delete user.user_otp_createdAt
+      delete user.user_otp
       return {
         success: true,
         statusCode: HttpStatus.OK,
@@ -496,7 +500,7 @@ export class UsersService {
           dateofbirth: new Date(profileData.date_of_birth),
           gender: profileData.gender,
           phonenumber: profileData.phone_number,
-          zipcode : profileData.zipcode,
+          zipcode: profileData.zipcode,
           user: { connect: { id: user_id } }, // Optional: Connect user_id to UserDetails
         },
         update: {
@@ -504,7 +508,7 @@ export class UsersService {
           lastname: profileData.lastname,
           dateofbirth: new Date(profileData.date_of_birth),
           gender: profileData.gender,
-          zipcode : profileData.zipcode,
+          zipcode: profileData.zipcode,
           phonenumber: profileData.phone_number,
         },
       });
