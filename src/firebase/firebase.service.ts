@@ -7,7 +7,7 @@ export class FirebaseService {
   private readonly firebaseApp: admin.app.App;
 
   constructor(private readonly configService: ConfigService) {
-
+  console.log(process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'))
     if (!admin.apps.length) { // Check if any Firebase apps have been initialized
       this.firebaseApp = admin.initializeApp({
         credential: admin.credential.cert({
