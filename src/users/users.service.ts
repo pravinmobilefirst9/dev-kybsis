@@ -15,7 +15,6 @@ import { ForgetPassword } from './dto/forget-password.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ProfileAddDto } from './dto/profile-add.dto';
 import { UpdatePasswordDTO } from './dto/update-password.dto';
-import { StripeService } from 'src/stripe/stripe.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserCreatedEventPayload } from 'src/event-emittors/types/user-created.event';
 import { FirebaseService } from 'src/firebase/firebase.service';
@@ -26,7 +25,6 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-    private stripeService: StripeService,
     private eventEmitter: EventEmitter2,
     private firebaseServices: FirebaseService
   ) { }
