@@ -6,6 +6,8 @@ import { LiabilitiesService } from 'src/liabilities/liabilities.service';
 import { AssetsService } from 'src/assets/assets.service';
 import { PlaidTartanService } from 'src/plaid-tartan/plaid-tartan.service';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import { InvestmentService } from 'src/investment/investment.service';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class EventEmittorsService {
@@ -13,7 +15,9 @@ export class EventEmittorsService {
     private liabilitiesService: LiabilitiesService,
     private assetsService: AssetsService,
     private plaidTartenService: PlaidTartanService,
-    private firebaseServices : FirebaseService
+    private investmentService: InvestmentService,
+    private firebaseServices : FirebaseService,
+    private prismaService : PrismaService
   ){}
 
   @OnEvent("user.created",{async : true})
@@ -43,11 +47,68 @@ export class EventEmittorsService {
 
   @OnEvent("plaid.registered",{async : true})
   async onPlaidAccountRegistered(user_id : number){
-    console.log({user_id});
     await this.plaidTartenService.syncHistoricalTransactions(user_id)
     await this.liabilitiesService.importLiabilities(user_id)
     await this.assetsService.createAssetReportToken(user_id)
     await this.assetsService.importAssetReports(user_id)
+    await this.investmentService.syncInvestmentHoldingDetails(user_id)
+  }
+
+  @OnEvent("manualInvestment.updated", {async : true})
+  async manualInvestmentUpdated(user_id : number){
+    const allManualInvestments = await this.prismaService.manualInvestments.findMany({
+      where : {
+        user_id
+      },
+      select : {
+        id : true,
+        investmentCategory : {
+          select : {
+            id : true,
+            name : true,
+            fields : true
+          }
+        },
+        account_id : true,
+        Institution : {
+          select : {
+            ins_id : true,
+            ins_name : true
+          }
+        },
+        data : true,
+        created_at : true
+      }
+    })
+    
+    const {total_investment} = await this.investmentService.totalOfManualInvestment(allManualInvestments);
+
+    // Create a date of first day of month to have consistency
+    const now = new Date();
+    const firstDayOfMonth = await this.investmentService.setToFirstDayOfMonth(new Date(now))
+    const investmentTotal = await this.prismaService.totalInvestments.findFirst({
+      where: {
+        userId: user_id,
+        monthYear: firstDayOfMonth
+      }
+    })
+
+    if (investmentTotal) {
+      await this.prismaService.totalInvestments.updateMany({
+        where: { userId: user_id, monthYear: firstDayOfMonth },
+        data: { totalManualInvestment : total_investment }
+      })
+    }
+    else {
+      await this.prismaService.totalInvestments.create({
+        data: {
+          userId: user_id,
+          totalPlaidInvestment: 0,
+          totalManualInvestment : total_investment,
+          monthYear: firstDayOfMonth,
+        }
+      })
+    }
   }
 
 

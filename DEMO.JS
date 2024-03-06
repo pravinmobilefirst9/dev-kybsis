@@ -64,5 +64,10 @@ function calculateInvestmentDetails(principal, annualInterestRate, years, contri
 }
 
 // Example usage:
-const investmentDetails = calculateInvestmentDetails(10000, 0.08, 10, 5000, 'endOfYear', 'annually');
-console.log(investmentDetails);
+// const investmentDetails = calculateInvestmentDetails(1000, -0.03, 2, 100, 'startOfMonth', 'annually');
+// console.log(investmentDetails);
+
+
+let currentMonth = new Date();
+currentMonth = currentMonth.setDate(1)
+console.log(currentMonth.getMonth());

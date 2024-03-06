@@ -4,8 +4,8 @@ import { UpdateAssetDto } from './dto/update-asset.dto';
 import { PrismaService } from 'src/prisma.service';
 
 import { TransactionService } from 'src/transaction/transaction.service';
-import { PlaidAssetItem, PlaidItem, UserManualAssets } from '@prisma/client';
 import { AssetFormDetails } from './dto/asset-form.dto';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class AssetsService {
@@ -27,26 +27,27 @@ export class AssetsService {
       }
       for (const plaidItem of plaidItems) {
         try {
-          const response = await this.transactionService.createAssetsReport(
-            plaidItem.access_token,
-            user_id,
-          );
-          const { asset_report_token } = response.data;
-
           const isExists = await this.prismaClient.plaidAssetItem.findUnique({
             where: {
               plaid_item_id: plaidItem.id,
             },
           });
           if (!isExists) {
-            await this.prismaClient.plaidAssetItem.create({
-              data: {
-                asset_report_token,
-                plaid_item_id: plaidItem.id,
-                user_id,
-              },
-            });
+            const response = await this.transactionService.createAssetsReport(
+              plaidItem.access_token,
+              user_id,
+            );
+            const { asset_report_token } = response.data;
+  
+              await this.prismaClient.plaidAssetItem.create({
+                data: {
+                  asset_report_token,
+                  plaid_item_id: plaidItem.id,
+                  user_id,
+                },
+              });
           }
+         
           // else{
           //   await this.prismaClient.plaidAssetItem.update({
           //     where : {
@@ -88,103 +89,155 @@ export class AssetsService {
         }
       });
 
+      const promises = plaidAssetItems.map(async (assetItem) => {
+        const response = await this.transactionService.getAssetsReport(
+          assetItem.asset_report_token,
+        );
 
-      plaidAssetItems.map(async (assetItem) => {
-        try {
-          const response = await this.transactionService.getAssetsReport(
-            assetItem.asset_report_token,
-          );
-      
-          let data = response.data;
-          // Add the data into Asset Account table
-          data.report.items.map((reportItem: any) => {
-            reportItem.accounts.map(async (account: any) => {
-              let isAccountExists =
-                await this.prismaClient.assetAccount.findUnique({
-                  where: {
-                    account_id: account.account_id,
-                  },
-                });
-              let dataToAdd = {
-                balance_available: account.balances.available,
-                balance_limit: account.balances.limit,
-                balance_current: account.balances.current,
-                account_id: account.account_id,
-                days_available: account.days_available,
-                mask: account.mask,
-                name: account.name,
-                subtype: account.subtype,
-                type: account.type,
-                user_id: user_id,
-                plaid_asset_item_id : assetItem.id
-              };
+        return {data : response.data, assetItem};
+      })
 
-              if (isAccountExists) {
-                await this.prismaClient.assetAccount.update({
-                  where: { id: isAccountExists.id },
-                  data: dataToAdd,
-                });
-              } else {
-                await this.prismaClient.assetAccount.create({
-                  data: dataToAdd,
-                });
-              }
-              // Save Historical Balances
 
-              const filterHistoricalBalances = account.historical_balances.map(
-                (balance: any) => {
-                  return {
-                    account_id: account.account_id,
-                    balance_amount: balance.current,
-                    balance_date: new Date(balance.date),
-                  };
+      let resultArr = await Promise.all(promises);
+      let total = 0;
+      resultArr.map(async ({assetItem, data}) => {
+        data.report.items.map((reportItem: any) => {  
+          // total all balances of assets
+          total += reportItem.accounts.reduce((acc, account) => acc + account.balances.current, 0);  
+                  
+          reportItem.accounts.map(async (account: any) => {
+            let isAccountExists =
+              await this.prismaClient.assetAccount.findUnique({
+                where: {
+                  account_id: account.account_id,
                 },
-              );
-
-              await this.prismaClient.assetHistoricalBalance.createMany({
-                skipDuplicates: true,
-                data: filterHistoricalBalances,
               });
+            let dataToAdd = {
+              balance_available: account.balances.available,
+              balance_limit: account.balances.limit,
+              balance_current: account.balances.current,
+              account_id: account.account_id,
+              days_available: account.days_available,
+              mask: account.mask,
+              name: account.name,
+              subtype: account.subtype,
+              type: account.type,
+              user_id: user_id,
+              plaid_asset_item_id : assetItem.id
+            };
 
-              // Save Assets Transactions
-
-              // const filterAssetsTransactions = account.transactions.map(
-              //   (transaction: any) => {
-              //     return {
-              //       account_id: transaction.account_id,
-              //       transaction_id: transaction.transaction_id,
-              //       transaction_type: transaction.transaction_type,
-              //       date: new Date(transaction.date),
-              //       date_transacted: new Date(transaction.date_transacted),
-              //       transaction_name: transaction.name,
-              //       transaction_amount: transaction.amount,
-              //       transaction_currency: transaction.iso_currency_code || null,
-              //       check_number: transaction.check_number || null,
-              //       merchant_name: transaction.merchant_name || null,
-              //       pending: transaction.pending || false,
-              //       category_id: transaction.category_id,
-              //       category: transaction.category || [],
-              //     };
-              //   },
-              // );
-
-              // await this.prismaClient.assetTransaction.createMany({
-              //   skipDuplicates: true,
-              //   data: filterAssetsTransactions,
-              // });
-
-              reports.push({
-                account,
-                // filterAssetsTransactions,
-                // filterHistoricalBalances,
-                reportItem,
+            if (isAccountExists) {
+              await this.prismaClient.assetAccount.update({
+                where: { id: isAccountExists.id },
+                data: dataToAdd,
               });
-            });
+            } else {
+              await this.prismaClient.assetAccount.create({
+                data: dataToAdd,
+              });
+            }
+
+
+            // Save Historical Balances
+
+            // const filterHistoricalBalances = account.historical_balances.map(
+            //   (balance: any) => {
+            //     return {
+            //       account_id: account.account_id,
+            //       balance_amount: balance.current,
+            //       balance_date: new Date(balance.date),
+            //     };
+            //   },
+            // );
+
+            // await this.prismaClient.assetHistoricalBalance.createMany({
+            //   skipDuplicates: true,
+            //   data: filterHistoricalBalances,
+            // });
+
+            // Save Assets Transactions
+
+            // const filterAssetsTransactions = account.transactions.map(
+            //   (transaction: any) => {
+            //     return {
+            //       account_id: transaction.account_id,
+            //       transaction_id: transaction.transaction_id,
+            //       transaction_type: transaction.transaction_type,
+            //       date: new Date(transaction.date),
+            //       date_transacted: new Date(transaction.date_transacted),
+            //       transaction_name: transaction.name,
+            //       transaction_amount: transaction.amount,
+            //       transaction_currency: transaction.iso_currency_code || null,
+            //       check_number: transaction.check_number || null,
+            //       merchant_name: transaction.merchant_name || null,
+            //       pending: transaction.pending || false,
+            //       category_id: transaction.category_id,
+            //       category: transaction.category || [],
+            //     };
+            //   },
+            // );
+
+            // await this.prismaClient.assetTransaction.createMany({
+            //   skipDuplicates: true,
+            //   data: filterAssetsTransactions,
+            // });
           });
-        } catch (error) {
-          
+        });
+      })
+
+      // Calculate total of manual assets
+      const manualAssets = await this.prismaClient.userManualAssets.findMany({
+        where : {
+          user_id
+        },
+        select: {
+          id : true
         }
       })
+
+      let manualAssetIds = manualAssets.map((asset) => asset.id)
+      
+      let allFormFields = await this.prismaClient.userAssetsDetails.findMany({
+        where : {
+          asset_id : {in : manualAssetIds},
+          asset_field : {
+            name : "value"
+          }
+        },
+        select: {
+          value : true
+        }
+      })
+
+      let totalOfManualAssets = allFormFields.reduce((sum, value) => {
+        return sum += parseInt(value.value);
+      }, 0)
+      
+      const now = new Date();
+      const firstDayOfMonth = await this.setToFirstDayOfMonth(new Date(now))
+
+      const totalAssets = await this.prismaClient.totalPlaidAssets.findFirst({
+        where: {
+          userId: user_id,
+          monthYear: firstDayOfMonth
+        }
+      })
+
+      if (totalAssets) {
+        await this.prismaClient.totalPlaidAssets.updateMany({
+          where: { userId: user_id, monthYear: firstDayOfMonth },
+          data: { totalAmount: total + totalOfManualAssets }
+        })
+      }
+      else {
+        await this.prismaClient.totalPlaidAssets.create({
+          data: {
+            userId: user_id,
+            totalAmount: total + totalOfManualAssets,
+            monthYear : firstDayOfMonth,
+          }
+        })
+      }
 
 
       return  {
@@ -200,6 +253,13 @@ export class AssetsService {
       throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)    }
   }
 
+  async setToFirstDayOfMonth(date: Date): Promise<Date> {
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth(); // getUTCMonth() returns the month (0-11), in UTC
+
+    // Create a new Date object set to the first day of the given month at 00:00 hours, in UTC
+    return new Date(Date.UTC(year, month, 1, 0, 0, 0));
+  }
   async getAssetDetails(userId: number) {
     try { 
 
@@ -714,6 +774,51 @@ export class AssetsService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+
+  // -----------------------------------------------CRONS -------------------------------------------------------------------------
+
+   // Cron for liabilities
+  // CRON expression for this approach (to run at 23:30 on the 28th to 31st)
+  @Cron("0 1 28-31 * *")
+  async handleAssetsCron() {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    // Check if tomorrow's month is different from today's month
+    if (today.getMonth() === tomorrow.getMonth()) {
+      return;
+    }
+    const users = await this.prismaClient.user.findMany({
+      where: {
+        user_role: {
+          in: ["BASIC", "PREMIUM"]
+        }
+      }
+    });
+    let processedRequests = 0;
+
+    for (const user of users) {
+      if (processedRequests >= 1000) {
+        // If the client's rate limit is reached, pause processing for a minute
+        await this.delay(60000); // 60,000 milliseconds = 1 minute
+        processedRequests = 0; // Reset counter after the pause
+      }
+      try {
+        await this.importAssetReports(user.id);
+        processedRequests++;
+        await this.delay(5000); // Delay to respect the 15 requests/minute/item limit
+      } catch (error) {
+        console.error(`Error fetching liabilities for user ${user.id}:`, error);
+      }
+    }
+  }
+
+  // Utility function to introduce delays
+  delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
   create(createAssetDto: CreateAssetDto) {
     return 'This action adds a new asset';
