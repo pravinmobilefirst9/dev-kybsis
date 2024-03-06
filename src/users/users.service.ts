@@ -19,6 +19,7 @@ import { StripeService } from 'src/stripe/stripe.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserCreatedEventPayload } from 'src/event-emittors/types/user-created.event';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import { request } from 'express';
 
 @Injectable()
 export class UsersService {
@@ -63,6 +64,8 @@ export class UsersService {
         },
       });
       
+
+
       this.eventEmitter.emit("user.created", new UserCreatedEventPayload(user, otp));
 
       // await this.sendEmail(
@@ -85,6 +88,13 @@ export class UsersService {
       //   otp,
       // );
       
+    // send Push Notification
+    const welcomeTitle = 'Welcome to Kybsis!';
+    const welcomeBody = 'Thank you for registering. OTP has been sent successfully to your Email!';
+    const deviceToken = user.device_token;     
+    await this.firebaseServices.sendPushNotification(deviceToken, welcomeTitle, welcomeBody);
+
+
       delete user.password;
       delete user.user_otp;
       return {
@@ -123,12 +133,7 @@ export class UsersService {
 
     await transporter.sendMail(emailOptions);
 
-    // send Push Notification
-    const welcomeTitle = 'Welcome to Kybsis!';
-    const welcomeBody = 'Thank you for registering. OTP has been sent successfully to your Email!';
-    const deviceToken = 'etK9E4x0SC-oK20MjZjBtF:APA91bHDIuzvHBWextRjwbL3qrS942CMMbMjB6vFPp0-Cp0MjK5GltsBNatTO4JnNFk4jID1aOx2VwhBSygYzyOgITNRoId7-wMJSYW7rFKOyJeX8IoGQ89wbEFJ6EmUK2RQhfKaKSgm';
-    await this.firebaseServices.sendPushNotification(deviceToken, welcomeTitle, welcomeBody);
-
+   
   }
 
 
