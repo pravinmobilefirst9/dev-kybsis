@@ -9,13 +9,15 @@ import { Prisma, Transaction } from '@prisma/client';
 import { FetchUserBanks } from './dto/fetch-user-banks.dto';
 import { AddBankDTO } from './dto/add-manual-bank.dto';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class PlaidTartanService {
   constructor(
     private readonly prisma: PrismaService,
     private transactionService: TransactionService,
-    private readonly firebaseServices:FirebaseService
+    private readonly firebaseServices:FirebaseService,
+    private eventEmitter : EventEmitter2
   ) { }
 
   async fetchAllManualAccounts(user_id: number, item_id : number,id?: number) {
@@ -149,7 +151,7 @@ export class PlaidTartanService {
         
       }
 
-      await this.syncHistoricalTransactions(user_id)
+      this.eventEmitter.emit("plaid.registered", user_id);
 
       return {
         success: true,

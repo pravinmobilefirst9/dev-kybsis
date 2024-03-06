@@ -3,12 +3,16 @@ import { UpdateInvestmentDto } from './dto/update-investment.dto';
 import { PrismaService } from 'src/prisma.service';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { CreateManualInvestmentDto } from './dto/create-investment.dto';
+import { Cron } from '@nestjs/schedule';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class InvestmentService {
   constructor(
     private readonly prisma: PrismaService,
     private transactionService: TransactionService,
+    private eventEmitter : EventEmitter2,
+
   ) { }
   async syncInvestmentDetails(user_id: number) {
     const existingUser = await this.prisma.user.findUnique({
@@ -170,44 +174,53 @@ export class InvestmentService {
         };
       }
       let resultArray = [];
+      let holdingsArr = []
 
+      // Create a promise to fetch all the data
+      const promises = plaid_items.map(async (itemData) => {
+        try {
+          const investmentholdingData = await this.transactionService.getInvestmentHoldings(
+            itemData.access_token
+          );
+          const { holdings, securities, accounts } = investmentholdingData.data
+          return {holdings, securities, accounts, itemData }
+        } catch (error) {
+          // Do nothing
+        }
+      })
 
-      for (const itemData of plaid_items) {
-        const investmentholdingData = await this.transactionService.getInvestmentHoldings(
-          itemData.access_token
-        );
-
-        if (investmentholdingData.status === 'failure') {
-          continue
+      const resultArr = await Promise.all(promises);
+      let investmentSecurityCount = 0;
+      resultArr.map(async ({accounts, holdings, itemData,securities}) => {
+        // Save the investment Securities
+        if (investmentSecurityCount === 0) {
+          await this.prisma.investmentSecurity.createMany({
+            skipDuplicates: true,
+            data: securities
+              .map((security: any) => ({
+                security_id: security.security_id,
+                close_price: security.close_price,
+                close_price_as_of: new Date(security.close_price_as_of),
+                cusip: security.cusip,
+                institution_id: security.institution_id,
+                institution_security_id: security.institution_security_id,
+                is_cash_equivalent: security.is_cash_equivalent,
+                isin: security.isin,
+                iso_currency_code: security.iso_currency_code,
+                market_identifier_code: security.market_identifier_code,
+                name: security.name,
+                option_contract: security.option_contract,
+                proxy_security_id: security.proxy_security_id,
+                sedol: security.sedol,
+                ticker_symbol: security.ticker_symbol,
+                type: security.type,
+                unofficial_currency_code: security.unofficial_currency_code,
+                update_datetime: new Date(security.update_datetime),
+              })),
+          });
+          investmentSecurityCount++;
         }
 
-        const { holdings, securities, accounts } = investmentholdingData.data
-
-        // Save the investment Securities
-        await this.prisma.investmentSecurity.createMany({
-          skipDuplicates: true,
-          data: securities
-            .map((security: any) => ({
-              security_id: security.security_id,
-              close_price: security.close_price,
-              close_price_as_of: new Date(security.close_price_as_of),
-              cusip: security.cusip,
-              institution_id: security.institution_id,
-              institution_security_id: security.institution_security_id,
-              is_cash_equivalent: security.is_cash_equivalent,
-              isin: security.isin,
-              iso_currency_code: security.iso_currency_code,
-              market_identifier_code: security.market_identifier_code,
-              name: security.name,
-              option_contract: security.option_contract,
-              proxy_security_id: security.proxy_security_id,
-              sedol: security.sedol,
-              ticker_symbol: security.ticker_symbol,
-              type: security.type,
-              unofficial_currency_code: security.unofficial_currency_code,
-              update_datetime: new Date(security.update_datetime),
-            })),
-        });
 
         for (const account of accounts) {
           let existingAccount = await this.prisma.investmentAccounts.findFirst({
@@ -248,7 +261,7 @@ export class InvestmentService {
 
           // Save security holdings
           const holdingsOfAccount = holdings.filter((hld: any) => hld.account_id === account.account_id)
-
+          holdingsArr.push(holdingsOfAccount);
           for (const holding of holdingsOfAccount) {
             const isHoldingExists = await this.prisma.investmentHolding.findFirst({
               where: {
@@ -269,9 +282,7 @@ export class InvestmentService {
                 institution_price_as_of: holding.institution_price_as_of ? new Date(holding.institution_price_as_of) : null,
                 institution_price_datetime: holding.institution_price_datetime ? new Date(holding.institution_price_datetime) : null
               }
-            if (isHoldingExists) {
-
-                
+            if (isHoldingExists) {               
               await this.prisma.investmentHolding.update({
                 data: dataObject,
                 where: { id: isHoldingExists.id }
@@ -284,15 +295,49 @@ export class InvestmentService {
             }
           }
 
-          if (holdingsOfAccount.length > 0) {
             resultArray.push({
               account_id: account.account_id,
               item_id: itemData.id,
               holdings: holdingsOfAccount
             });
-          }
+          
         }
+      })
+
+    // Calculate total investment, profit, and loss
+    let totalInvestment = 0;
+            
+    holdingsArr.map((holding) => {
+      const market_value = holding.institution_value || 0;
+      totalInvestment += market_value
+    });
+
+    // Create a date of first day of month to have consistency
+    const now = new Date();
+    const firstDayOfMonth = await this.setToFirstDayOfMonth(new Date(now))
+    const investmentTotal = await this.prisma.totalInvestments.findFirst({
+      where: {
+        userId: user_id,
+        monthYear: firstDayOfMonth
       }
+    })
+
+    if (investmentTotal) {
+      await this.prisma.totalInvestments.updateMany({
+        where: { userId: user_id, monthYear: firstDayOfMonth },
+        data: { totalPlaidInvestment : totalInvestment }
+      })
+    }
+    else {
+      await this.prisma.totalInvestments.create({
+        data: {
+          userId: user_id,
+          totalPlaidInvestment: totalInvestment,
+          totalManualInvestment : 0,
+          monthYear: firstDayOfMonth,
+        }
+      })
+    }
 
       return {
         message: 'Investment holdings are sync successfully',
@@ -308,6 +353,15 @@ export class InvestmentService {
       throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
+
+  async setToFirstDayOfMonth(date: Date): Promise<Date> {
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth(); // getUTCMonth() returns the month (0-11), in UTC
+
+    // Create a new Date object set to the first day of the given month at 00:00 hours, in UTC
+    return new Date(Date.UTC(year, month, 1, 0, 0, 0));
+  }
+
 
 
   async fetchPlaidInvestmentHomePageData(user_id: number) {
@@ -496,37 +550,151 @@ export class InvestmentService {
     }
   }
 
-  async fetchInvestmentManualData(user_id : number){
-    try {
-      const allManualInvestments = await this.prisma.manualInvestments.findMany({
-        where : {
-          user_id
-        }
-      })
-
+  async totalOfManualInvestment(investments : any[]) {
       // Calculate total investment, profit, and loss
       let total_investment = 0;
       let totalProfit = 0;
       let totalLoss = 0;
       let investmentsResult = []
-      // allManualInvestments.forEach((investment) => {
-      //   const marketPrice = investment.current_price || 0;
-      //   const userPurchasePrice = investment.purchase_price;
-      //   const quantity = investment.quantity;
-      //   const profitLoss = (marketPrice * quantity) - (userPurchasePrice * quantity)
 
-      //   total_investment += (userPurchasePrice * quantity);
-      //   if (profitLoss > 0) {
-      //     totalProfit += profitLoss;
-      //   } else {
-      //     totalLoss += Math.abs(profitLoss);          
-      //   }
-      // })
-      
+      investments.map((investment) => {
+        switch (investment.investmentCategory.name) {
+          case "Annuity":
+            let value = investment.data.find((data) => data['name'] === "ending_account_value")['value'];
+            total_investment += parseFloat(value);
+            investmentsResult.push({
+              ...investment,
+              portfolio_value : value
+            })
+            break;
+        
+          case "Cash & Money Market":
+            value = investment.data.find((data) => data['name'] === "market_value")['value'];
+            total_investment += parseFloat(value);
+            investmentsResult.push({
+              ...investment,
+              portfolio_value : value
+            })
+            break;
+
+          case "Equity/ETF":
+            let market_price = parseFloat(investment.data.find((data) => data['name'] === "market_price_(per_share)")['value'])
+            let total_quantity = parseFloat(investment.data.find((data) => data['name'] === "quantity")['value'])
+            total_investment += market_price * total_quantity;
+            let userPurchasePrice = parseFloat(investment.data.find((data) => data['name'] === "purchase_price_(per_share)")['value']);
+            let profitLoss = (market_price * total_quantity) - (userPurchasePrice * total_quantity)
+            let cost_basis = userPurchasePrice * total_quantity;
+            let name = investment.investmentCategory.name
+
+            market_price = parseFloat(market_price.toFixed(2))
+            userPurchasePrice = parseFloat(userPurchasePrice.toFixed(2))
+            total_quantity = parseFloat(total_quantity.toFixed(2))
+            profitLoss = parseFloat(profitLoss.toFixed(2))
+            let portfolio_value = market_price * total_quantity
+
+            let profitLossObj = {
+              totalProfit : 0,
+              totalLoss : 0
+            }
+            let profitLossPercentage = Math.ceil((Math.abs(profitLoss) / cost_basis) * 100)
+            let growth_percentage = 25
+
+            if (profitLoss > 0) {
+              totalProfit += profitLoss;
+              profitLossObj.totalProfit = profitLoss;
+            } else {
+              totalLoss += Math.abs(profitLoss);   
+              profitLossObj.totalLoss = profitLoss;       
+            }
+
+            investmentsResult.push({
+              ...investment,
+              growth_percentage,
+              market_price,
+              totalInvestment : parseFloat(cost_basis.toFixed(2)),
+              total_quantity,
+              name,
+              ...profitLossObj,
+              portfolio_value,
+              profitLossPercentage,
+              created_at : investment.created_at
+            })
+            break;
+          
+          case "Hedge Fund" || "Private Equity":
+            value = investment.data.find((data) => data['name'] === "value")['value'];
+            total_investment += parseFloat(value);
+            investmentsResult.push({
+              ...investment,
+              portfolio_value : value
+            })
+          break;
+
+          case "Life Insurance":
+            value = investment.data.find((data) => data['name'] === "cash_value")['value'];
+            total_investment += parseFloat(value);
+            investmentsResult.push({
+              ...investment,
+              portfolio_value : value
+            })
+          break;
+
+          case "Mutual Fund" || "Fixed Income" :
+            value = parseFloat(investment.data.find((data) => data['name'] === "market_value")['value'])
+            total_investment += value;
+            investmentsResult.push({
+              ...investment,
+              portfolio_value : value
+            })
+          break
+
+          default:
+            break;
+        }
+      })
+
       let totalValue = total_investment + totalProfit - totalLoss;
       let profitPercentage = Math.ceil((totalProfit / totalValue) * 100) || 0;
-      let lossPercentage = Math.ceil((totalLoss / totalValue) * 100) || 0;
+      let lossPercentage = Math.ceil((totalLoss / totalValue) * 100) || 0; 
+
+      return {
+        total_investment,
+        profitPercentage,
+        lossPercentage,
+        totalProfit,
+        totalLoss,
+        investmentsResult
+      }
+  }
+  async fetchInvestmentManualData(user_id : number){
+    try {
+      const allManualInvestments = await this.prisma.manualInvestments.findMany({
+        where : {
+          user_id
+        },
+        select : {
+          id : true,
+          investmentCategory : {
+            select : {
+              id : true,
+              name : true,
+              fields : true
+            }
+          },
+          account_id : true,
+          Institution : {
+            select : {
+              ins_id : true,
+              ins_name : true
+            }
+          },
+          data : true,
+          created_at : true
+        }
+      })
       
+      const {lossPercentage, profitPercentage, totalLoss, totalProfit, total_investment, investmentsResult} = await this.totalOfManualInvestment(allManualInvestments);
+
       const pieChartData = {
         total_investment,
         profitPercentage,
@@ -536,6 +704,10 @@ export class InvestmentService {
       }
 
       // allManualInvestments.map((investment) => {
+
+      //   const data = investment.data;
+        
+
       //   let market_value = investment.current_price || 0;
       //   let userPurchasePrice = investment.purchase_price;
       //   let total_quantity = investment.quantity;
@@ -588,7 +760,8 @@ export class InvestmentService {
           allInvestmentResult :investmentsResult
 
         }
-      };    } catch (error) {
+      };    
+    } catch (error) {
       if (error instanceof HttpException) {
         throw error
       }
@@ -667,10 +840,43 @@ export class InvestmentService {
         })
       }
 
+      // Emit event 
+      this.eventEmitter.emit("manualInvestment.updated", user_id);
       return {
         success: true,
         statusCode: HttpStatus.CREATED,
         message: 'Investment added successfully!',
+        data: null,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+      throw new HttpException(error.toString(), HttpStatus.INTERNAL_SERVER_ERROR)
+    }
+  }
+
+
+  async deleteManualInvestment(user_id : number, id : number){
+    try {
+
+      const toBeDelete = await this.prisma.manualInvestments.delete({
+        where : {
+          id, 
+          user_id
+        }
+      })
+
+      if (!toBeDelete) {
+        throw new HttpException("Invalid investment id", HttpStatus.BAD_REQUEST)
+      }
+      
+      this.eventEmitter.emit("manualInvestment.updated", user_id);
+
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: 'Investment deleted successfully!',
         data: null,
       };
     } catch (error) {
@@ -742,6 +948,48 @@ export class InvestmentService {
     }
   }
 
+
+    // Cron for liabilities
+  // CRON expression for this approach (to run at 23:30 on the 28th to 31st)
+  @Cron("0 2 28-31 * *")
+  async handleInvestmentCron() {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    // Check if tomorrow's month is different from today's month
+    if (today.getMonth() === tomorrow.getMonth()) {
+      return;
+    }
+    const users = await this.prisma.user.findMany({
+      where: {
+        user_role: {
+          in: ["BASIC", "PREMIUM"]
+        }
+      }
+    });
+    let processedRequests = 0;
+
+    for (const user of users) {
+      if (processedRequests >= 2000 ) {
+        // If the client's rate limit is reached, pause processing for a minute
+        await this.delay(60000); // 60,000 milliseconds = 1 minute
+        processedRequests = 0; // Reset counter after the pause
+      }
+      try {
+        await this.syncInvestmentHoldingDetails(user.id);
+        processedRequests++;
+        await this.delay(5000); // Delay to respect the 15 requests/minute/item limit
+      } catch (error) {
+        console.error(`Error fetching Investment Holdings for user ${user.id}:`, error);
+      }
+    }
+  }
+
+  // Utility function to introduce delays
+  delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
   findAll() {
     return `This action returns all investment`;
   }

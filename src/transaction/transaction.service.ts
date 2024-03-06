@@ -219,8 +219,8 @@ export class TransactionService {
     };
     try {
       const response = await this.client.liabilitiesGet(request);
-      const liabilities = response.data.liabilities;
-      return {status : "success" , liabilities, message : "Liabilities fetched successfully!"}
+      const {liabilities, accounts} = response.data;
+      return {status : "success" , data : {accounts : accounts.filter((acc) => acc.type === "loan" || acc.type === "credit")}, message : "Liabilities fetched successfully!"}
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
     }
@@ -241,7 +241,7 @@ export class TransactionService {
   async importAllUSAInstitution() : Promise<ResponseReturnType> {
     try {
       let totalBanks = 0;
-      for (let index = 10298; index < 15000; index+=500) {
+      for (let index = 9500; index < 15000; index+=500) {
         const Institutions = await this.client.institutionsGet({
           count : 500,
           offset : index,
@@ -286,16 +286,7 @@ export class TransactionService {
   // Cron Jobs
   @Cron(CronExpression.EVERY_SECOND)
   async cronDemo(){
-    // const allUsers = await this.prisma.user.findMany({
-    //   where : {
-    //     user_role : {
-    //       in : ['BASIC', 'PREMIUM']
-    //     }
-    //   }
-    // })
-    
-    // this.logger.log(allUsers.length)
-
+    // this.logger.log("ABC")
   }
   create(createTransactionDto: CreateTransactionDto) {
     return 'This action adds a new transaction';

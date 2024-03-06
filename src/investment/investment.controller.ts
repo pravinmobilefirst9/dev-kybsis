@@ -82,6 +82,17 @@ export class InvestmentController {
     return result;
   }
 
+  @Delete('delete_manual_investment/:id')
+  @UseGuards(AuthGuard)
+  async removeManualInvestment(
+  @Param('id', ParseIntPipe) id: number,     
+  @Req() req : any, 
+  ) {
+    const {user_id} = req.auth     
+    const result = await this.investmentService.deleteManualInvestment( user_id,id);
+    return result;
+  }
+
   @Get("get_user_investment_form_data")
   @UseGuards(AuthGuard)
   async getAllInvestments(
@@ -121,8 +132,5 @@ export class InvestmentController {
     return this.investmentService.update(+id, updateInvestmentDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.investmentService.remove(+id);
-  }
+ 
 }

@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma.service';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { FirebaseService } from 'src/firebase/firebase.service';
 
+
 @Module({
   imports : [],
   controllers: [PlaidTartanController],

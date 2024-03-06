@@ -94,9 +94,9 @@ model PlaidItem {
   AssetPlaidItem       PlaidAssetItem?
   investmentAccounts   InvestmentAccounts[]
   TransactionsAccounts Account[]
-  Forecasts Forecast[]
-  ManualAssets UserManualAssets[]
-  ManualInvestment ManualInvestments[]
+  Forecasts            Forecast[]
+  ManualAssets         UserManualAssets[]
+  ManualInvestment     ManualInvestments[]
 }
 
 model PlaidInstitutionImportHistory {
@@ -148,7 +148,10 @@ model User {
   bankTransactions              Transaction[]
   liabilities                   liabilities[]
   subscriptions                 Subscription[]
-  notification     Notification[]
+  notification                  Notification[]
+  totalLiabilities              TotalLiabilities[]
+  totalPlaidAssets              TotalPlaidAssets[]
+  totalInvestmetns              TotalInvestments[]
 }
 
 model UserDetails {
@@ -289,6 +292,19 @@ model InvestmentHolding {
   @@unique([account_id, security_id])
 }
 
+// Including Manual and plaid
+model TotalInvestments {
+  id                    Int      @id @default(autoincrement())
+  userId                Int
+  totalManualInvestment Float
+  totalPlaidInvestment  Float
+  monthYear             DateTime
+  createdAt             DateTime @default(now())
+  User                  User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, monthYear])
+}
+
 model InvestmentCategories {
   id         Int      @id @default(autoincrement())
   name       String   @unique
@@ -309,7 +325,7 @@ model ManualInvestments {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  Institution   PlaidItem         @relation(fields: [ins_id], references: [id])
+  Institution        PlaidItem            @relation(fields: [ins_id], references: [id])
   user               User                 @relation(fields: [user_id], references: [id])
   investmentCategory InvestmentCategories @relation(fields: [category_id], references: [id])
 }
@@ -398,6 +414,17 @@ model AssetAccount {
   transactions             AssetTransaction[]
 }
 
+model TotalPlaidAssets {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  totalAmount Float
+  monthYear   DateTime
+  createdAt   DateTime @default(now())
+  User        User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, monthYear])
+}
+
 model UserManualAssets {
   id               Int      @id @default(autoincrement())
   user_id          Int
@@ -408,7 +435,7 @@ model UserManualAssets {
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
 
-  Institution   PlaidItem         @relation(fields: [ins_id], references: [id])
+  Institution   PlaidItem           @relation(fields: [ins_id], references: [id])
   AssetType     AssetType           @relation(fields: [asset_type_id], references: [id])
   AssetSubType  AssetSubType        @relation(fields: [asset_subtype_id], references: [id])
   User          User                @relation(fields: [user_id], references: [id])
@@ -582,7 +609,7 @@ model UserAssetsDetails {
 model Forecast {
   id                     Int      @id @default(autoincrement())
   compound               String   @db.VarChar(255)
-  ins_id                 Int   
+  ins_id                 Int
   startingAmount         Float
   returnRate             Float
   investmentLength       Int
@@ -628,20 +655,50 @@ model userWidgets {
   @@unique([user_id, widget_id])
 }
 
+// model liabilities {
+//   id                  Int      @id @default(autoincrement())
+//   user_id             Int
+//   last_payment_date   DateTime
+//   account_id          String
+//   account_number      String?
+//   account_type        String?
+//   last_payment_amount Float
+//   type                String
+//   createdAt           DateTime @default(now())
+//   updatedAt           DateTime @updatedAt
+
+//   User User @relation(fields: [user_id], references: [id])
+
+//   @@unique([last_payment_date, user_id, type])
+// }
+
 model liabilities {
-  id                  Int      @id @default(autoincrement())
-  user_id             Int
-  last_payment_date   DateTime
-  account_id          String
-  account_number      String?
-  last_payment_amount Float
-  type                String
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  accountId   String   @unique
+  accountType String
+  subtype     String
+  current     Float
+  available   Float?
+  limit       Float?
+  isoCurrency String
+  userId      Int // Assuming you're tracking data per user
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  User User @relation(fields: [user_id], references: [id])
+  User User @relation(fields: [userId], references: [id])
 
-  @@unique([last_payment_date, user_id, type])
+  @@unique([accountId, userId])
+}
+
+model TotalLiabilities {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  totalAmount Float
+  monthYear   DateTime
+  createdAt   DateTime @default(now())
+  User        User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, monthYear])
 }
 
 enum SubscriptionStatus {
@@ -695,23 +752,23 @@ model Institution {
 }
 
 model Feature {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique
-  free        Boolean @default(false)
-  basic       Boolean @default(false)
-  premium     Boolean @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  free      Boolean  @default(false)
+  basic     Boolean  @default(false)
+  premium   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Notification {
-  id          Int      @id @default(autoincrement())
-  userId      Int      // Reference to your User model
-  title       String
-  body        String
-  isRead      Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  userId    Int // Reference to your User model
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user        User     @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }

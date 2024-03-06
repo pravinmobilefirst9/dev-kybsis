@@ -4,22 +4,6 @@ import { UpdateAccountForcastingDto } from './dto/update-account_forcasting.dto'
 import { PrismaService } from 'src/prisma.service';
 import { InvestmentDetailsDto } from './dto/forecast-account-v1.dto';
 
-export enum Compound {
-  ANNUALLY = 'annually',
-  SEMIANNUALLY = 'semiannually',
-  QUARTERLY = 'quarterly',
-  MONTHLY = 'monthly',
-  SEMIMONTHLY = 'semimonthly',
-  BIWEEKLY = 'biweekly',
-  WEEKLY = 'weekly',
-  DAILY = 'daily',
-  CONTINUOUSLY = 'continuously',
-}
-
-
-
-
-
 @Injectable()
 export class AccountForcastingService {
 

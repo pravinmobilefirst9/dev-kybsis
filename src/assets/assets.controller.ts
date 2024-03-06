@@ -31,7 +31,7 @@ export class AssetsController {
   async importAssets(
     @Req() request: any,
   ) {
-    try {
+    try {     
       const { user_id } = request.auth
       const result = await this.assetsService.importAssetReports(user_id);
       return result;

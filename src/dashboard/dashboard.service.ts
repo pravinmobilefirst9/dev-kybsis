@@ -692,6 +692,78 @@ export class DashboardService {
   }
 
 
+  async networthCalculationsPerMonth (user_id : number) {
+    try {
+    // Fetch total assets for each month
+    const assets = await this.prisma.totalPlaidAssets.findMany({
+      where: { userId : user_id },
+      select: {
+        monthYear: true,
+        totalAmount: true,
+      },
+      orderBy: {
+        monthYear: 'asc',
+      },
+    });
+
+    // Fetch total liabilities for each month
+    const liabilities = await this.prisma.totalLiabilities.findMany({
+      where: { userId : user_id },
+      select: {
+        monthYear: true,
+        totalAmount: true,
+      },
+      orderBy: {
+        monthYear: 'asc',
+      },
+    });
+
+    const investments = await this.prisma.totalInvestments.findMany({
+      where : {
+        userId : user_id
+      },
+      select: {
+        monthYear: true,
+        totalManualInvestment : true,
+        totalPlaidInvestment : true
+      },
+    })
+
+    const netWorth = assets.map(asset => {
+      const correspondingLiability = liabilities.find(liability => 
+        liability.monthYear.toISOString() === asset.monthYear.toISOString()
+      );
+      const correspondingInvestment = investments.find(investment => 
+        investment.monthYear.toISOString() === asset.monthYear.toISOString()
+      );
+
+      const liabilityAmount = correspondingLiability ? correspondingLiability.totalAmount : 0;
+      const netWorthValue = (asset.totalAmount + correspondingInvestment.totalManualInvestment + correspondingInvestment.totalPlaidInvestment )- liabilityAmount;
+
+      return {
+        month: asset.monthYear.toLocaleString('default', { month: 'long' }),
+        net_worth: netWorthValue,
+      };
+    });
+
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: `Networth fetched successfully`,
+      data: netWorth
+    }
+
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        error.toString(),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   async calculateUserPlaidAssets(user_id : number) : Promise<boolean> {
     try {
       const plaidAssetWidget = await this.prisma.widgets.findFirst({

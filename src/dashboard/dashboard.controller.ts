@@ -30,6 +30,13 @@ export class DashboardController {
     return await this.dashboardService.removeUserWidget(user_id, payload);
   }
 
+  @Get("fetch_networth_data_for_graph")
+  @UseGuards(AuthGuard)
+  async fetchNwtworthDataForGraph(@Req() request : any){
+    const {user_id} = request.auth;
+    return await this.dashboardService.networthCalculationsPerMonth(user_id);
+  }
+
   @Post()
   create(@Body() createDashboardDto: CreateDashboardDto) {
     return this.dashboardService.create(createDashboardDto);
