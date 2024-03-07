@@ -160,6 +160,63 @@ export class EventEmittorsService {
     }
   }
 
+  @OnEvent("manualAssets.updated", {async : true})
+  async manualAssetsUpdated(user_id : number){
+          // Calculate total of manual assets
+          const manualAssets = await this.prismaService.userManualAssets.findMany({
+            where : {
+              user_id
+            },
+            select: {
+              id : true
+            }
+          })
+    
+          let manualAssetIds = manualAssets.map((asset) => asset.id)
+          
+          let allFormFields = await this.prismaService.userAssetsDetails.findMany({
+            where : {
+              asset_id : {in : manualAssetIds},
+              asset_field : {
+                name : "value"
+              }
+            },
+            select: {
+              value : true
+            }
+          })
+    
+          let totalOfManualAssets = allFormFields.reduce((sum, value) => {
+            return sum += parseInt(value.value);
+          }, 0)
+
+          const now = new Date();
+          const firstDayOfMonth = await this.assetsService.setToFirstDayOfMonth(new Date(now))
+    
+          const totalAssets = await this.prismaService.totalAssets.findFirst({
+            where: {
+              userId: user_id,
+              monthYear: firstDayOfMonth
+            }
+          })
+    
+          if (totalAssets) {
+            await this.prismaService.totalAssets.updateMany({
+              where: { userId: user_id, monthYear: firstDayOfMonth },
+              data: { totalManualAssets: totalOfManualAssets  }
+            })
+          }
+          else {
+            await this.prismaService.totalAssets.create({
+              data: {
+                userId: user_id,
+                totalPliadAssets: 0,
+                totalManualAssets : totalOfManualAssets,
+                monthYear : firstDayOfMonth,
+              }
+            })
+          }
+  }
 
 
 

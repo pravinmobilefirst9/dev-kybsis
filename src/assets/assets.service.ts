@@ -6,12 +6,14 @@ import { PrismaService } from 'src/prisma.service';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { AssetFormDetails } from './dto/asset-form.dto';
 import { Cron } from '@nestjs/schedule';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class AssetsService {
   constructor(
     private readonly prismaClient: PrismaService,
     private readonly transactionService: TransactionService,
+    private eventEmitter : EventEmitter2,
   ) {}
 
   async createAssetReportToken(user_id: number): Promise<any> {
@@ -79,7 +81,6 @@ export class AssetsService {
 
   async importAssetReports(user_id: number) {
     try {
-      let reports = [];
       const plaidAssetItems = await this.prismaClient.plaidAssetItem.findMany({
         where: {
           PlaidItem: { user_id },
@@ -99,6 +100,8 @@ export class AssetsService {
 
 
       let resultArr = await Promise.all(promises);
+      console.log({resultArr});
+      
       let total = 0;
       resultArr.map(async ({assetItem, data}) => {
         data.report.items.map((reportItem: any) => {  
@@ -185,38 +188,12 @@ export class AssetsService {
         });
       })
 
-      // Calculate total of manual assets
-      const manualAssets = await this.prismaClient.userManualAssets.findMany({
-        where : {
-          user_id
-        },
-        select: {
-          id : true
-        }
-      })
 
-      let manualAssetIds = manualAssets.map((asset) => asset.id)
-      
-      let allFormFields = await this.prismaClient.userAssetsDetails.findMany({
-        where : {
-          asset_id : {in : manualAssetIds},
-          asset_field : {
-            name : "value"
-          }
-        },
-        select: {
-          value : true
-        }
-      })
-
-      let totalOfManualAssets = allFormFields.reduce((sum, value) => {
-        return sum += parseInt(value.value);
-      }, 0)
       
       const now = new Date();
       const firstDayOfMonth = await this.setToFirstDayOfMonth(new Date(now))
 
-      const totalAssets = await this.prismaClient.totalPlaidAssets.findFirst({
+      const totalAssets = await this.prismaClient.totalAssets.findFirst({
         where: {
           userId: user_id,
           monthYear: firstDayOfMonth
@@ -224,16 +201,17 @@ export class AssetsService {
       })
 
       if (totalAssets) {
-        await this.prismaClient.totalPlaidAssets.updateMany({
+        await this.prismaClient.totalAssets.updateMany({
           where: { userId: user_id, monthYear: firstDayOfMonth },
-          data: { totalAmount: total + totalOfManualAssets }
+          data: { totalPliadAssets: total  }
         })
       }
       else {
-        await this.prismaClient.totalPlaidAssets.create({
+        await this.prismaClient.totalAssets.create({
           data: {
             userId: user_id,
-            totalAmount: total + totalOfManualAssets,
+            totalPliadAssets: total,
+            totalManualAssets : 0,
             monthYear : firstDayOfMonth,
           }
         })
@@ -564,6 +542,9 @@ export class AssetsService {
         data : userAssetsFieldsArr
       })
 
+      this.eventEmitter.emit("manualAssets.updated", user_id);
+
+
       return {
         success: true,
         statusCode: HttpStatus.CREATED,
@@ -665,6 +646,9 @@ export class AssetsService {
             }
           }
         })   
+
+        this.eventEmitter.emit("manualAssets.updated", user_id);
+
         return {
           success: true,
           statusCode: HttpStatus.OK,
@@ -758,6 +742,7 @@ export class AssetsService {
           user_id
         }
       })
+      this.eventEmitter.emit("manualAssets.updated", user_id);
 
       return {
         success: true,
