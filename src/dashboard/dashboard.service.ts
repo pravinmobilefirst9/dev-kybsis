@@ -695,11 +695,12 @@ export class DashboardService {
   async networthCalculationsPerMonth (user_id : number) {
     try {
     // Fetch total assets for each month
-    const assets = await this.prisma.totalPlaidAssets.findMany({
+    const assets = await this.prisma.totalAssets.findMany({
       where: { userId : user_id },
       select: {
         monthYear: true,
-        totalAmount: true,
+        totalManualAssets : true,
+        totalPliadAssets : true
       },
       orderBy: {
         monthYear: 'asc',
@@ -738,7 +739,7 @@ export class DashboardService {
       );
 
       const liabilityAmount = correspondingLiability ? correspondingLiability.totalAmount : 0;
-      const netWorthValue = (asset.totalAmount + correspondingInvestment.totalManualInvestment + correspondingInvestment.totalPlaidInvestment )- liabilityAmount;
+      const netWorthValue = (asset.totalManualAssets + asset.totalPliadAssets + correspondingInvestment.totalManualInvestment + correspondingInvestment.totalPlaidInvestment )- liabilityAmount;
 
       return {
         month: asset.monthYear.toLocaleString('default', { month: 'long' }),
