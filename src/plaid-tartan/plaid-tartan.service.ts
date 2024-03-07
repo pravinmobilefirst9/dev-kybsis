@@ -121,6 +121,7 @@ export class PlaidTartanService {
             plaid_item_id: isBankExists.id
           }
         })
+        this.eventEmitter.emit("plaid.registered", user_id);
 
       }
       else {
@@ -134,6 +135,7 @@ export class PlaidTartanService {
             ins_name: createPlaidTartanDto.institution_name
           },
         });
+        this.eventEmitter.emit("plaid.registered", user_id);
 
         try {
           const token = await this.prisma.user.findUnique({
@@ -150,8 +152,6 @@ export class PlaidTartanService {
         }
         
       }
-
-      this.eventEmitter.emit("plaid.registered", user_id);
 
       return {
         success: true,

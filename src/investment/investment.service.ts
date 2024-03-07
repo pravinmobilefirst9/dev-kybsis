@@ -183,16 +183,32 @@ export class InvestmentService {
             itemData.access_token
           );
           const { holdings, securities, accounts } = investmentholdingData.data
-          return {holdings, securities, accounts, itemData }
+          
+          let invHoldings = holdings ? holdings : []
+          let invSecurities = securities ? securities : []
+          let invAccounts = accounts ? accounts : []
+          return {holdings : invHoldings, securities : invSecurities, accounts : invAccounts, itemData }
         } catch (error) {
-          // Do nothing
+          console.error("Investment Fetching error :",{error})
         }
       })
 
-      const resultArr = await Promise.all(promises);
+      let resultArr = await Promise.all(promises);
       let investmentSecurityCount = 0;
-     
-      resultArr.map(async ({accounts, holdings, itemData,securities}) => {
+      
+      resultArr = resultArr.filter((result) => result !== undefined)
+      
+      resultArr.map(async (data) => {
+        let holdings = data['holdings'] ? data['holdings'] : []
+        let accounts = data['accounts'] ? data['accounts'] : []
+        let securities = data['securities'] ? data['securities'] :  []
+        let itemData = data['itemData'] ? data['itemData'] : null
+
+        resultArray.push({accounts, holdings, securities})
+        accounts = accounts.filter((acc) => acc !== undefined)
+        holdings = holdings.filter((acc) => acc !== undefined)
+        securities = securities.filter((acc) => acc !== undefined)
+        
         // Save the investment Securities
         holdingsArr = [...holdingsArr, ...holdings]
         if (investmentSecurityCount === 0) {
@@ -233,21 +249,22 @@ export class InvestmentService {
           });
 
           const currentTime = new Date();
+
           const dataObj = {
             plaidItem: { connect: { id: itemData.id } },
-            account_name: account.name,
-            account_id: account.account_id,
-            official_name: account.official_name || '--',
-            mask: account.mask,
-            type: account.type,
-            subtype: account.subtype,
+            account_name: account?.name,
+            account_id: account?.account_id,
+            official_name: account?.official_name || '--',
+            mask: account?.mask,
+            type: account?.type,
+            subtype: account?.subtype,
             verification_status: 'verified', // Adjust as per your requirements
             created_at: currentTime,
             updated_at: currentTime,
             User: { connect: { id: user_id } },
-            available_balance: account.balances.available || 0,
-            current_balance: account.balances.current || 0,
-            iso_currency_code: account.balances.iso_currency_code || 'USD',
+            available_balance: account?.balances?.available || 0,
+            current_balance: account?.balances?.current || 0,
+            iso_currency_code: account?.balances?.iso_currency_code || 'USD',
           }
           if (!existingAccount) {
             // If account is not exists the create new one with balance
@@ -270,38 +287,43 @@ export class InvestmentService {
                 security_id: holding.security_id
               }
             });
-            const dataObject = 
-              {
-                account_id: holding.account_id,
-                cost_basis: holding.cost_basis,
-                institution_price: holding.institution_price,
-                institution_value: holding.institution_value,
-                iso_currency_code: holding.iso_currency_code,
-                quantity: holding.quantity,
-                security_id: holding.security_id,
-                unofficial_currency_code: holding.unofficial_currency_code,
-                institution_price_as_of: holding.institution_price_as_of ? new Date(holding.institution_price_as_of) : null,
-                institution_price_datetime: holding.institution_price_datetime ? new Date(holding.institution_price_datetime) : null
+
+            const security = await this.prisma.investmentSecurity.findUnique({
+              where : {
+                security_id : holding.security_id
               }
+            })
+              
             if (isHoldingExists) {               
               await this.prisma.investmentHolding.update({
-                data: dataObject,
+                data: {
+                  cost_basis: holding.cost_basis,
+                  institution_price: holding.institution_price,
+                  institution_value: holding.institution_value,
+                  quantity: holding.quantity,
+                  institution_price_as_of: holding.institution_price_as_of ? new Date(holding.institution_price_as_of) : null,
+                  institution_price_datetime: holding.institution_price_datetime ? new Date(holding.institution_price_datetime) : null,
+                },
                 where: { id: isHoldingExists.id }
               })
             }
             else {
               await this.prisma.investmentHolding.create({
-                data: dataObject
+                data: {
+                  cost_basis: holding.cost_basis,
+                  institution_price: holding.institution_price,
+                  institution_value: holding.institution_value,
+                  iso_currency_code: holding.iso_currency_code,
+                  quantity: holding.quantity,
+                  unofficial_currency_code: holding.unofficial_currency_code,
+                  institution_price_as_of: holding.institution_price_as_of ? new Date(holding.institution_price_as_of) : null,
+                  institution_price_datetime: holding.institution_price_datetime ? new Date(holding.institution_price_datetime) : null,
+                  investment_account : {connect : {account_id : existingAccount.account_id}},
+                  investment_security : {connect : {security_id : security.security_id}}
+                }
               })
             }
-          }
-
-            resultArray.push({
-              account_id: account.account_id,
-              item_id: itemData.id,
-              holdings: holdingsOfAccount
-            });
-          
+          }          
         }
       })
 
@@ -344,7 +366,7 @@ export class InvestmentService {
         message: 'Investment holdings are sync successfully',
         success: true,
         statusCode: HttpStatus.OK,
-        data: {},
+        data: resultArray,
       };
 
     } catch (error) {

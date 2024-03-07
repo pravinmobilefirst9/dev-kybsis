@@ -41,14 +41,18 @@ export class AssetsService {
             );
             const { asset_report_token } = response.data;
   
-              await this.prismaClient.plaidAssetItem.create({
+              const created = await this.prismaClient.plaidAssetItem.create({
                 data: {
                   asset_report_token,
                   plaid_item_id: plaidItem.id,
                   user_id,
                 },
               });
+              if (created) {
+                this.eventEmitter.emit("assetReportToken.registered", user_id);
+              }
           }
+
          
           // else{
           //   await this.prismaClient.plaidAssetItem.update({
@@ -91,18 +95,23 @@ export class AssetsService {
       });
 
       const promises = plaidAssetItems.map(async (assetItem) => {
-        const response = await this.transactionService.getAssetsReport(
-          assetItem.asset_report_token,
-        );
-
-        return {data : response.data, assetItem};
+        try {
+          const response = await this.transactionService.getAssetsReport(
+            assetItem.asset_report_token,
+          );
+  
+          return {data : response.data, assetItem};
+        } catch (error) {
+          console.error("Assets Fetching error :",{error})
+        }
       })
 
 
       let resultArr = await Promise.all(promises);
-      console.log({resultArr});
       
       let total = 0;
+      resultArr = resultArr.filter(data => data !== undefined);
+      
       resultArr.map(async ({assetItem, data}) => {
         data.report.items.map((reportItem: any) => {  
           // total all balances of assets
@@ -225,6 +234,7 @@ export class AssetsService {
         data: {}
       };
     } catch (error) {
+      // console.error({error})
       if (error instanceof HttpException) {
         throw error
       }

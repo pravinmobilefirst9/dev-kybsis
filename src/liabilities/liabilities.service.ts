@@ -26,8 +26,12 @@ export class LiabilitiesService {
 
       // Map each plaid item to an array of promises
       const promises = plaidItems.map(async (item) => {
-        const { accounts } = (await this.transactionService.getLiabilities(item.access_token)).data;
-        return accounts;
+        try {
+          const { accounts } = (await this.transactionService.getLiabilities(item.access_token)).data;
+          return accounts;
+        } catch (error) {
+          return
+        }
       });
 
       // Wait for all promises to resolve
@@ -106,6 +110,7 @@ export class LiabilitiesService {
       }
 
     } catch (error) {
+      console.error({error})
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

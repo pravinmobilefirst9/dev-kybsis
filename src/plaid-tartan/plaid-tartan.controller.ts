@@ -7,10 +7,12 @@ import { ManualAccountDTO } from './dto/manual-account.dto';
 import { CreateTransactionDto } from './dto/create-manual-transaction.dto';
 import { AddBankDTO } from './dto/add-manual-bank.dto';
 import { FetchUserBanks } from './dto/fetch-user-banks.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Controller('plaid_tartan')
 export class PlaidTartanController {
-  constructor(private readonly plaidTartanService: PlaidTartanService) {}
+  constructor(private readonly plaidTartanService: PlaidTartanService, 
+    ) {}
 
   @Get('fetch_manual_accounts/:item_id')
   @UseGuards(AuthGuard)
@@ -50,7 +52,8 @@ export class PlaidTartanController {
     @Req() req : any
   ) {
       const {user_id} = req.auth     
-      return await this.plaidTartanService.addPlaidItems(createPlaidTartanDto, user_id);
+      const result =  await this.plaidTartanService.addPlaidItems(createPlaidTartanDto, user_id);
+      return result
   }
  
   @Post("sync_historical_transaction")

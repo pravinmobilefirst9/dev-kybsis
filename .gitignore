@@ -36,3 +36,7 @@ secrets.json
 *.exe
 *.dll
 *.so
+
+/prisma/migrations
+
+
