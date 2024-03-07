@@ -191,8 +191,10 @@ export class InvestmentService {
 
       const resultArr = await Promise.all(promises);
       let investmentSecurityCount = 0;
+     
       resultArr.map(async ({accounts, holdings, itemData,securities}) => {
         // Save the investment Securities
+        holdingsArr = [...holdingsArr, ...holdings]
         if (investmentSecurityCount === 0) {
           await this.prisma.investmentSecurity.createMany({
             skipDuplicates: true,
@@ -261,7 +263,6 @@ export class InvestmentService {
 
           // Save security holdings
           const holdingsOfAccount = holdings.filter((hld: any) => hld.account_id === account.account_id)
-          holdingsArr.push(holdingsOfAccount);
           for (const holding of holdingsOfAccount) {
             const isHoldingExists = await this.prisma.investmentHolding.findFirst({
               where: {
@@ -306,11 +307,11 @@ export class InvestmentService {
 
     // Calculate total investment, profit, and loss
     let totalInvestment = 0;
-            
+    
     holdingsArr.map((holding) => {
       const market_value = holding.institution_value || 0;
       totalInvestment += market_value
-    });
+    });    
 
     // Create a date of first day of month to have consistency
     const now = new Date();
