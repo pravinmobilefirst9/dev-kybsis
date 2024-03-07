@@ -691,9 +691,35 @@ export class DashboardService {
     }
   }
 
+  async setToFirstDayOfMonth(date: Date): Promise<Date> {
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth(); // getUTCMonth() returns the month (0-11), in UTC
+
+    // Create a new Date object set to the first day of the given month at 00:00 hours, in UTC
+    return new Date(Date.UTC(year, month, 1, 0, 0, 0));
+  }
 
   async networthCalculationsPerMonth (user_id : number) {
     try {
+
+      const user = await this.prisma.user.findUnique({
+        where : {
+          id : user_id
+        }
+      })
+
+      const startDate = new Date(user.created_at);
+      const endDate = new Date(); // current date
+      let monthsArray = [];
+
+      while (startDate <= endDate) {
+        // Add the month in 'YYYY-MM' format
+        monthsArray.push(startDate.toLocaleString('default', { month: 'long' }));
+    
+        // Move to next month
+        startDate.setMonth(startDate.getMonth() + 1);
+      }
+          
     // Fetch total assets for each month
     const assets = await this.prisma.totalAssets.findMany({
       where: { userId : user_id },
@@ -730,20 +756,28 @@ export class DashboardService {
       },
     })
 
-    const netWorth = assets.map(asset => {
+    
+    
+    const netWorth = monthsArray.map((month) => {
       const correspondingLiability = liabilities.find(liability => 
-        liability.monthYear.toISOString() === asset.monthYear.toISOString()
+        liability.monthYear.toLocaleString('default', { month: 'long' }) === month
       );
       const correspondingInvestment = investments.find(investment => 
-        investment.monthYear.toISOString() === asset.monthYear.toISOString()
-      );
-
+        investment.monthYear.toLocaleString('default', { month: 'long' }) === month
+        );
+        
+        const correspondingAsset = assets.find(asset => 
+          asset.monthYear.toLocaleString('default', { month: 'long' }) === month
+          );
+          
       const liabilityAmount = correspondingLiability ? correspondingLiability.totalAmount : 0;
-      const netWorthValue = (asset.totalManualAssets + asset.totalPliadAssets + correspondingInvestment.totalManualInvestment + correspondingInvestment.totalPlaidInvestment )- liabilityAmount;
+      const investmentAmount = correspondingInvestment ? correspondingInvestment.totalManualInvestment + correspondingInvestment.totalPlaidInvestment : 0;
+      const assetAmount = correspondingAsset ? correspondingAsset.totalManualAssets + correspondingAsset.totalPliadAssets : 0;
+      const netWorthValue = (assetAmount + investmentAmount) - liabilityAmount;
 
       return {
-        month: asset.monthYear.toLocaleString('default', { month: 'long' }),
-        net_worth: netWorthValue,
+        month,
+        net_worth: parseFloat(netWorthValue.toFixed(2)),
       };
     });
 
