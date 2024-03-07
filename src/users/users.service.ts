@@ -88,7 +88,7 @@ export class UsersService {
 
       delete user.password;
       delete user.user_otp;
-
+        console.log(process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'))
       try {
         const welcomeTitle = 'Welcome to Kybsis!';
         const welcomeBody = 'Thank you for registering. OTP has been sent successfully to your Email!';
