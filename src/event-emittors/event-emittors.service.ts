@@ -61,32 +61,32 @@ export class EventEmittorsService {
   
       // Wrap each function call in a try-catch and use the retry helper
       try {
-          await retry(() => this.assetsService.createAssetReportToken(user_id));
+          await retry(async () => await this.assetsService.createAssetReportToken(user_id));
       } catch (error) {
           console.error(`createAssetReportToken failed: ${error.message}`);
       }
   
       try {
-          await retry(() => this.plaidTartenService.syncHistoricalTransactions(user_id));
+          await retry(async() => await this.plaidTartenService.syncHistoricalTransactions(user_id));
       } catch (error) {
           console.error(`syncHistoricalTransactions failed: ${error.message}`);
       }
   
       try {
-          await retry(() => this.liabilitiesService.importLiabilities(user_id));
+          await retry(async() => await this.liabilitiesService.importLiabilities(user_id));
       } catch (error) {
           console.error(`importLiabilities failed: ${error.message}`);
       }
   
       try {
-          await retry(() => this.investmentService.syncInvestmentHoldingDetails(user_id));
+          await retry(async() => await this.investmentService.syncInvestmentHoldingDetails(user_id));
       } catch (error) {
           console.error(`syncInvestmentHoldingDetails failed: ${error.message}`);
       }
   
       console.log("Attempting to fetch data for Plaid!");
       try {
-          await retry(() => this.assetsService.importAssetReports(user_id));
+          await retry(async() => await this.assetsService.importAssetReports(user_id));
           console.log("Data Fetched for Plaid!");
       } catch (error) {
           console.error(`importAssetReports failed: ${error.message}`);
