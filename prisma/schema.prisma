@@ -223,15 +223,15 @@ model InvestmentAccounts {
   id                  Int      @id @default(autoincrement())
   user_id             Int
   pliad_id            Int
-  account_name        String
+  account_name        String?
   account_id          String   @unique
   official_name       String?
-  mask                String
-  type                String
-  subtype             String
-  verification_status String
-  current_balance     Float
-  available_balance   Float
+  mask                String?
+  type                String?
+  subtype             String?
+  verification_status String?
+  current_balance     Float?  @default(0)
+  available_balance   Float?  @default(0)
   iso_currency_code   String?
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
@@ -274,13 +274,13 @@ model InvestmentAccounts {
 model InvestmentHolding {
   id                         Int       @id @default(autoincrement())
   account_id                 String
-  cost_basis                 Float
-  institution_price          Float
+  cost_basis                 Float?
+  institution_price          Float?
   institution_price_as_of    DateTime?
   institution_price_datetime DateTime?
-  institution_value          Float
-  iso_currency_code          String
-  quantity                   Float
+  institution_value          Float?
+  iso_currency_code          String?
+  quantity                   Float?
   security_id                String
   unofficial_currency_code   String?
 
@@ -332,7 +332,7 @@ model ManualInvestments {
 
 model InvestmentSecurity {
   id                       Int       @id @default(autoincrement())
-  security_id              String
+  security_id              String    @unique()
   close_price              Float?
   close_price_as_of        DateTime?
   cusip                    String?
@@ -355,7 +355,6 @@ model InvestmentSecurity {
 
   InvestmentHolding InvestmentHolding[]
 
-  @@unique([security_id])
 }
 
 //the CategoryHierarchy model
