@@ -41,16 +41,13 @@ export class AssetsService {
             );
             const { asset_report_token } = response.data;
   
-              const created = await this.prismaClient.plaidAssetItem.create({
+              await this.prismaClient.plaidAssetItem.create({
                 data: {
                   asset_report_token,
                   plaid_item_id: plaidItem.id,
                   user_id,
                 },
               });
-              if (created) {
-                this.eventEmitter.emit("assetReportToken.registered", user_id);
-              }
           }
 
          
@@ -554,7 +551,7 @@ export class AssetsService {
 
       this.eventEmitter.emit("manualAssets.updated", user_id);
 
-
+      await this.manualAssetsUpdated(user_id);
       return {
         success: true,
         statusCode: HttpStatus.CREATED,
@@ -569,6 +566,63 @@ export class AssetsService {
         error.toString(),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  async manualAssetsUpdated(user_id: number) {
+    // Calculate total of manual assets
+    const manualAssets = await this.prismaClient.userManualAssets.findMany({
+      where: {
+        user_id
+      },
+      select: {
+        id: true
+      }
+    })
+
+    let manualAssetIds = manualAssets.map((asset) => asset.id)
+
+    let allFormFields = await this.prismaClient.userAssetsDetails.findMany({
+      where: {
+        asset_id: { in: manualAssetIds },
+        asset_field: {
+          name: "value"
+        }
+      },
+      select: {
+        value: true
+      }
+    })
+
+    let totalOfManualAssets = allFormFields.reduce((sum, value) => {
+      return sum += parseInt(value.value);
+    }, 0)
+
+    const now = new Date();
+    const firstDayOfMonth = await this.setToFirstDayOfMonth(new Date(now))
+
+    const totalAssets = await this.prismaClient.totalAssets.findFirst({
+      where: {
+        userId: user_id,
+        monthYear: firstDayOfMonth
+      }
+    })
+
+    if (totalAssets) {
+      await this.prismaClient.totalAssets.updateMany({
+        where: { userId: user_id, monthYear: firstDayOfMonth },
+        data: { totalManualAssets: totalOfManualAssets }
+      })
+    }
+    else {
+      await this.prismaClient.totalAssets.create({
+        data: {
+          userId: user_id,
+          totalPliadAssets: 0,
+          totalManualAssets: totalOfManualAssets,
+          monthYear: firstDayOfMonth,
+        }
+      })
     }
   }
 
@@ -657,7 +711,7 @@ export class AssetsService {
           }
         })   
 
-        this.eventEmitter.emit("manualAssets.updated", user_id);
+        await this.manualAssetsUpdated(user_id);
 
         return {
           success: true,
@@ -752,7 +806,7 @@ export class AssetsService {
           user_id
         }
       })
-      this.eventEmitter.emit("manualAssets.updated", user_id);
+      await this.manualAssetsUpdated(user_id);
 
       return {
         success: true,
