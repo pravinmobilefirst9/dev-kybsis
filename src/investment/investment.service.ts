@@ -579,11 +579,11 @@ export class InvestmentService {
       let totalProfit = 0;
       let totalLoss = 0;
       let investmentsResult = []
-
+      let value : any = 0;
       investments.map((investment) => {
         switch (investment.investmentCategory.name) {
           case "Annuity":
-            let value = investment.data.find((data) => data['name'] === "ending_account_value")['value'];
+            value = investment.data.find((data) => data['name'] === "ending_account_value")['value'];
             total_investment += parseFloat(value);
             investmentsResult.push({
               ...investment,
