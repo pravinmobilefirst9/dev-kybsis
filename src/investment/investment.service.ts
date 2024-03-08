@@ -40,10 +40,9 @@ export class InvestmentService {
         created_at: true
       }
     })
-
-    const { total_investment } = await this.totalOfManualInvestment(allManualInvestments);
-
-    // Create a date of first day of month to have consistency
+    try {
+      const { total_investment } = await this.totalOfManualInvestment(allManualInvestments);
+       // Create a date of first day of month to have consistency
     const now = new Date();
     const firstDayOfMonth = await this.setToFirstDayOfMonth(new Date(now))
     const investmentTotal = await this.prisma.totalInvestments.findFirst({
@@ -56,7 +55,7 @@ export class InvestmentService {
     if (investmentTotal) {
       await this.prisma.totalInvestments.updateMany({
         where: { userId: user_id, monthYear: firstDayOfMonth },
-        data: { totalManualInvestment: total_investment }
+        data: { totalManualInvestment: total_investment || 0 }
       })
     }
     else {
@@ -64,11 +63,16 @@ export class InvestmentService {
         data: {
           userId: user_id,
           totalPlaidInvestment: 0,
-          totalManualInvestment: total_investment,
+          totalManualInvestment: total_investment || 0,
           monthYear: firstDayOfMonth,
         }
       })
     }
+    } catch (error)   {
+      console.error(error)
+    }
+
+   
   }
   async syncInvestmentDetails(user_id: number) {
     const existingUser = await this.prisma.user.findUnique({
@@ -903,7 +907,6 @@ export class InvestmentService {
           },
           data : {
             data : formFields,
-            account_id : data['accountId']
           }
         })
       }
