@@ -100,7 +100,7 @@ export class EventEmittorsService {
   //     }
   // }
 
-  @OnEvent("plaid.registered")
+  @OnEvent("plaid.registered", {async : true})
   async onPlaidAccountRegistered(user_id: number) {
     const plaidItems = await this.prismaService.plaidItem.findMany({
       where : {
