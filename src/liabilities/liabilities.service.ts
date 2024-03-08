@@ -35,7 +35,7 @@ export class LiabilitiesService {
       });
 
       // Wait for all promises to resolve
-      const resultArr = await Promise.all(promises);
+      let resultArr = await Promise.all(promises);
 
       if (resultArr.length === 0) {
         return {
@@ -48,6 +48,7 @@ export class LiabilitiesService {
 
       let total = 0;
       let totalData = []
+      resultArr = resultArr.filter((acc) => acc !== undefined);
       resultArr.map(async (accounts) => {
         // Make a total of all account balances
         total += accounts.reduce((acc, account) => acc + account.balances.current, 0);
