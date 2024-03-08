@@ -102,25 +102,25 @@ export class EventEmittorsService {
 
   @OnEvent("plaid.registered", {async : true})
   async onPlaidAccountRegistered(user_id: number) {
-    const plaidItems = await this.prismaService.plaidItem.findMany({
-      where : {
-        user_id
-      },
-      select : {
-        AssetPlaidItem : {
-          select : {
-            asset_report_token : true
-          }
-        }
-      }
-    })
+    // const plaidItems = await this.prismaService.plaidItem.findMany({
+    //   where : {
+    //     user_id
+    //   },
+    //   select : {
+    //     AssetPlaidItem : {
+    //       select : {
+    //         asset_report_token : true
+    //       }
+    //     }
+    //   }
+    // })
 
-    if (plaidItems.length > 0) {
-      await this.assetsService.createAssetReportToken(user_id)
-      await this.plaidTartenService.syncHistoricalTransactions(user_id)
-      await this.liabilitiesService.importLiabilities(user_id)
-      await this.investmentService.syncInvestmentHoldingDetails(user_id)
-    }
+    // if (plaidItems.length > 0) {
+    //   await this.assetsService.createAssetReportToken(user_id)
+    //   await this.plaidTartenService.syncHistoricalTransactions(user_id)
+    //   await this.liabilitiesService.importLiabilities(user_id)
+    //   await this.investmentService.syncInvestmentHoldingDetails(user_id)
+    // }
   }
 
 

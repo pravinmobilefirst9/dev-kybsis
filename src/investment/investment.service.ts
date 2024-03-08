@@ -14,6 +14,62 @@ export class InvestmentService {
     private eventEmitter : EventEmitter2,
 
   ) { }
+
+  async manualInvestmentUpdated(user_id: number) {
+    const allManualInvestments = await this.prisma.manualInvestments.findMany({
+      where: {
+        user_id
+      },
+      select: {
+        id: true,
+        investmentCategory: {
+          select: {
+            id: true,
+            name: true,
+            fields: true
+          }
+        },
+        account_id: true,
+        Institution: {
+          select: {
+            ins_id: true,
+            ins_name: true
+          }
+        },
+        data: true,
+        created_at: true
+      }
+    })
+
+    const { total_investment } = await this.totalOfManualInvestment(allManualInvestments);
+
+    // Create a date of first day of month to have consistency
+    const now = new Date();
+    const firstDayOfMonth = await this.setToFirstDayOfMonth(new Date(now))
+    const investmentTotal = await this.prisma.totalInvestments.findFirst({
+      where: {
+        userId: user_id,
+        monthYear: firstDayOfMonth
+      }
+    })
+
+    if (investmentTotal) {
+      await this.prisma.totalInvestments.updateMany({
+        where: { userId: user_id, monthYear: firstDayOfMonth },
+        data: { totalManualInvestment: total_investment }
+      })
+    }
+    else {
+      await this.prisma.totalInvestments.create({
+        data: {
+          userId: user_id,
+          totalPlaidInvestment: 0,
+          totalManualInvestment: total_investment,
+          monthYear: firstDayOfMonth,
+        }
+      })
+    }
+  }
   async syncInvestmentDetails(user_id: number) {
     const existingUser = await this.prisma.user.findUnique({
       where: { id: user_id },
@@ -864,7 +920,7 @@ export class InvestmentService {
       }
 
       // Emit event 
-      this.eventEmitter.emit("manualInvestment.updated", user_id);
+      await this.manualInvestmentUpdated(user_id)
       return {
         success: true,
         statusCode: HttpStatus.CREATED,
@@ -894,7 +950,7 @@ export class InvestmentService {
         throw new HttpException("Invalid investment id", HttpStatus.BAD_REQUEST)
       }
       
-      this.eventEmitter.emit("manualInvestment.updated", user_id);
+      await this.manualInvestmentUpdated(user_id)
 
       return {
         success: true,
