@@ -643,7 +643,7 @@ export class InvestmentService {
             total_investment += parseFloat(value);
             investmentsResult.push({
               ...investment,
-              portfolio_value : parseFloat(value.toFixed(2))
+              portfolio_value : parseFloat(value)
             })
             break;
         
@@ -652,7 +652,7 @@ export class InvestmentService {
             total_investment += parseFloat(value);
             investmentsResult.push({
               ...investment,
-              portfolio_value : parseFloat(value.toFixed(2))
+              portfolio_value : parseFloat(value)
             })
             break;
 
@@ -705,13 +705,13 @@ export class InvestmentService {
             total_investment += parseFloat(value);
             investmentsResult.push({
               ...investment,
-              portfolio_value : parseFloat(value.toFixed(2))
+              portfolio_value : parseFloat(value)
             })
           break;
 
           case "Life Insurance":
             value = investment.data.find((data) => data['name'] === "cash_value")['value'];
-            total_investment += parseFloat(value.toFixed(2));
+            total_investment += parseFloat(value);
             investmentsResult.push({
               ...investment,
               portfolio_value : parseFloat(value)
@@ -723,7 +723,7 @@ export class InvestmentService {
             total_investment += value;
             investmentsResult.push({
               ...investment,
-              portfolio_value : parseFloat(value.toFixed(2))
+              portfolio_value : parseFloat(value)
             })
           break
 
