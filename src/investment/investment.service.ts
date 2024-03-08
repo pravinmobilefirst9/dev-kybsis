@@ -643,7 +643,7 @@ export class InvestmentService {
             total_investment += parseFloat(value);
             investmentsResult.push({
               ...investment,
-              portfolio_value : value
+              portfolio_value : parseFloat(value.toFixed(2))
             })
             break;
         
@@ -652,7 +652,7 @@ export class InvestmentService {
             total_investment += parseFloat(value);
             investmentsResult.push({
               ...investment,
-              portfolio_value : value
+              portfolio_value : parseFloat(value.toFixed(2))
             })
             break;
 
@@ -694,7 +694,7 @@ export class InvestmentService {
               total_quantity,
               name,
               ...profitLossObj,
-              portfolio_value,
+              portfolio_value : parseFloat(portfolio_value.toFixed(2)),
               profitLossPercentage,
               created_at : investment.created_at
             })
@@ -705,16 +705,16 @@ export class InvestmentService {
             total_investment += parseFloat(value);
             investmentsResult.push({
               ...investment,
-              portfolio_value : value
+              portfolio_value : parseFloat(value.toFixed(2))
             })
           break;
 
           case "Life Insurance":
             value = investment.data.find((data) => data['name'] === "cash_value")['value'];
-            total_investment += parseFloat(value);
+            total_investment += parseFloat(value.toFixed(2));
             investmentsResult.push({
               ...investment,
-              portfolio_value : value
+              portfolio_value : parseFloat(value)
             })
           break;
 
@@ -723,7 +723,7 @@ export class InvestmentService {
             total_investment += value;
             investmentsResult.push({
               ...investment,
-              portfolio_value : value
+              portfolio_value : parseFloat(value.toFixed(2))
             })
           break
 
@@ -1028,8 +1028,7 @@ export class InvestmentService {
   }
 
 
-    // Cron for liabilities
-  // CRON expression for this approach (to run at 23:30 on the 28th to 31st)
+  // CRON expression for this approach (to run at 2 AM on the 28th to 31st)
   @Cron("0 2 28-31 * *")
   async handleInvestmentCron() {
     const today = new Date();
