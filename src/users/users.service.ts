@@ -59,6 +59,7 @@ export class UsersService {
           user_otp: otp,
           user_otp_createdAt: new Date(),
           device_token: createUserDto.device_token,
+          user_role : "PREMIUM"
         },
       });
 
